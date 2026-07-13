@@ -1,0 +1,9 @@
+node_modules
+dist
+.env
+.env.local
+.firebase
+firebase-debug.log
+.DS_Store
+/.vs/theblackwolfstudio/CopilotIndices/17.14.1691.21253
+/.vs
