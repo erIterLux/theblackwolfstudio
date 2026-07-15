@@ -374,11 +374,8 @@ p {
 }
 
     .hero__image::after {
-        position: absolute;
-        inset: 0;
-        content: "";
-        background: linear-gradient(90deg, var(--bone) 0%, var(--bone) 43%, rgba(242,238,230,.98) 49%, rgba(242,238,230,.76) 56%, rgba(242,238,230,.32) 63%, rgba(242,238,230,.08) 70%, transparent 77%), linear-gradient(180deg, var(--bone) 0%, transparent 11%, transparent 89%, var(--bone) 100%);
-        pointer-events: none;
+        display: none;
+        content: none;
     }
 
 .hero__brand-card {
@@ -1536,10 +1533,6 @@ textarea {
         background-position: center bottom;
         background-attachment: scroll;
     }
-
-        .hero__image::after {
-            background: linear-gradient(180deg, var(--bone) 0%, rgba(242,238,230,.9) 10%, rgba(242,238,230,.14) 34%, rgba(242,238,230,.04) 72%, var(--bone) 100%), linear-gradient(90deg, var(--bone) 0%, transparent 10%, transparent 90%, var(--bone) 100%);
-        }
 
     .hero__brand-card {
         top: auto;
