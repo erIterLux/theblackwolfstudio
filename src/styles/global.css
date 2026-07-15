@@ -401,7 +401,7 @@ p {
         width: 88%;
         aspect-ratio: 1;
         content: "";
-        background: rgba(242,238,230,.98);
+        background: var(--bone);
         border: 3px solid #101215;
         border-radius: 50%;
         box-shadow: 0 14px 30px rgba(20,23,27,.10);
@@ -466,16 +466,16 @@ p {
 .hero__dojo-mark {
     position: absolute;
     z-index: 1;
-    top: 35%;
-    bottom: 12%;
+    top: 37%;
+    bottom: 15%;
     left: 50%;
-    width: 48%;
+    width: 56%;
     display: grid;
     place-items: center;
-    padding: 13% 11% 9%;
-    background: rgba(242,238,230,.98);
-    border: 1px solid rgba(20,23,27,.16);
-    box-shadow: 0 12px 22px rgba(20,23,27,.10);
+    padding: 0;
+    background: transparent;
+    border: 0;
+    box-shadow: none;
     transform: translateX(-50%);
 }
 
@@ -486,7 +486,7 @@ p {
     .hero__dojo-mark img {
         position: relative;
         z-index: 1;
-        width: 100%;
+        width: 78%;
         filter: none;
     }
 
@@ -1662,9 +1662,13 @@ textarea {
         }
 
     .hero__dojo-mark {
-        width: 50%;
-        padding: 13% 10% 9%;
+        width: 58%;
+        padding: 0;
     }
+
+        .hero__dojo-mark img {
+            width: 80%;
+        }
 
     .hero__signature {
         margin-top: 1.85rem;
