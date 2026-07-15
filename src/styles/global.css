@@ -177,7 +177,7 @@ p {
 }
 
 .site-header__inner {
-    min-height: 76px;
+    min-height: 88px;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -192,19 +192,20 @@ p {
 }
 
 .brand__mark-wrap {
-    width: 48px;
-    height: 48px;
+    width: 64px;
+    height: 64px;
     display: grid;
     place-items: center;
     overflow: hidden;
-    border: 1px solid rgba(255,255,255,.18);
-    border-radius: 12px;
-    background: var(--bone);
+    border: 1px solid rgba(255,255,255,.24);
+    border-radius: 14px;
+    background: var(--white);
+    box-shadow: 0 8px 24px rgba(0,0,0,.24);
 }
 
 .brand__mark {
-    width: 42px;
-    height: 42px;
+    width: 58px;
+    height: 58px;
     object-fit: contain;
     filter: none;
 }
