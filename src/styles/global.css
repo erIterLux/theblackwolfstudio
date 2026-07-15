@@ -377,63 +377,56 @@ p {
         position: absolute;
         inset: 0;
         content: "";
-        background: linear-gradient(90deg, var(--bone) 0%, var(--bone) 40%, rgba(242,238,230,.98) 47%, rgba(242,238,230,.82) 55%, rgba(242,238,230,.38) 64%, rgba(242,238,230,.08) 73%, transparent 82%), linear-gradient(180deg, var(--bone) 0%, transparent 12%, transparent 88%, var(--bone) 100%);
+        background: linear-gradient(90deg, var(--bone) 0%, var(--bone) 43%, rgba(242,238,230,.98) 49%, rgba(242,238,230,.76) 56%, rgba(242,238,230,.32) 63%, rgba(242,238,230,.08) 70%, transparent 77%), linear-gradient(180deg, var(--bone) 0%, transparent 11%, transparent 89%, var(--bone) 100%);
         pointer-events: none;
     }
 
-.hero__watermark {
+.hero__brand-card {
     position: absolute;
-    z-index: 2;
-    top: 50%;
-    left: calc(50% + clamp(88px, 8vw, 150px));
-    width: clamp(245px, 18vw, 325px);
+    z-index: 3;
+    top: 49%;
+    left: calc(50% + clamp(56px, 5vw, 92px));
+    width: clamp(168px, 12vw, 190px);
+    min-height: clamp(198px, 14vw, 222px);
     display: grid;
     place-items: center;
-    opacity: .3;
+    padding: clamp(18px, 1.5vw, 24px);
+    background: rgba(242,238,230,.96);
+    border: 1px solid rgba(20,23,27,.12);
+    border-radius: 0;
+    box-shadow: 0 20px 50px rgba(20,23,27,.15);
     transform: translate(-50%, -50%);
     pointer-events: none;
 }
 
-    .hero__watermark::before {
+    .hero__brand-card::after {
         position: absolute;
-        inset: -18%;
+        inset: 10px;
         content: "";
-        border: 1px solid rgba(20,23,27,.08);
-        border-radius: 50%;
-        background: radial-gradient(circle, rgba(242,238,230,.96) 0%, rgba(242,238,230,.76) 43%, rgba(242,238,230,.24) 67%, transparent 76%);
-        box-shadow: 0 24px 64px rgba(20,23,27,.08);
-        filter: blur(1px);
+        border: 1px solid rgba(53,73,93,.14);
+        pointer-events: none;
     }
 
-    .hero__watermark::after {
-        position: absolute;
-        inset: -4%;
-        content: "";
-        border: 1px solid rgba(53,73,93,.12);
-        border-radius: 50%;
-    }
-
-    .hero__watermark img {
+    .hero__brand-card img {
         position: relative;
         z-index: 1;
         width: 100%;
         filter: none;
-        mix-blend-mode: multiply;
     }
 
 .hero__grid {
     position: relative;
     z-index: 2;
     display: grid;
-    grid-template-columns: minmax(0, 640px) 1fr;
-    gap: 3rem;
+    grid-template-columns: minmax(0, 620px) 1fr;
+    gap: clamp(3rem, 6vw, 6rem);
     align-items: center;
-    padding-block: clamp(88px, 10vw, 140px) 120px;
+    padding-block: clamp(72px, 8vw, 112px);
 }
 
 .hero__copy {
-    max-width: 620px;
-    padding: 2rem 0;
+    max-width: 600px;
+    padding: 1.5rem 0;
 }
 
     .hero__copy h1 {
@@ -469,33 +462,21 @@ p {
     min-height: 520px;
 }
 
-.hero__quote {
-    position: absolute;
-    z-index: 4;
-    bottom: 68px;
-    left: 50%;
-    width: min(calc(100% - 40px), 620px);
-    margin: 0;
-    padding: .75rem 1.5rem .65rem;
-    color: rgba(20,23,27,.78);
-    text-align: center;
-    font-size: clamp(.92rem, 1.05vw, 1rem);
-    font-weight: 600;
-    line-height: 1.45;
-    letter-spacing: .025em;
-    background: linear-gradient(90deg, transparent 0%, rgba(242,238,230,.72) 18%, rgba(242,238,230,.9) 50%, rgba(242,238,230,.72) 82%, transparent 100%);
-    text-shadow: 0 1px 0 rgba(255,255,255,.75);
-    transform: translateX(-50%);
+.hero__signature {
+    max-width: 440px;
+    margin-top: 2.25rem;
 }
 
-    .hero__quote::before {
-        display: block;
-        width: 42px;
-        height: 1px;
-        margin: 0 auto .65rem;
-        content: "";
-        background: rgba(53,73,93,.52);
-    }
+.hero__quote {
+    margin: 0;
+    padding-top: 1rem;
+    color: rgba(20,23,27,.78);
+    border-top: 1px solid rgba(53,73,93,.34);
+    text-align: left;
+    font-family: Georgia, Cambria, "Times New Roman", serif;
+    font-size: clamp(.98rem, 1.15vw, 1.08rem);
+    line-height: 1.52;
+}
 
     .hero__quote span {
         display: block;
@@ -504,31 +485,35 @@ p {
 
     .hero__quote cite {
         display: block;
-        margin-top: .35rem;
-        color: rgba(20,23,27,.48);
-        font-size: .66rem;
+        margin-top: .42rem;
+        color: rgba(20,23,27,.5);
+        font-family: var(--body);
+        font-size: .65rem;
         font-style: normal;
         font-weight: 850;
-        letter-spacing: .16em;
+        letter-spacing: .17em;
         text-transform: uppercase;
     }
 
 .hero__scroll {
-    position: absolute;
-    z-index: 4;
-    bottom: 22px;
-    left: 50%;
     display: inline-flex;
     align-items: center;
     gap: .45rem;
-    color: var(--gray-600);
-    font-size: .75rem;
-    font-weight: 800;
-    letter-spacing: .1em;
+    margin-top: 1rem;
+    color: var(--blue-dark);
+    font-size: .73rem;
+    font-weight: 850;
+    letter-spacing: .11em;
     text-transform: uppercase;
-    text-shadow: 0 1px 0 rgba(255,255,255,.65);
-    transform: translateX(-50%);
 }
+
+    .hero__scroll svg {
+        transition: transform .2s ease;
+    }
+
+    .hero__scroll:hover svg {
+        transform: translateY(3px);
+    }
 
 @keyframes rotate {
     to {
@@ -1460,30 +1445,34 @@ textarea {
         grid-template-columns: 1fr;
     }
 
+    .hero {
+        min-height: auto;
+    }
+
+    .hero__grid {
+        padding-block: 72px 520px;
+    }
+
     .hero__image {
-        inset: 42% 0 0;
+        inset: auto 0 0;
+        height: 500px;
         background-size: contain;
-        background-position: center top;
+        background-position: center bottom;
         background-attachment: scroll;
     }
 
         .hero__image::after {
-            background: linear-gradient(180deg, var(--bone) 0%, rgba(242,238,230,.9) 10%, rgba(242,238,230,.18) 36%, rgba(242,238,230,.08) 70%, var(--bone) 100%), linear-gradient(90deg, var(--bone) 0%, transparent 12%, transparent 88%, var(--bone) 100%);
+            background: linear-gradient(180deg, var(--bone) 0%, rgba(242,238,230,.9) 10%, rgba(242,238,230,.14) 34%, rgba(242,238,230,.04) 72%, var(--bone) 100%), linear-gradient(90deg, var(--bone) 0%, transparent 10%, transparent 90%, var(--bone) 100%);
         }
 
-    .hero__watermark {
-        top: 66%;
-        left: 22%;
-        width: clamp(165px, 25vw, 220px);
-        opacity: .26;
-    }
-
-        .hero__watermark::before {
-            inset: -15%;
-        }
-
-    .hero__quote {
-        bottom: 70px;
+    .hero__brand-card {
+        top: auto;
+        bottom: 330px;
+        left: max(34px, calc(50% - 300px));
+        width: 154px;
+        min-height: 182px;
+        padding: 18px;
+        transform: none;
     }
 
     .hero__visual {
@@ -1568,53 +1557,45 @@ textarea {
     }
 
     .hero__grid {
-        gap: 3rem;
-        padding-block: 70px 455px;
+        gap: 2rem;
+        padding-block: 56px 374px;
+    }
+
+    .hero__copy {
+        padding: 0;
     }
 
     .hero__image {
-        inset: 48% 0 0;
+        inset: auto 0 0;
+        height: 350px;
         background-size: contain;
-        background-position: center top;
+        background-position: center bottom;
     }
 
-    .hero__watermark {
+    .hero__brand-card {
         top: auto;
-        bottom: 190px;
-        left: 8%;
-        width: clamp(128px, 36vw, 168px);
-        opacity: .27;
+        bottom: 224px;
+        left: 22px;
+        width: 126px;
+        min-height: 148px;
+        padding: 14px;
         transform: none;
     }
 
-        .hero__watermark::before {
-            inset: -13%;
+        .hero__brand-card::after {
+            inset: 7px;
         }
 
-        .hero__watermark::after {
-            inset: -2%;
-        }
-
-    .hero__quote {
-        bottom: 64px;
-        width: calc(100% - 24px);
-        padding: .7rem 1rem .6rem;
-        font-size: .84rem;
-        line-height: 1.42;
-        letter-spacing: .015em;
+    .hero__signature {
+        margin-top: 1.85rem;
     }
 
-        .hero__quote::before {
-            margin-bottom: .5rem;
-        }
-
-        .hero__quote cite {
-            margin-top: .3rem;
-            font-size: .61rem;
-        }
+    .hero__quote {
+        font-size: .94rem;
+    }
 
     .hero__scroll {
-        bottom: 17px;
+        margin-top: .85rem;
     }
 
     .trust-strip__inner {
