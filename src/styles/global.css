@@ -349,7 +349,7 @@ p {
     align-items: center;
     overflow: hidden;
     color: var(--white);
-    background: var(--black);
+    background: #000;
     isolation: isolate;
 }
 
@@ -357,19 +357,28 @@ p {
     position: absolute;
     inset: 0;
     z-index: 1;
-    opacity: .72;
-    background: radial-gradient(circle at 24% 28%, rgba(147,167,186,.09), transparent 30%), repeating-linear-gradient(90deg, transparent 0 118px, rgba(255,255,255,.018) 119px 120px);
+    opacity: .58;
+    background: radial-gradient(circle at 24% 28%, rgba(147,167,186,.08), transparent 30%), repeating-linear-gradient(90deg, transparent 0 118px, rgba(255,255,255,.014) 119px 120px);
 }
 
 .hero__image {
     position: absolute;
     z-index: 0;
-    inset: 0 0 0 42%;
-    background-image: linear-gradient(90deg, var(--black) 0%, rgba(3,3,3,.94) 10%, rgba(3,3,3,.55) 36%, rgba(3,3,3,.12) 68%, rgba(3,3,3,0) 100%), linear-gradient(180deg, rgba(3,3,3,.12), rgba(3,3,3,.25)), url("/images/Wolfingout.png");
+    inset: 0;
+    background-color: #000;
+    background-image: url("/images/Wolfingout.png");
     background-repeat: no-repeat;
-    background-size: cover;
-    background-position: center right;
+    background-size: auto 94%;
+    background-position: right 3vw center;
 }
+
+    .hero__image::after {
+        position: absolute;
+        inset: 0;
+        content: "";
+        background: linear-gradient(90deg, #000 0%, #000 34%, rgba(0,0,0,.96) 43%, rgba(0,0,0,.74) 55%, rgba(0,0,0,.30) 69%, rgba(0,0,0,.06) 84%, transparent 100%), linear-gradient(180deg, #000 0%, transparent 12%, transparent 87%, #000 100%);
+        pointer-events: none;
+    }
 
 .hero__grid {
     position: relative;
@@ -1365,9 +1374,14 @@ textarea {
 
     .hero__image {
         inset: 42% 0 0;
-        background-image: linear-gradient(180deg, var(--black) 0%, rgba(3,3,3,.55) 20%, rgba(3,3,3,.12) 52%, rgba(3,3,3,.22) 100%), url("/images/Wolfingout.png");
+        background-size: contain;
         background-position: center top;
+        background-attachment: scroll;
     }
+
+        .hero__image::after {
+            background: linear-gradient(180deg, #000 0%, rgba(0,0,0,.84) 10%, rgba(0,0,0,.18) 36%, rgba(0,0,0,.08) 70%, #000 100%), linear-gradient(90deg, #000 0%, transparent 12%, transparent 88%, #000 100%);
+        }
 
     .hero__visual {
         display: none;
@@ -1439,7 +1453,8 @@ textarea {
 
     .hero__image {
         inset: 48% 0 0;
-        background-size: cover;
+        background-size: contain;
+        background-position: center top;
     }
 
     .trust-strip__inner {
