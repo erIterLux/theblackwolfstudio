@@ -45,7 +45,6 @@ export default function HomePage() {
                     </div>
 
                     <div className="hero__brand-card" aria-hidden="true">
-                        <span className="hero__dojo-roof" />
                         <span className="hero__dojo-lintel" />
                         <span className="hero__dojo-crossbar" />
                         <span className="hero__dojo-post hero__dojo-post--left" />
