@@ -383,21 +383,39 @@ p {
 
 .hero__watermark {
     position: absolute;
-    z-index: 1;
-    top: 49%;
-    left: calc(50% + clamp(70px, 7vw, 130px));
-    width: clamp(180px, 15vw, 260px);
-    padding: 0;
-    opacity: .16;
-    background: transparent;
-    border: 0;
-    border-radius: 0;
-    box-shadow: none;
+    z-index: 2;
+    top: 50%;
+    left: calc(50% + clamp(88px, 8vw, 150px));
+    width: clamp(245px, 18vw, 325px);
+    display: grid;
+    place-items: center;
+    opacity: .3;
     transform: translate(-50%, -50%);
     pointer-events: none;
 }
 
+    .hero__watermark::before {
+        position: absolute;
+        inset: -18%;
+        content: "";
+        border: 1px solid rgba(20,23,27,.08);
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(242,238,230,.96) 0%, rgba(242,238,230,.76) 43%, rgba(242,238,230,.24) 67%, transparent 76%);
+        box-shadow: 0 24px 64px rgba(20,23,27,.08);
+        filter: blur(1px);
+    }
+
+    .hero__watermark::after {
+        position: absolute;
+        inset: -4%;
+        content: "";
+        border: 1px solid rgba(53,73,93,.12);
+        border-radius: 50%;
+    }
+
     .hero__watermark img {
+        position: relative;
+        z-index: 1;
         width: 100%;
         filter: none;
         mix-blend-mode: multiply;
@@ -453,34 +471,52 @@ p {
 
 .hero__quote {
     position: absolute;
-    z-index: 3;
-    bottom: 58px;
+    z-index: 4;
+    bottom: 68px;
     left: 50%;
-    width: min(calc(100% - 40px), 680px);
+    width: min(calc(100% - 40px), 620px);
     margin: 0;
-    color: rgba(20,23,27,.58);
+    padding: .75rem 1.5rem .65rem;
+    color: rgba(20,23,27,.78);
     text-align: center;
-    font-size: .84rem;
+    font-size: clamp(.92rem, 1.05vw, 1rem);
+    font-weight: 600;
     line-height: 1.45;
-    letter-spacing: .045em;
-    text-shadow: 0 1px 0 rgba(255,255,255,.65);
+    letter-spacing: .025em;
+    background: linear-gradient(90deg, transparent 0%, rgba(242,238,230,.72) 18%, rgba(242,238,230,.9) 50%, rgba(242,238,230,.72) 82%, transparent 100%);
+    text-shadow: 0 1px 0 rgba(255,255,255,.75);
     transform: translateX(-50%);
 }
 
+    .hero__quote::before {
+        display: block;
+        width: 42px;
+        height: 1px;
+        margin: 0 auto .65rem;
+        content: "";
+        background: rgba(53,73,93,.52);
+    }
+
     .hero__quote span {
+        display: block;
         font-style: italic;
     }
 
     .hero__quote cite {
-        margin-left: .45rem;
-        color: rgba(20,23,27,.4);
+        display: block;
+        margin-top: .35rem;
+        color: rgba(20,23,27,.48);
+        font-size: .66rem;
         font-style: normal;
+        font-weight: 850;
+        letter-spacing: .16em;
+        text-transform: uppercase;
     }
 
 .hero__scroll {
     position: absolute;
-    z-index: 3;
-    bottom: 24px;
+    z-index: 4;
+    bottom: 22px;
     left: 50%;
     display: inline-flex;
     align-items: center;
@@ -1436,11 +1472,18 @@ textarea {
         }
 
     .hero__watermark {
-        top: 67%;
-        left: 20%;
-        width: clamp(120px, 22vw, 190px);
-        padding: 0;
-        opacity: .19;
+        top: 66%;
+        left: 22%;
+        width: clamp(165px, 25vw, 220px);
+        opacity: .26;
+    }
+
+        .hero__watermark::before {
+            inset: -15%;
+        }
+
+    .hero__quote {
+        bottom: 70px;
     }
 
     .hero__visual {
@@ -1526,7 +1569,7 @@ textarea {
 
     .hero__grid {
         gap: 3rem;
-        padding-block: 70px 390px;
+        padding-block: 70px 455px;
     }
 
     .hero__image {
@@ -1537,28 +1580,41 @@ textarea {
 
     .hero__watermark {
         top: auto;
-        bottom: 124px;
-        left: 7%;
-        width: clamp(96px, 27vw, 146px);
-        padding: 0;
-        opacity: .17;
+        bottom: 190px;
+        left: 8%;
+        width: clamp(128px, 36vw, 168px);
+        opacity: .27;
         transform: none;
     }
 
+        .hero__watermark::before {
+            inset: -13%;
+        }
+
+        .hero__watermark::after {
+            inset: -2%;
+        }
+
     .hero__quote {
-        bottom: 56px;
-        width: calc(100% - 28px);
-        font-size: .75rem;
-        line-height: 1.4;
-        letter-spacing: .025em;
+        bottom: 64px;
+        width: calc(100% - 24px);
+        padding: .7rem 1rem .6rem;
+        font-size: .84rem;
+        line-height: 1.42;
+        letter-spacing: .015em;
     }
 
+        .hero__quote::before {
+            margin-bottom: .5rem;
+        }
+
         .hero__quote cite {
-            display: inline-block;
+            margin-top: .3rem;
+            font-size: .61rem;
         }
 
     .hero__scroll {
-        bottom: 18px;
+        bottom: 17px;
     }
 
     .trust-strip__inner {
