@@ -45,7 +45,14 @@ export default function HomePage() {
                     </div>
 
                     <div className="hero__brand-card" aria-hidden="true">
-                        <img src="/images/black-wolf-mark.png" alt="" />
+                        <span className="hero__dojo-roof" />
+                        <span className="hero__dojo-lintel" />
+                        <span className="hero__dojo-crossbar" />
+                        <span className="hero__dojo-post hero__dojo-post--left" />
+                        <span className="hero__dojo-post hero__dojo-post--right" />
+                        <span className="hero__dojo-mark">
+                            <img src="/images/black-wolf-mark.png" alt="" />
+                        </span>
                     </div>
 
                     <div className="hero__visual" aria-hidden="true" />

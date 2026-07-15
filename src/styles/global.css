@@ -385,43 +385,111 @@ p {
     position: absolute;
     z-index: 3;
     top: 49%;
-    left: calc(50% + clamp(56px, 5vw, 92px));
-    width: clamp(196px, 14vw, 224px);
-    min-height: clamp(208px, 15vw, 238px);
-    display: grid;
-    place-items: center;
-    padding: clamp(64px, 4.7vw, 76px) clamp(30px, 2.3vw, 38px) clamp(22px, 1.8vw, 28px);
-    background: transparent;
-    border: 0;
-    border-radius: 0;
-    filter: drop-shadow(0 20px 34px rgba(20,23,27,.18));
+    left: calc(50% + clamp(60px, 5.5vw, 102px));
+    width: clamp(224px, 16vw, 262px);
+    aspect-ratio: 1.04;
     transform: translate(-50%, -50%);
+    filter: drop-shadow(0 20px 34px rgba(20,23,27,.18));
     pointer-events: none;
 }
 
-    .hero__brand-card::before, .hero__brand-card::after {
-        position: absolute;
-        inset: 0;
-        content: "";
-        clip-path: polygon(50% 0%, 100% 27%, 91% 27%, 91% 34%, 100% 34%, 91% 43%, 86% 43%, 86% 100%, 14% 100%, 14% 43%, 9% 43%, 0% 34%, 9% 34%, 9% 27%, 0% 27%);
-        pointer-events: none;
-    }
-
     .hero__brand-card::before {
+        position: absolute;
         z-index: 0;
-        background: rgba(20,23,27,.22);
+        inset: 3%;
+        content: "";
+        border: 1px solid rgba(53,73,93,.14);
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(242,238,230,.58) 0%, rgba(242,238,230,.26) 54%, transparent 72%);
     }
 
-    .hero__brand-card::after {
-        z-index: 1;
-        background: linear-gradient(180deg, rgba(226,219,207,.99) 0%, rgba(232,225,214,.99) 34%, rgba(53,73,93,.22) 34.2%, rgba(242,238,230,.99) 34.8%, rgba(242,238,230,.99) 100%);
-        transform: scale(.982);
-        transform-origin: center;
+.hero__dojo-roof,
+.hero__dojo-lintel,
+.hero__dojo-crossbar,
+.hero__dojo-post {
+    position: absolute;
+    z-index: 1;
+    display: block;
+    background: linear-gradient(180deg, rgba(65,83,101,.98), rgba(26,33,40,.99));
+    filter: drop-shadow(0 1px 0 rgba(242,238,230,.34)) drop-shadow(0 10px 16px rgba(20,23,27,.18));
+}
+
+.hero__dojo-roof {
+    top: 5%;
+    left: -1%;
+    width: 102%;
+    height: 27%;
+    clip-path: polygon(0 61%, 8% 46%, 24% 31%, 50% 20%, 76% 31%, 92% 46%, 100% 61%, 92% 69%, 74% 57%, 50% 49%, 26% 57%, 8% 69%);
+}
+
+.hero__dojo-lintel {
+    top: 27%;
+    left: 5%;
+    width: 90%;
+    height: 11%;
+    clip-path: polygon(0 0, 100% 0, 92% 100%, 8% 100%);
+}
+
+.hero__dojo-crossbar {
+    top: 40%;
+    left: 14%;
+    width: 72%;
+    height: 7%;
+    clip-path: polygon(0 0, 100% 0, 91% 100%, 9% 100%);
+}
+
+.hero__dojo-post {
+    top: 33%;
+    bottom: 4%;
+    width: 11%;
+    clip-path: polygon(30% 0, 70% 0, 100% 100%, 0 100%);
+}
+
+    .hero__dojo-post::after {
+        position: absolute;
+        right: -24%;
+        bottom: 0;
+        left: -24%;
+        height: 6%;
+        content: "";
+        background: inherit;
     }
 
-    .hero__brand-card img {
+.hero__dojo-post--left {
+    left: 19%;
+    transform: rotate(1.4deg);
+    transform-origin: top center;
+}
+
+.hero__dojo-post--right {
+    right: 19%;
+    transform: rotate(-1.4deg);
+    transform-origin: top center;
+}
+
+.hero__dojo-mark {
+    position: absolute;
+    z-index: 2;
+    top: 43%;
+    left: 50%;
+    width: 43%;
+    display: grid;
+    place-items: center;
+    transform: translateX(-50%);
+}
+
+    .hero__dojo-mark::before {
+        position: absolute;
+        inset: -18% -22%;
+        content: "";
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(242,238,230,.97) 0%, rgba(242,238,230,.84) 55%, transparent 78%);
+        filter: blur(1px);
+    }
+
+    .hero__dojo-mark img {
         position: relative;
-        z-index: 2;
+        z-index: 1;
         width: 100%;
         filter: none;
     }
@@ -1479,11 +1547,10 @@ textarea {
 
     .hero__brand-card {
         top: auto;
-        bottom: 318px;
-        left: max(34px, calc(50% - 300px));
-        width: 172px;
-        min-height: 192px;
-        padding: 58px 27px 22px;
+        bottom: 308px;
+        left: max(32px, calc(50% - 300px));
+        width: 188px;
+        aspect-ratio: 1.04;
         transform: none;
     }
 
@@ -1586,17 +1653,20 @@ textarea {
 
     .hero__brand-card {
         top: auto;
-        bottom: 210px;
-        left: 18px;
-        width: 144px;
-        min-height: 160px;
-        padding: 48px 23px 18px;
+        bottom: 202px;
+        left: 16px;
+        width: 154px;
+        aspect-ratio: 1.04;
         transform: none;
     }
 
-        .hero__brand-card::after {
-            transform: scale(.978);
+        .hero__brand-card::before {
+            inset: 1%;
         }
+
+    .hero__dojo-mark {
+        width: 45%;
+    }
 
     .hero__signature {
         margin-top: 1.85rem;
