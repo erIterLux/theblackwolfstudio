@@ -198,7 +198,7 @@ p {
     place-items: center;
     overflow: hidden;
     border: 1px solid rgba(255,255,255,.24);
-    border-radius: 14px;
+    border-radius: 0;
     background: var(--white);
     box-shadow: 0 8px 24px rgba(0,0,0,.24);
 }
@@ -381,6 +381,23 @@ p {
         pointer-events: none;
     }
 
+.hero__watermark {
+    position: absolute;
+    z-index: 1;
+    top: 49%;
+    left: calc(50% + clamp(70px, 7vw, 130px));
+    width: clamp(180px, 15vw, 260px);
+    opacity: .12;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+}
+
+    .hero__watermark img {
+        width: 100%;
+        filter: invert(1) grayscale(1) brightness(1.28);
+        mix-blend-mode: screen;
+    }
+
 .hero__grid {
     position: relative;
     z-index: 2;
@@ -428,6 +445,30 @@ p {
 .hero__visual {
     min-height: 520px;
 }
+
+.hero__quote {
+    position: absolute;
+    z-index: 3;
+    bottom: 58px;
+    left: 50%;
+    width: min(calc(100% - 40px), 620px);
+    margin: 0;
+    color: rgba(242,238,230,.48);
+    text-align: center;
+    font-size: .72rem;
+    letter-spacing: .055em;
+    transform: translateX(-50%);
+}
+
+    .hero__quote span {
+        font-style: italic;
+    }
+
+    .hero__quote cite {
+        margin-left: .45rem;
+        color: rgba(242,238,230,.31);
+        font-style: normal;
+    }
 
 .hero__scroll {
     position: absolute;
@@ -1349,7 +1390,7 @@ textarea {
 
     .site-nav {
         position: absolute;
-        top: 76px;
+        top: 88px;
         right: 0;
         left: 0;
         display: none;
@@ -1383,6 +1424,13 @@ textarea {
         .hero__image::after {
             background: linear-gradient(180deg, #000 0%, rgba(0,0,0,.84) 10%, rgba(0,0,0,.18) 36%, rgba(0,0,0,.08) 70%, #000 100%), linear-gradient(90deg, #000 0%, transparent 12%, transparent 88%, #000 100%);
         }
+
+    .hero__watermark {
+        top: 67%;
+        left: 20%;
+        width: clamp(120px, 22vw, 190px);
+        opacity: .1;
+    }
 
     .hero__visual {
         display: none;
@@ -1439,6 +1487,24 @@ textarea {
         padding-block: 72px;
     }
 
+    .site-header__inner {
+        min-height: 76px;
+    }
+
+    .brand__mark-wrap {
+        width: 56px;
+        height: 56px;
+    }
+
+    .brand__mark {
+        width: 50px;
+        height: 50px;
+    }
+
+    .site-nav {
+        top: 76px;
+    }
+
     .brand__copy {
         display: none;
     }
@@ -1456,6 +1522,30 @@ textarea {
         inset: 48% 0 0;
         background-size: contain;
         background-position: center top;
+    }
+
+    .hero__watermark {
+        top: auto;
+        bottom: 116px;
+        left: 9%;
+        width: clamp(92px, 27vw, 142px);
+        opacity: .09;
+        transform: none;
+    }
+
+    .hero__quote {
+        bottom: 54px;
+        width: calc(100% - 32px);
+        font-size: .67rem;
+        letter-spacing: .035em;
+    }
+
+        .hero__quote cite {
+            display: inline-block;
+        }
+
+    .hero__scroll {
+        bottom: 18px;
     }
 
     .trust-strip__inner {

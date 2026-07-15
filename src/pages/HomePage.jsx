@@ -17,6 +17,9 @@ export default function HomePage() {
             <section className="hero">
                 <div className="hero__texture" aria-hidden="true" />
                 <div className="hero__image" aria-hidden="true" />
+                <div className="hero__watermark" aria-hidden="true">
+                    <img src="/images/black-wolf-mark.png" alt="" />
+                </div>
                 <div className="container hero__grid">
                     <div className="hero__copy">
                         <p className="eyebrow">Martial arts · self-defense · somatic healing</p>
@@ -35,6 +38,10 @@ export default function HomePage() {
                     </div>
                     <div className="hero__visual" aria-hidden="true" />
                 </div>
+                <blockquote className="hero__quote">
+                    <span>“Be a black wolf, not a black sheep.”</span>
+                    <cite>— Unknown</cite>
+                </blockquote>
                 <a href="#training" className="hero__scroll">See the approach <ChevronDown size={18} /></a>
             </section>
 
