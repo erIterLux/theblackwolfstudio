@@ -1,13 +1,8 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    function signedIn() {
-      return request.auth != null;
-    }
-
-    function isOwner(userId) {
-      return signedIn() && request.auth.uid == userId;
-    }
+    function signedIn() { return request.auth != null; }
+    function isOwner(userId) { return signedIn() && request.auth.uid == userId; }
 
     match /inquiries/{inquiryId} {
       allow create: if request.resource.data.keys().hasOnly([
@@ -25,8 +20,23 @@ service cloud.firestore {
       allow delete: if false;
     }
 
-    match /users/{userId}/{document=**} {
-      allow read, write: if isOwner(userId);
+    match /users/{userId}/wolfGuideConversations/{conversationId} {
+      allow read: if isOwner(userId);
+      allow write: if false;
     }
+
+    match /users/{userId}/wolfGuideConversations/{conversationId}/messages/{messageId} {
+      allow read: if isOwner(userId);
+      allow write: if false;
+    }
+
+
+    match /memberships/{userId} {
+      allow read: if isOwner(userId);
+      allow write: if false;
+    }
+
+    match /stripeEvents/{eventId} { allow read, write: if false; }
+    match /wolfGuideUsage/{userId} { allow read, write: if false; }
   }
 }
