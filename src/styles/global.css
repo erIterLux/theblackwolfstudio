@@ -221,7 +221,7 @@ p {
 
 .brand__copy {
     display: grid;
-    text-transform: uppercase;
+    text-transform: none;
     line-height: 1;
 }
 
