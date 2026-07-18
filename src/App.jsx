@@ -3,6 +3,7 @@ import { Route, Routes } from 'react-router-dom';
 import AppShell from './components/AppShell';
 import ProtectedRoute from './components/ProtectedRoute';
 import './styles/progression.css';
+import './styles/content.css';
 
 const ContactPage = lazy(() => import('./pages/ContactPage'));
 const HomePage = lazy(() => import('./pages/HomePage'));
@@ -12,6 +13,8 @@ const MembershipPage = lazy(() => import('./pages/MembershipPage'));
 const ProgramsPage = lazy(() => import('./pages/ProgramsPage'));
 const ProgressionPage = lazy(() => import('./pages/ProgressionPage'));
 const InstructorProgressionAdmin = lazy(() => import('./pages/InstructorProgressionAdmin'));
+const InstructorContentAdmin = lazy(() => import('./pages/InstructorContentAdmin'));
+const MemberLibraryPage = lazy(() => import('./pages/MemberLibraryPage'));
 const SchedulePage = lazy(() => import('./pages/SchedulePage'));
 
 function RouteLoader() {
@@ -46,10 +49,26 @@ export default function App() {
                         }
                     />
                     <Route
+                        path="member/library"
+                        element={
+                            <ProtectedRoute>
+                                <MemberLibraryPage />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
                         path="instructor/progression"
                         element={
                             <ProtectedRoute>
                                 <InstructorProgressionAdmin />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="instructor/content"
+                        element={
+                            <ProtectedRoute>
+                                <InstructorContentAdmin />
                             </ProtectedRoute>
                         }
                     />

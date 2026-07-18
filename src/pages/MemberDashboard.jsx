@@ -1,5 +1,6 @@
 import {
     ArrowRight,
+    BookOpen,
     CalendarDays,
     HeartPulse,
     LogOut,
@@ -47,12 +48,25 @@ export default function MemberDashboard() {
                         <Link to="/member/progression" className="text-link">Open progression <ArrowRight size={17} /></Link>
                     </article>
 
+                    <article className="dashboard-card dashboard-card--library">
+                        <div className="dashboard-card__heading"><BookOpen /><div><p className="eyebrow">Training library</p><h2>Technique references</h2></div></div>
+                        <p>Browse instructor-published text, images, audio, and video connected to your progression.</p>
+                        <Link to="/member/library" className="text-link">Open training library <ArrowRight size={17} /></Link>
+                    </article>
+
                     {isInstructor && (
-                        <article className="dashboard-card dashboard-card--instructor">
-                            <div className="dashboard-card__heading"><UserCog /><div><p className="eyebrow">Instructor</p><h2>Progression review queue</h2></div></div>
-                            <p>Review member videos, record category feedback, and approve completed levels.</p>
-                            <Link to="/instructor/progression" className="text-link">Open instructor tools <ArrowRight size={17} /></Link>
-                        </article>
+                        <>
+                            <article className="dashboard-card dashboard-card--instructor">
+                                <div className="dashboard-card__heading"><UserCog /><div><p className="eyebrow">Instructor</p><h2>Progression review queue</h2></div></div>
+                                <p>Review member videos, record category feedback, and approve completed levels.</p>
+                                <Link to="/instructor/progression" className="text-link">Open progression reviews <ArrowRight size={17} /></Link>
+                            </article>
+                            <article className="dashboard-card dashboard-card--instructor">
+                                <div className="dashboard-card__heading"><BookOpen /><div><p className="eyebrow">Instructor</p><h2>Training reference library</h2></div></div>
+                                <p>Create structured curriculum content and publish it to members and Wolf Guide.</p>
+                                <Link to="/instructor/content" className="text-link">Manage training references <ArrowRight size={17} /></Link>
+                            </article>
+                        </>
                     )}
 
                     <article className="dashboard-card">

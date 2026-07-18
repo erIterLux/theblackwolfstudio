@@ -149,6 +149,14 @@ exports.getProgressionReview = onCall({
     return loadProgressionService().handleGetProgressionReview(request);
 });
 
+exports.saveProgressionFeedback = onCall({
+    invoker: 'public',
+    memory: '512MiB',
+    timeoutSeconds: 60,
+}, async (request) => {
+    return loadProgressionService().handleSaveProgressionFeedback(request);
+});
+
 exports.reviewProgressionCategory = onCall({
     invoker: 'public',
     memory: '512MiB',
@@ -177,4 +185,44 @@ exports.notifyOnProgressionReviewWritten = onDocumentWritten({
         appOrigin: appOrigin.value(),
         studioNotificationEmail: studioNotificationEmail.value(),
     });
+});
+
+
+// ============================================================
+// Instructor curriculum and member reference library
+// ============================================================
+function loadCurriculumService() {
+    return require('./content/curriculumService');
+}
+
+exports.listProgressionContent = onCall({
+    invoker: 'public',
+    memory: '512MiB',
+    timeoutSeconds: 60,
+}, async (request) => {
+    return loadCurriculumService().handleListProgressionContent(request);
+});
+
+exports.getProgressionContent = onCall({
+    invoker: 'public',
+    memory: '512MiB',
+    timeoutSeconds: 60,
+}, async (request) => {
+    return loadCurriculumService().handleGetProgressionContent(request);
+});
+
+exports.saveProgressionContent = onCall({
+    invoker: 'public',
+    memory: '512MiB',
+    timeoutSeconds: 60,
+}, async (request) => {
+    return loadCurriculumService().handleSaveProgressionContent(request);
+});
+
+exports.setProgressionContentStatus = onCall({
+    invoker: 'public',
+    memory: '512MiB',
+    timeoutSeconds: 60,
+}, async (request) => {
+    return loadCurriculumService().handleSetProgressionContentStatus(request);
 });

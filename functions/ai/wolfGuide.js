@@ -29,6 +29,8 @@ Hard boundaries:
 - Do not provide step-by-step instructions intended to injure, incapacitate, choke, break joints, attack vulnerable anatomy, use weapons, or perform weapon disarms.
 - Do not promise that any technique guarantees safety.
 - The progression system is instructor-validated. You may explain requirements and help a member prepare, but you must never claim that a category or level has been passed.
+- Treat published Black Wolf Studio training references and the member’s instructor feedback as the primary source of technique guidance. When useful, name the training reference title or say that you are using the member’s latest instructor feedback.
+- Never invent a studio reference, requirement, or instructor comment. If the supplied studio context does not answer the question, say so and direct the member to an instructor.
 - Do not shame fear, freezing, fawning, dissociation, or other protective responses.
 - When a question is technique-specific or high risk, explain the principle at a high level and direct the member to practice with a qualified instructor.
 - When there may be immediate danger, self-harm, a medical emergency, or inability to stay safe, tell the member to stop using the chat and contact local emergency services or a trusted person nearby now.
@@ -124,11 +126,44 @@ function fixedSafetyResponse(message) {
 }
 
 
+function tokenize(value) {
+    return new Set(
+        String(value || '')
+            .toLowerCase()
+            .replace(/[^a-z0-9\s-]/g, ' ')
+            .split(/\s+/)
+            .map((token) => token.trim())
+            .filter((token) => token.length > 2),
+    );
+}
+
+function scoreCurriculumItem(item, messageTokens, currentLevelKey, categoryKeys) {
+    const itemTokens = tokenize([
+        item.title,
+        item.summary,
+        item.aiText,
+        ...(item.techniqueTags || []),
+    ].join(' '));
+    let score = 0;
+    for (const token of messageTokens) {
+        if (itemTokens.has(token)) score += 3;
+    }
+    if (item.levelKeys?.includes(currentLevelKey)) score += 5;
+    for (const categoryKey of categoryKeys) {
+        if (item.categoryKeys?.includes(categoryKey)) score += 6;
+    }
+    return score;
+}
+
 async function getMemberProgressionContext(uid) {
     const profileRef = admin.firestore().collection('progressionProfiles').doc(uid);
     const profileSnap = await profileRef.get();
     if (!profileSnap.exists) {
-        return 'No progression profile has been initialized yet.';
+        return {
+            text: 'No progression profile has been initialized yet.',
+            currentLevelKey: 'white',
+            categoryKeys: [],
+        };
     }
 
     const profile = profileSnap.data() || {};
@@ -140,27 +175,97 @@ async function getMemberProgressionContext(uid) {
         levelRef.collection('categories').get(),
     ]);
 
+    const categoryKeys = [];
     const categoryLines = CATEGORIES.map((category) => {
         const categoryDoc = categoriesSnap.docs.find((docSnap) => docSnap.id === category.key);
         const categoryData = categoryDoc?.data() || {};
-        return `${category.label}: ${categoryData.status || 'not_started'}${categoryData.instructorNotes ? ' — instructor feedback available' : ''}${categoryData.video?.storagePath ? ' — video uploaded' : ' — no video uploaded'}`;
+        if (categoryData.status === 'needs_work' || categoryData.latestFeedback?.text) {
+            categoryKeys.push(category.key);
+        }
+        const feedbackParts = [];
+        if (categoryData.latestFeedback?.text) {
+            feedbackParts.push(`latest instructor feedback: ${cleanText(categoryData.latestFeedback.text, 800)}`);
+        }
+        if (categoryData.latestFeedback?.strengths?.length) {
+            feedbackParts.push(`strengths: ${categoryData.latestFeedback.strengths.join('; ')}`);
+        }
+        if (categoryData.latestFeedback?.focusAreas?.length) {
+            feedbackParts.push(`next focus: ${categoryData.latestFeedback.focusAreas.join('; ')}`);
+        }
+        return `${category.label}: ${categoryData.status || 'not_started'}${categoryData.currentEvidence?.storagePath || categoryData.video?.storagePath ? ' — evidence uploaded' : ' — no evidence uploaded'}${feedbackParts.length ? ` — ${feedbackParts.join(' — ')}` : ''}`;
     });
 
-    return [
-        `Current working level: ${currentLevel?.label || currentLevelKey}.`,
-        `Level status: ${levelSnap.data()?.status || 'active'}.`,
-        `Highest approved level: ${profile.earnedLevel || 'none yet'}.`,
-        'Current category record:',
-        ...categoryLines,
-    ].join('\n');
+    return {
+        currentLevelKey,
+        categoryKeys,
+        text: [
+            `Current working level: ${currentLevel?.label || currentLevelKey}.`,
+            `Level status: ${levelSnap.data()?.status || 'active'}.`,
+            `Highest approved level: ${profile.earnedLevel || 'none yet'}.`,
+            'Current category record and instructor feedback:',
+            ...categoryLines,
+        ].join('\n'),
+    };
 }
 
-async function callGemini({ apiKey, model, message, previousInteractionId, memberState, progressionContext }) {
+async function getRelevantCurriculumContext(message, progressionState) {
+    const snapshot = await admin.firestore()
+        .collection('progressionContent')
+        .where('status', '==', 'published')
+        .limit(200)
+        .get();
+
+    const messageTokens = tokenize(message);
+    const categoryKeys = new Set(progressionState.categoryKeys || []);
+    for (const category of CATEGORIES) {
+        const categoryTokens = tokenize(`${category.key} ${category.label}`);
+        if ([...categoryTokens].some((token) => messageTokens.has(token))) {
+            categoryKeys.add(category.key);
+        }
+    }
+
+    const ranked = snapshot.docs
+        .map((docSnap) => ({ id: docSnap.id, ...docSnap.data() }))
+        .filter((item) => item.aiEligible === true && item.visibility === 'members')
+        .map((item) => ({
+            item,
+            score: scoreCurriculumItem(
+                item,
+                messageTokens,
+                progressionState.currentLevelKey,
+                [...categoryKeys],
+            ),
+        }))
+        .sort((left, right) => right.score - left.score)
+        .filter((entry, index) => entry.score > 0 || index < 2)
+        .slice(0, 5);
+
+    const sources = ranked.map(({ item }) => ({
+        id: item.id,
+        title: cleanText(item.title, 240),
+        levelKeys: item.levelKeys || [],
+        categoryKeys: item.categoryKeys || [],
+    }));
+
+    const context = ranked.map(({ item }, index) => [
+        `Studio reference ${index + 1}: ${item.title}`,
+        `Summary: ${item.summary}`,
+        cleanText(item.aiText, 6500),
+    ].join('\n')).join('\n\n');
+
+    return {
+        context: context || 'No directly relevant published studio reference was found.',
+        sources,
+    };
+}
+
+async function callGemini({ apiKey, model, message, previousInteractionId, memberState, progressionContext, curriculumContext }) {
     const { GoogleGenAI } = await import('@google/genai');
     const ai = new GoogleGenAI({ apiKey });
     const contextLines = [
         memberState ? `Member check-in: ${cleanText(memberState, 120)}` : '',
         progressionContext ? `Member progression context:\n${progressionContext}` : '',
+        curriculumContext ? `Relevant published studio references:\n${curriculumContext}` : '',
         `Member question: ${message}`,
     ].filter(Boolean);
     const input = contextLines.join('\n\n');
@@ -197,7 +302,8 @@ async function handleWolfGuideChat(request, dependencies = {}) {
     const conversationId = cleanText(request.data?.conversationId, 120);
     const memberState = cleanText(request.data?.memberState, 120);
     const { ref: conversationRef, data: conversation } = await getConversation(uid, conversationId);
-    const progressionContext = await getMemberProgressionContext(uid);
+    const progressionState = await getMemberProgressionContext(uid);
+    const curriculum = await getRelevantCurriculumContext(message, progressionState);
     await logMessage(conversationRef, 'member', message, { memberState: memberState || null });
 
     const fixed = fixedSafetyResponse(message);
@@ -217,12 +323,17 @@ async function handleWolfGuideChat(request, dependencies = {}) {
             message,
             previousInteractionId: conversation.previousInteractionId || null,
             memberState,
-            progressionContext,
+            progressionContext: progressionState.text,
+            curriculumContext: curriculum.context,
         });
         const answer = cleanText(interaction.output_text || '', 4500)
             || 'I could not form a useful response. Please ask your instructor or try a more specific question.';
 
-        await logMessage(conversationRef, 'assistant', answer, { category: 'education', modelUsed: true });
+        await logMessage(conversationRef, 'assistant', answer, {
+            category: 'education',
+            modelUsed: true,
+            sourceIds: curriculum.sources.map((source) => source.id),
+        });
         await conversationRef.set({
             previousInteractionId: interaction.id || admin.firestore.FieldValue.delete(),
             model: dependencies.geminiModel || 'gemini-3.5-flash',
@@ -230,7 +341,12 @@ async function handleWolfGuideChat(request, dependencies = {}) {
             lastCategory: 'education',
         }, { merge: true });
 
-        return { conversationId: conversationRef.id, answer, category: 'education' };
+        return {
+            conversationId: conversationRef.id,
+            answer,
+            category: 'education',
+            sources: curriculum.sources,
+        };
     } catch (error) {
         logger.error('Wolf Guide Gemini request failed.', error);
         throw new HttpsError('unavailable', 'Wolf Guide is temporarily unavailable. Please try again shortly.');
