@@ -1,5 +1,5 @@
 const admin = require('firebase-admin');
-const { onDocumentCreated } = require('firebase-functions/v2/firestore');
+const { onDocumentCreated, onDocumentWritten } = require('firebase-functions/v2/firestore');
 const { onCall, onRequest } = require('firebase-functions/v2/https');
 const { defineSecret, defineString } = require('firebase-functions/params');
 
@@ -17,75 +17,164 @@ const stripePriceBegin = defineString('STRIPE_PRICE_BEGIN', { default: '' });
 const stripePriceTrain = defineString('STRIPE_PRICE_TRAIN', { default: '' });
 const stripePriceIntegrate = defineString('STRIPE_PRICE_INTEGRATE', { default: '' });
 const geminiModel = defineString('GEMINI_MODEL', { default: 'gemini-3.5-flash' });
+const instructorEmails = defineString('INSTRUCTOR_EMAILS', { default: '' });
 
 function sharedConfig() {
-  return {
-    appOrigin: appOrigin.value(),
-    studioNotificationEmail: studioNotificationEmail.value(),
-    beginPriceId: stripePriceBegin.value(),
-    trainPriceId: stripePriceTrain.value(),
-    integratePriceId: stripePriceIntegrate.value(),
-  };
+    return {
+        appOrigin: appOrigin.value(),
+        studioNotificationEmail: studioNotificationEmail.value(),
+        beginPriceId: stripePriceBegin.value(),
+        trainPriceId: stripePriceTrain.value(),
+        integratePriceId: stripePriceIntegrate.value(),
+    };
 }
 
 exports.notifyOnInquiryCreated = onDocumentCreated({
-  document: 'inquiries/{inquiryId}',
-  secrets: [gmailEmail, gmailAppPassword],
-  retry: true,
+    document: 'inquiries/{inquiryId}',
+    secrets: [gmailEmail, gmailAppPassword],
+    retry: true,
 }, async (event) => {
-  const { handleInquiryCreated } = require('./notifications/inquiryEmails');
-  return handleInquiryCreated(event, {
-    gmailEmail,
-    gmailAppPassword,
-    appOrigin: appOrigin.value(),
-    studioNotificationEmail: studioNotificationEmail.value(),
-  });
+    const { handleInquiryCreated } = require('./notifications/inquiryEmails');
+    return handleInquiryCreated(event, {
+        gmailEmail,
+        gmailAppPassword,
+        appOrigin: appOrigin.value(),
+        studioNotificationEmail: studioNotificationEmail.value(),
+    });
 });
 
 exports.createMembershipCheckout = onCall({
-  invoker: 'public',
-  secrets: [stripeSecretKey],
-  memory: '256MiB',
-  timeoutSeconds: 60,
+    invoker: 'public',
+    secrets: [stripeSecretKey],
+    memory: '256MiB',
+    timeoutSeconds: 60,
 }, async (request) => {
-  const { handleCreateMembershipCheckout } = require('./billing/membershipBilling');
-  return handleCreateMembershipCheckout(request, { stripeSecretKey, ...sharedConfig() });
+    const { handleCreateMembershipCheckout } = require('./billing/membershipBilling');
+    return handleCreateMembershipCheckout(request, { stripeSecretKey, ...sharedConfig() });
 });
 
 exports.createBillingPortal = onCall({
-  invoker: 'public',
-  secrets: [stripeSecretKey],
-  memory: '256MiB',
-  timeoutSeconds: 60,
+    invoker: 'public',
+    secrets: [stripeSecretKey],
+    memory: '256MiB',
+    timeoutSeconds: 60,
 }, async (request) => {
-  const { handleCreateBillingPortal } = require('./billing/membershipBilling');
-  return handleCreateBillingPortal(request, { stripeSecretKey, ...sharedConfig() });
+    const { handleCreateBillingPortal } = require('./billing/membershipBilling');
+    return handleCreateBillingPortal(request, { stripeSecretKey, ...sharedConfig() });
 });
 
 exports.stripeWebhook = onRequest({
-  secrets: [stripeSecretKey, stripeWebhookSecret, gmailEmail, gmailAppPassword],
-  memory: '512MiB',
-  timeoutSeconds: 120,
+    secrets: [stripeSecretKey, stripeWebhookSecret, gmailEmail, gmailAppPassword],
+    memory: '512MiB',
+    timeoutSeconds: 120,
 }, async (req, res) => {
-  const { handleStripeWebhook } = require('./billing/membershipBilling');
-  return handleStripeWebhook(req, res, {
-    stripeSecretKey,
-    stripeWebhookSecret,
-    gmailEmail,
-    gmailAppPassword,
-    ...sharedConfig(),
-  });
+    const { handleStripeWebhook } = require('./billing/membershipBilling');
+    return handleStripeWebhook(req, res, {
+        stripeSecretKey,
+        stripeWebhookSecret,
+        gmailEmail,
+        gmailAppPassword,
+        ...sharedConfig(),
+    });
 });
 
 exports.wolfGuideChat = onCall({
-  invoker: 'public',
-  secrets: [geminiApiKey],
-  memory: '512MiB',
-  timeoutSeconds: 60,
+    invoker: 'public',
+    secrets: [geminiApiKey],
+    memory: '512MiB',
+    timeoutSeconds: 60,
 }, async (request) => {
-  const { handleWolfGuideChat } = require('./ai/wolfGuide');
-  return handleWolfGuideChat(request, {
-    geminiApiKey,
-    geminiModel: geminiModel.value(),
-  });
+    const { handleWolfGuideChat } = require('./ai/wolfGuide');
+    return handleWolfGuideChat(request, {
+        geminiApiKey,
+        geminiModel: geminiModel.value(),
+    });
+});
+
+
+// ============================================================
+// Studio roles and progression
+// ============================================================
+function loadProgressionService() {
+    return require('./progression/progressionService');
+}
+
+exports.syncMyStudioRole = onCall({
+    invoker: 'public',
+    memory: '256MiB',
+    timeoutSeconds: 30,
+}, async (request) => {
+    return loadProgressionService().handleSyncMyStudioRole(request, {
+        instructorEmails: instructorEmails.value(),
+    });
+});
+
+exports.getMyProgression = onCall({
+    invoker: 'public',
+    memory: '512MiB',
+    timeoutSeconds: 60,
+}, async (request) => {
+    return loadProgressionService().handleGetMyProgression(request);
+});
+
+exports.saveProgressionCategory = onCall({
+    invoker: 'public',
+    memory: '512MiB',
+    timeoutSeconds: 60,
+}, async (request) => {
+    return loadProgressionService().handleSaveProgressionCategory(request);
+});
+
+exports.submitProgressionLevel = onCall({
+    invoker: 'public',
+    memory: '512MiB',
+    timeoutSeconds: 60,
+}, async (request) => {
+    return loadProgressionService().handleSubmitProgressionLevel(request);
+});
+
+exports.listProgressionReviews = onCall({
+    invoker: 'public',
+    memory: '512MiB',
+    timeoutSeconds: 60,
+}, async (request) => {
+    return loadProgressionService().handleListProgressionReviews(request);
+});
+
+exports.getProgressionReview = onCall({
+    invoker: 'public',
+    memory: '512MiB',
+    timeoutSeconds: 60,
+}, async (request) => {
+    return loadProgressionService().handleGetProgressionReview(request);
+});
+
+exports.reviewProgressionCategory = onCall({
+    invoker: 'public',
+    memory: '512MiB',
+    timeoutSeconds: 60,
+}, async (request) => {
+    return loadProgressionService().handleReviewProgressionCategory(request);
+});
+
+exports.approveProgressionLevel = onCall({
+    invoker: 'public',
+    memory: '512MiB',
+    timeoutSeconds: 60,
+}, async (request) => {
+    return loadProgressionService().handleApproveProgressionLevel(request);
+});
+
+exports.notifyOnProgressionReviewWritten = onDocumentWritten({
+    document: 'progressionReviews/{reviewId}',
+    secrets: [gmailEmail, gmailAppPassword],
+    retry: true,
+}, async (event) => {
+    const { handleProgressionReviewWritten } = require('./notifications/progressionEmails');
+    return handleProgressionReviewWritten(event, {
+        gmailEmail,
+        gmailAppPassword,
+        appOrigin: appOrigin.value(),
+        studioNotificationEmail: studioNotificationEmail.value(),
+    });
 });

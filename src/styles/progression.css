@@ -1,0 +1,607 @@
+.progression-page,
+.progression-admin-page {
+  min-height: 100vh;
+  color: var(--charcoal);
+  background:
+    radial-gradient(circle at 86% 8%, rgba(93, 115, 139, .11), transparent 28%),
+    var(--bone);
+}
+
+.progression-shell,
+.progression-admin-shell {
+  padding-block: clamp(2rem, 5vw, 4.5rem) 6rem;
+}
+
+.progression-page__topline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.progression-page__topline .text-link {
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.progression-hero,
+.progression-admin-header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 2rem;
+  align-items: end;
+  margin-bottom: 2.25rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid rgba(20, 23, 27, .15);
+}
+
+.progression-hero h1,
+.progression-admin-header h1 {
+  max-width: 760px;
+  margin: .2rem 0 .75rem;
+  font-size: clamp(2.5rem, 6vw, 5.25rem);
+  line-height: .95;
+}
+
+.progression-hero p,
+.progression-admin-header p {
+  max-width: 720px;
+  margin: 0;
+  color: var(--gray-600);
+}
+
+.progression-current {
+  min-width: 245px;
+  display: grid;
+  gap: .35rem;
+  padding: 1.25rem 1.4rem;
+  color: var(--white);
+  background: var(--charcoal);
+  border-left: 4px solid var(--blue);
+  box-shadow: 0 18px 38px rgba(20, 23, 27, .14);
+}
+
+.progression-current span,
+.progression-current small {
+  color: rgba(242, 238, 230, .68);
+  font-size: .72rem;
+  font-weight: 750;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+
+.progression-current strong {
+  font-family: var(--display);
+  font-size: 1.7rem;
+  line-height: 1;
+}
+
+.progression-levels {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: .75rem;
+  margin-bottom: 1.25rem;
+}
+
+.progression-levels button {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: .7rem;
+  align-items: center;
+  padding: 1rem;
+  color: var(--charcoal);
+  text-align: left;
+  background: rgba(255, 255, 255, .58);
+  border: 1px solid rgba(20, 23, 27, .12);
+  cursor: pointer;
+  transition: border-color .2s ease, background .2s ease, transform .2s ease;
+}
+
+.progression-levels button:hover,
+.progression-levels button.is-selected {
+  background: #fff;
+  border-color: rgba(53, 73, 93, .48);
+  transform: translateY(-2px);
+}
+
+.progression-levels button > span {
+  min-width: 0;
+  display: grid;
+}
+
+.progression-levels strong {
+  font-size: .95rem;
+}
+
+.progression-levels small {
+  color: var(--gray-600);
+  font-size: .72rem;
+}
+
+.progression-levels em {
+  grid-column: 1 / -1;
+  justify-self: start;
+}
+
+.progression-status {
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  padding: .32rem .62rem;
+  color: #3e4751;
+  background: #e4e7ea;
+  border-radius: 999px;
+  font-size: .66rem;
+  font-style: normal;
+  font-weight: 850;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+}
+
+.progression-status.is-approved,
+.progression-status.is-validated,
+.progression-status.is-ready-for-approval {
+  color: #174c31;
+  background: #dff2e7;
+}
+
+.progression-status.is-submitted,
+.progression-status.is-in-review {
+  color: #2d4f6d;
+  background: #dce8f3;
+}
+
+.progression-status.is-needs-work {
+  color: #7b2d2d;
+  background: #f3dddd;
+}
+
+.progression-status.is-active,
+.progression-status.is-draft,
+.progression-status.is-in-practice {
+  color: #604a16;
+  background: #f2e8c9;
+}
+
+.progression-status.is-locked {
+  color: #6c6c6c;
+  background: #e8e5df;
+}
+
+.progression-level-detail,
+.progression-review-detail,
+.progression-review-queue {
+  background: rgba(255, 255, 255, .78);
+  border: 1px solid rgba(20, 23, 27, .12);
+  box-shadow: 0 22px 50px rgba(20, 23, 27, .08);
+}
+
+.progression-level-detail {
+  padding: clamp(1.1rem, 3vw, 2rem);
+}
+
+.progression-level-detail__heading,
+.progression-review-detail__heading,
+.progression-category__heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.5rem;
+}
+
+.progression-level-detail__heading {
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid rgba(20, 23, 27, .1);
+}
+
+.progression-level-detail__heading h2,
+.progression-review-detail__heading h2 {
+  margin: .2rem 0 .55rem;
+  font-size: clamp(2rem, 4vw, 3.3rem);
+}
+
+.progression-level-detail__heading p,
+.progression-review-detail__heading p,
+.progression-category__heading p {
+  margin: 0;
+  color: var(--gray-600);
+}
+
+.progression-category-list,
+.progression-admin-categories {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1.25rem;
+}
+
+.progression-category,
+.progression-admin-category {
+  padding: clamp(1rem, 2.5vw, 1.5rem);
+  background: #fff;
+  border: 1px solid rgba(20, 23, 27, .11);
+}
+
+.progression-category__heading h3 {
+  max-width: 760px;
+  margin: .2rem 0 .45rem;
+  font-size: clamp(1.25rem, 2.1vw, 1.75rem);
+  line-height: 1.15;
+}
+
+.progression-category__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(280px, .75fr);
+  gap: clamp(1.3rem, 4vw, 3rem);
+  margin-top: 1.5rem;
+}
+
+.progression-category h4,
+.progression-evidence h4 {
+  margin: 0 0 .75rem;
+  font-size: .76rem;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+.progression-requirements {
+  display: grid;
+  gap: .7rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.progression-requirements li {
+  position: relative;
+  padding-left: 1.35rem;
+  color: #39414a;
+  line-height: 1.5;
+}
+
+.progression-requirements li::before {
+  position: absolute;
+  top: .6em;
+  left: 0;
+  width: 6px;
+  height: 6px;
+  content: '';
+  background: var(--blue-dark);
+  transform: rotate(45deg);
+}
+
+.progression-video {
+  display: grid;
+  gap: .65rem;
+}
+
+.progression-video__player,
+.progression-video__empty {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: #101215;
+  border: 1px solid rgba(20, 23, 27, .2);
+}
+
+.progression-video__player {
+  object-fit: contain;
+}
+
+.progression-video__empty {
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: .55rem;
+  color: rgba(242, 238, 230, .65);
+  text-align: center;
+}
+
+.progression-video .button {
+  justify-self: start;
+}
+
+.progression-video__hint {
+  margin: 0;
+  color: var(--gray-600);
+  font-size: .74rem;
+}
+
+.progression-notes {
+  display: grid;
+  gap: .5rem;
+  margin-top: 1.25rem;
+  color: #303740;
+  font-size: .78rem;
+  font-weight: 800;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+.progression-notes textarea {
+  width: 100%;
+  min-height: 100px;
+  resize: vertical;
+  padding: .85rem;
+  color: var(--charcoal);
+  background: var(--bone);
+  border: 1px solid rgba(20, 23, 27, .18);
+  font: 400 .93rem/1.5 var(--body);
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+.progression-notes textarea:focus {
+  outline: 2px solid rgba(53, 73, 93, .35);
+  outline-offset: 2px;
+}
+
+.progression-feedback,
+.progression-member-note {
+  display: flex;
+  gap: .75rem;
+  margin-top: 1rem;
+  padding: .9rem 1rem;
+  color: #223b30;
+  background: #e4f0e9;
+  border-left: 3px solid #2d6a4f;
+}
+
+.progression-feedback p,
+.progression-member-note p {
+  margin: .25rem 0 0;
+  line-height: 1.5;
+}
+
+.progression-category > .button {
+  margin-top: .9rem;
+}
+
+.progression-submit,
+.progression-approval-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  margin-top: 1.25rem;
+  padding: 1.25rem;
+  color: var(--white);
+  background: var(--charcoal);
+}
+
+.progression-submit p,
+.progression-approval-bar p {
+  margin: .25rem 0 0;
+  color: rgba(242, 238, 230, .68);
+}
+
+.progression-page-message {
+  margin: 1rem 0 0;
+  padding: .85rem 1rem;
+  color: #24394a;
+  background: #dfe9f1;
+  border-left: 3px solid var(--blue-dark);
+}
+
+.membership-progression-callout {
+  display: grid;
+  grid-template-columns: minmax(220px, .55fr) minmax(0, 1fr);
+  gap: 2rem;
+  align-items: center;
+  margin-top: 2rem;
+  padding: 1.5rem;
+  color: var(--white);
+  background: var(--charcoal);
+  border-left: 4px solid var(--blue);
+}
+
+.membership-progression-callout h2,
+.membership-progression-callout p {
+  margin: 0;
+}
+
+.membership-progression-callout p {
+  color: rgba(242, 238, 230, .72);
+}
+
+.progression-admin-header svg {
+  color: var(--blue-dark);
+}
+
+.progression-admin-grid {
+  display: grid;
+  grid-template-columns: minmax(260px, 330px) minmax(0, 1fr);
+  gap: 1rem;
+  align-items: start;
+}
+
+.progression-review-queue {
+  position: sticky;
+  top: 110px;
+  overflow: hidden;
+}
+
+.progression-review-queue__heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem;
+  color: var(--white);
+  background: var(--charcoal);
+}
+
+.progression-review-queue__heading h2 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.progression-review-queue__heading span {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  color: var(--charcoal);
+  background: var(--bone);
+  border-radius: 50%;
+  font-weight: 800;
+}
+
+.progression-review-queue > button {
+  width: 100%;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: .7rem;
+  align-items: center;
+  padding: 1rem;
+  text-align: left;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid rgba(20, 23, 27, .1);
+  cursor: pointer;
+}
+
+.progression-review-queue > button:hover,
+.progression-review-queue > button.is-selected {
+  background: #f0ece4;
+}
+
+.progression-review-queue > button span {
+  min-width: 0;
+  display: grid;
+}
+
+.progression-review-queue > button strong,
+.progression-review-queue > button small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.progression-review-queue > button small {
+  color: var(--gray-600);
+}
+
+.progression-review-queue > button em {
+  grid-column: 1 / -1;
+}
+
+.progression-review-detail {
+  min-width: 0;
+  padding: clamp(1rem, 2.5vw, 1.75rem);
+}
+
+.progression-review-detail__heading {
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid rgba(20, 23, 27, .12);
+}
+
+.progression-admin-category .progression-video {
+  max-width: 640px;
+  margin-top: 1rem;
+}
+
+.progression-member-note {
+  color: #343a40;
+  background: #f1ede5;
+  border-left-color: var(--blue-dark);
+}
+
+.progression-review-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: .7rem;
+  margin-top: 1rem;
+}
+
+.progression-empty-state,
+.progression-access-denied {
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: .55rem;
+  min-height: 240px;
+  padding: 2rem;
+  color: var(--gray-600);
+  text-align: center;
+}
+
+.progression-empty-state p,
+.progression-access-denied p {
+  max-width: 520px;
+  margin: 0;
+}
+
+.progression-access-denied {
+  min-height: 72vh;
+}
+
+.is-spinning {
+  animation: progression-spin .8s linear infinite;
+}
+
+@keyframes progression-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (max-width: 1040px) {
+  .progression-levels {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .progression-category__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .progression-admin-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .progression-review-queue {
+    position: static;
+  }
+}
+
+@media (max-width: 720px) {
+  .progression-page__topline,
+  .progression-hero,
+  .progression-admin-header,
+  .progression-level-detail__heading,
+  .progression-review-detail__heading,
+  .progression-category__heading,
+  .progression-submit,
+  .progression-approval-bar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .progression-hero,
+  .progression-admin-header {
+    grid-template-columns: 1fr;
+  }
+
+  .progression-current {
+    min-width: 0;
+  }
+
+  .membership-progression-callout {
+    grid-template-columns: 1fr;
+    gap: .75rem;
+  }
+}
+
+@media (max-width: 520px) {
+  .progression-levels {
+    grid-template-columns: 1fr;
+  }
+
+  .progression-review-actions {
+    flex-direction: column;
+  }
+
+  .progression-review-actions .button,
+  .progression-submit .button,
+  .progression-approval-bar .button {
+    width: 100%;
+  }
+}

@@ -10,6 +10,13 @@ service cloud.firestore {
       return signedIn() && request.auth.uid == userId;
     }
 
+    function isInstructor() {
+      return signedIn()
+        && (request.auth.token.role == 'instructor'
+          || request.auth.token.role == 'admin'
+          || request.auth.token.admin == true);
+    }
+
     match /inquiries/{inquiryId} {
       allow create: if request.resource.data.keys().hasOnly([
         'name',
@@ -30,7 +37,12 @@ service cloud.firestore {
     }
 
     match /users/{userId} {
-      allow read, create, update: if isOwner(userId);
+      allow read: if isOwner(userId);
+      allow create: if isOwner(userId)
+        && (!request.resource.data.keys().hasAny(['role'])
+          || request.resource.data.role == 'member');
+      allow update: if isOwner(userId)
+        && request.resource.data.role == resource.data.role;
       allow delete: if false;
     }
 
@@ -46,6 +58,27 @@ service cloud.firestore {
 
     match /memberships/{userId} {
       allow read: if isOwner(userId);
+      allow write: if false;
+    }
+
+    match /progressionProfiles/{userId} {
+      allow read: if isOwner(userId) || isInstructor();
+      allow write: if false;
+
+      match /levels/{levelId} {
+        allow read: if isOwner(userId) || isInstructor();
+        allow write: if false;
+
+        match /categories/{categoryId} {
+          allow read: if isOwner(userId) || isInstructor();
+          allow write: if false;
+        }
+      }
+    }
+
+    match /progressionReviews/{reviewId} {
+      allow read: if isInstructor()
+        || (signedIn() && resource.data.memberUid == request.auth.uid);
       allow write: if false;
     }
 

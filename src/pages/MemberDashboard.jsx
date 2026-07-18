@@ -1,15 +1,25 @@
-import { ArrowRight, BookOpen, CalendarDays, HeartPulse, LogOut, ShieldCheck } from 'lucide-react';
+import {
+    ArrowRight,
+    CalendarDays,
+    HeartPulse,
+    LogOut,
+    ShieldCheck,
+    TrendingUp,
+    UserCog,
+} from 'lucide-react';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import MembershipStatusCard from '../components/membership/MembershipStatusCard';
 import WolfGuidePanel from '../components/wolf-guide/WolfGuidePanel';
 import { useAuth } from '../context/AuthContext';
 import { schedule } from '../data/siteContent';
+import useStudioRole from '../hooks/useStudioRole';
 
 const checkIns = ['Activated', 'Steady', 'Tired', 'Disconnected'];
 
 export default function MemberDashboard() {
     const { user, signOutUser } = useAuth();
+    const { isInstructor } = useStudioRole();
     const [checkIn, setCheckIn] = useState('Steady');
 
     return (
@@ -31,6 +41,20 @@ export default function MemberDashboard() {
                         <p className="dashboard-hint">This check-in is used only to give Wolf Guide optional context during this visit.</p>
                     </article>
 
+                    <article className="dashboard-card dashboard-card--progression">
+                        <div className="dashboard-card__heading"><TrendingUp /><div><p className="eyebrow">Progression</p><h2>White Wolf to Black Wolf</h2></div></div>
+                        <p>Track seven skill categories, upload current evidence, and submit each level for instructor validation.</p>
+                        <Link to="/member/progression" className="text-link">Open progression <ArrowRight size={17} /></Link>
+                    </article>
+
+                    {isInstructor && (
+                        <article className="dashboard-card dashboard-card--instructor">
+                            <div className="dashboard-card__heading"><UserCog /><div><p className="eyebrow">Instructor</p><h2>Progression review queue</h2></div></div>
+                            <p>Review member videos, record category feedback, and approve completed levels.</p>
+                            <Link to="/instructor/progression" className="text-link">Open instructor tools <ArrowRight size={17} /></Link>
+                        </article>
+                    )}
+
                     <article className="dashboard-card">
                         <div className="dashboard-card__heading"><CalendarDays /><div><p className="eyebrow">Next class</p><h2>{schedule[0].className}</h2></div></div>
                         <p>{schedule[0].day} · {schedule[0].time}</p>
@@ -40,7 +64,7 @@ export default function MemberDashboard() {
                     <article className="dashboard-card">
                         <div className="dashboard-card__heading"><ShieldCheck /><div><p className="eyebrow">Current focus</p><h2>Foundational stance</h2></div></div>
                         <p>Balance, visual awareness, protected posture, and the ability to move in any direction.</p>
-                        <button className="text-link" type="button">Open practice note <BookOpen size={17} /></button>
+                        <Link className="text-link" to="/member/progression">Connect this to progression <ArrowRight size={17} /></Link>
                     </article>
 
                     <WolfGuidePanel memberState={checkIn} />

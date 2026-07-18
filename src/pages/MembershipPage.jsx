@@ -38,6 +38,10 @@ export default function MembershipPage() {
                             </article>
                         ))}
                     </div>
+                    <div className="membership-progression-callout">
+                        <div><p className="eyebrow">Included progression</p><h2>White Wolf to Black Wolf</h2></div>
+                        <p>Active members receive structured progression across striking, movement, situational awareness, breath control, grappling, ground, and weapons. Each level is validated by an instructor.</p>
+                    </div>
                     <p className="membership-fine-print">Membership access is granted only after Stripe confirms the subscription through the secure webhook. Plans renew automatically until canceled through the billing portal.</p>
                 </div>
             </section>
