@@ -24,9 +24,9 @@ export default function Footer() {
         <div>
           <p className="footer-heading">Connect</p>
           <div className="footer-links">
-            <a href="mailto:hello@theblackwolfstudio.com"><Mail size={17} /> hello@theblackwolfstudio.com</a>
-            <span><MapPin size={17} /> Studio location coming soon</span>
-            <span><AtSign size={17} /> theblackwolfstudio</span>
+                      <a href="mailto:contact@theblackwolf.studio"><Mail size={17} /> contact@theblackwolf.studio</a>
+            <span><MapPin size={17} /> mobile</span>
+            <span><AtSign size={17} /> theblackwolf.studio</span>
           </div>
         </div>
       </div>
