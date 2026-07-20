@@ -115,6 +115,19 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    match /privateTrainingPurchases/{purchaseId} {
+      allow read: if isInstructor()
+        || (signedIn() && resource.data.uid == request.auth.uid);
+      allow write: if false;
+
+      match /sessionHistory/{historyId} {
+        allow read: if isInstructor()
+          || (signedIn()
+            && get(/databases/$(database)/documents/privateTrainingPurchases/$(purchaseId)).data.uid == request.auth.uid);
+        allow write: if false;
+      }
+    }
+
     match /stripeEvents/{eventId} {
       allow read, write: if false;
     }

@@ -7,7 +7,7 @@
     "node": "22"
   },
   "scripts": {
-    "check": "node --check index.js && node --check ai/wolfGuide.js && node --check billing/membershipBilling.js && node --check notifications/emailService.js && node --check notifications/inquiryEmails.js && node --check notifications/progressionEmails.js && node --check progression/progressionService.js && node --check config/progressionSystem.js && node --check content/curriculumService.js && node --check commerce/commerceFoundation.js",
+    "check": "node --check index.js && node --check ai/wolfGuide.js && node --check billing/membershipBilling.js && node --check notifications/emailService.js && node --check notifications/inquiryEmails.js && node --check notifications/progressionEmails.js && node --check progression/progressionService.js && node --check config/progressionSystem.js && node --check content/curriculumService.js && node --check commerce/commerceFoundation.js && node --check privateTraining/privateTrainingService.js",
     "serve": "firebase emulators:start --only functions,firestore,auth",
     "deploy": "firebase deploy --only functions"
   },
@@ -19,4 +19,3 @@
     "stripe": "^22.3.2"
   }
 }
-

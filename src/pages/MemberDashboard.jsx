@@ -1,6 +1,7 @@
 import {
     ArrowRight,
     BookOpen,
+    CalendarClock,
     HeartPulse,
     LogOut,
     Settings2,
@@ -10,6 +11,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import MembershipStatusCard from '../components/membership/MembershipStatusCard';
 import ProgressionSummaryCard from '../components/progression/ProgressionSummaryCard';
+import PrivateTrainingSummaryCard from '../components/private-training/PrivateTrainingSummaryCard';
 import WolfGuidePanel from '../components/wolf-guide/WolfGuidePanel';
 import { useAuth } from '../context/AuthContext';
 import useStudioRole from '../hooks/useStudioRole';
@@ -47,6 +49,8 @@ export default function MemberDashboard() {
                     <ProgressionSummaryCard />
 
                     <MembershipStatusCard />
+
+                    <PrivateTrainingSummaryCard />
 
                     <article className="dashboard-card dashboard-card--library">
                         <div className="dashboard-card__heading">
@@ -134,6 +138,20 @@ export default function MemberDashboard() {
                                     <p>Create structured content for members and Wolf Guide.</p>
                                     <Link to="/instructor/content" className="text-link">
                                         Manage references <ArrowRight size={17} aria-hidden="true" />
+                                    </Link>
+                                </article>
+
+                                <article className="dashboard-card dashboard-card--instructor">
+                                    <div className="dashboard-card__heading">
+                                        <CalendarClock aria-hidden="true" />
+                                        <div>
+                                            <p className="eyebrow">Private training</p>
+                                            <h3>Packages and session credits</h3>
+                                        </div>
+                                    </div>
+                                    <p>Create packages, record completed sessions, and adjust credits with an audit note.</p>
+                                    <Link to="/instructor/private-training" className="text-link">
+                                        Manage private training <ArrowRight size={17} aria-hidden="true" />
                                     </Link>
                                 </article>
                             </div>

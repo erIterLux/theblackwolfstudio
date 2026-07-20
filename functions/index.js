@@ -132,6 +132,56 @@ exports.listCommerceFoundationAdmin = onCall({
     timeoutSeconds: 60,
 }, async (request) => loadCommerceFoundation().handleListCommerceFoundationAdmin(request));
 
+
+// ============================================================
+// Private training packages and session credits
+// ============================================================
+function loadPrivateTrainingService() {
+    return require('./privateTraining/privateTrainingService');
+}
+
+exports.listPrivateTrainingOffers = onCall({
+    invoker: 'public',
+    memory: '256MiB',
+    timeoutSeconds: 30,
+}, async () => loadPrivateTrainingService().handleListPrivateTrainingOffers());
+
+exports.savePrivateTrainingOffer = onCall({
+    invoker: 'public',
+    memory: '256MiB',
+    timeoutSeconds: 30,
+}, async (request) => loadPrivateTrainingService().handleSavePrivateTrainingOffer(request));
+
+exports.getPrivateTrainingPurchase = onCall({
+    invoker: 'public',
+    memory: '256MiB',
+    timeoutSeconds: 30,
+}, async (request) => loadPrivateTrainingService().handleGetPrivateTrainingPurchase(request));
+
+exports.listMyPrivateTrainingPurchases = onCall({
+    invoker: 'public',
+    memory: '256MiB',
+    timeoutSeconds: 30,
+}, async (request) => loadPrivateTrainingService().handleListMyPrivateTrainingPurchases(request));
+
+exports.listPrivateTrainingAdmin = onCall({
+    invoker: 'public',
+    memory: '512MiB',
+    timeoutSeconds: 60,
+}, async (request) => loadPrivateTrainingService().handleListPrivateTrainingAdmin(request));
+
+exports.recordPrivateTrainingSession = onCall({
+    invoker: 'public',
+    memory: '256MiB',
+    timeoutSeconds: 30,
+}, async (request) => loadPrivateTrainingService().handleRecordPrivateTrainingSession(request));
+
+exports.adjustPrivateTrainingCredits = onCall({
+    invoker: 'public',
+    memory: '256MiB',
+    timeoutSeconds: 30,
+}, async (request) => loadPrivateTrainingService().handleAdjustPrivateTrainingCredits(request));
+
 exports.wolfGuideChat = onCall({
     invoker: 'public',
     secrets: [geminiApiKey],
