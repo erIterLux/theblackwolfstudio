@@ -100,6 +100,21 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    match /studioOffers/{offerId} {
+      allow read: if resource.data.status == 'published' || isInstructor();
+      allow write: if false;
+    }
+
+    match /studioDiscounts/{discountId} {
+      allow read, write: if false;
+    }
+
+    match /studioOrders/{orderId} {
+      allow read: if isInstructor()
+        || (signedIn() && resource.data.uid == request.auth.uid);
+      allow write: if false;
+    }
+
     match /stripeEvents/{eventId} {
       allow read, write: if false;
     }

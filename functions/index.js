@@ -78,6 +78,60 @@ exports.stripeWebhook = onRequest({
     });
 });
 
+
+// ============================================================
+// Hybrid commerce foundation
+// ============================================================
+function loadCommerceFoundation() {
+    return require('./commerce/commerceFoundation');
+}
+
+exports.quoteStudioCheckout = onCall({
+    invoker: 'public',
+    memory: '256MiB',
+    timeoutSeconds: 30,
+}, async (request) => loadCommerceFoundation().handleQuoteStudioCheckout(request));
+
+exports.createStudioCheckout = onCall({
+    invoker: 'public',
+    secrets: [stripeSecretKey],
+    memory: '512MiB',
+    timeoutSeconds: 90,
+}, async (request) => loadCommerceFoundation().handleCreateStudioCheckout(request, {
+    stripeSecretKey,
+    appOrigin: appOrigin.value(),
+}));
+
+exports.getStudioOrder = onCall({
+    invoker: 'public',
+    memory: '256MiB',
+    timeoutSeconds: 30,
+}, async (request) => loadCommerceFoundation().handleGetStudioOrder(request));
+
+exports.listMyStudioOrders = onCall({
+    invoker: 'public',
+    memory: '256MiB',
+    timeoutSeconds: 30,
+}, async (request) => loadCommerceFoundation().handleListMyStudioOrders(request));
+
+exports.saveStudioOffer = onCall({
+    invoker: 'public',
+    memory: '256MiB',
+    timeoutSeconds: 30,
+}, async (request) => loadCommerceFoundation().handleSaveStudioOffer(request));
+
+exports.saveStudioDiscount = onCall({
+    invoker: 'public',
+    memory: '256MiB',
+    timeoutSeconds: 30,
+}, async (request) => loadCommerceFoundation().handleSaveStudioDiscount(request));
+
+exports.listCommerceFoundationAdmin = onCall({
+    invoker: 'public',
+    memory: '512MiB',
+    timeoutSeconds: 60,
+}, async (request) => loadCommerceFoundation().handleListCommerceFoundationAdmin(request));
+
 exports.wolfGuideChat = onCall({
     invoker: 'public',
     secrets: [geminiApiKey],
