@@ -36,6 +36,15 @@ function positiveInteger(value, min = 1, max = 99, fallback = min) {
     return Math.min(max, Math.max(min, parsed));
 }
 
+function nonNegativeInteger(value, max = 100000, fallback = 0) {
+    if (value === '' || value == null) return fallback;
+    const parsed = Number(value);
+    if (!Number.isInteger(parsed) || parsed < 0) {
+        throw new HttpsError('invalid-argument', 'Enter a valid whole-number redemption limit.');
+    }
+    return Math.min(max, parsed);
+}
+
 function serialize(value) {
     if (value == null) return value;
     if (value instanceof admin.firestore.Timestamp) return value.toDate().toISOString();
@@ -721,12 +730,23 @@ async function handleSaveStudioDiscount(request) {
     const existing = await ref.get();
     const codeNormalized = normalizeCode(request.data?.code);
     const type = DISCOUNT_TYPES.has(request.data?.type) ? request.data.type : 'percent';
-    const value = type === 'percent'
-        ? Math.min(100, Math.max(0, Number(request.data?.value || 0)))
-        : cents(request.data?.value);
+    const rawValue = Number(request.data?.value);
 
     if (!codeNormalized) throw new HttpsError('invalid-argument', 'Discount code is required.');
-    if (!value) throw new HttpsError('invalid-argument', 'Discount value must be greater than zero.');
+    if (!Number.isFinite(rawValue) || rawValue <= 0) {
+        throw new HttpsError('invalid-argument', 'Discount value must be greater than zero.');
+    }
+    if (type === 'percent' && rawValue > 100) {
+        throw new HttpsError('invalid-argument', 'Percentage discounts cannot exceed 100%.');
+    }
+
+    const value = type === 'percent' ? rawValue : cents(rawValue);
+    const startsAt = nullableTimestamp(request.data?.startsAt);
+    const endsAt = nullableTimestamp(request.data?.endsAt);
+    if (startsAt && endsAt && endsAt.toMillis() <= startsAt.toMillis()) {
+        throw new HttpsError('invalid-argument', 'Discount end time must be after its start time.');
+    }
+    const maxRedemptions = nonNegativeInteger(request.data?.maxRedemptions);
 
     const duplicate = await db.collection('studioDiscounts')
         .where('codeNormalized', '==', codeNormalized)
@@ -753,9 +773,9 @@ async function handleSaveStudioDiscount(request) {
         memberOnly: request.data?.memberOnly === true,
         appliesTo,
         offerIds,
-        startsAt: nullableTimestamp(request.data?.startsAt),
-        endsAt: nullableTimestamp(request.data?.endsAt),
-        maxRedemptions: cents(request.data?.maxRedemptions),
+        startsAt,
+        endsAt,
+        maxRedemptions,
         redemptions: Number(existing.data()?.redemptions || 0),
         updatedBy: instructorUid,
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
@@ -775,8 +795,12 @@ async function handleListCommerceFoundationAdmin(request) {
         db.collection('studioOrders').limit(200).get(),
     ]);
 
-    const offers = offersSnapshot.docs.map((snapshot) => serialize({ id: snapshot.id, ...snapshot.data() }));
-    const discounts = discountsSnapshot.docs.map((snapshot) => serialize({ id: snapshot.id, ...snapshot.data() }));
+    const offers = offersSnapshot.docs
+        .map((snapshot) => serialize({ id: snapshot.id, ...snapshot.data() }))
+        .sort((left, right) => String(left.name || '').localeCompare(String(right.name || '')));
+    const discounts = discountsSnapshot.docs
+        .map((snapshot) => serialize({ id: snapshot.id, ...snapshot.data() }))
+        .sort((left, right) => String(left.codeDisplay || '').localeCompare(String(right.codeDisplay || '')));
     const orders = ordersSnapshot.docs.map((snapshot) => {
         const value = { id: snapshot.id, ...snapshot.data() };
         delete value.accessTokenHash;

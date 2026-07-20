@@ -6,6 +6,7 @@ import './styles/progression.css';
 import './styles/content.css';
 import './styles/private-training.css';
 import './styles/events.css';
+import './styles/commerce-admin.css';
 
 const ContactPage = lazy(() => import('./pages/ContactPage'));
 const HomePage = lazy(() => import('./pages/HomePage'));
@@ -20,6 +21,7 @@ const EventWaiverPage = lazy(() => import('./pages/EventWaiverPage'));
 const MemberEventsPage = lazy(() => import('./pages/MemberEventsPage'));
 const InstructorEventsAdmin = lazy(() => import('./pages/InstructorEventsAdmin'));
 const InstructorEventCheckIn = lazy(() => import('./pages/InstructorEventCheckIn'));
+const InstructorDiscountsAdmin = lazy(() => import('./pages/InstructorDiscountsAdmin'));
 const MemberPrivateTrainingPage = lazy(() => import('./pages/MemberPrivateTrainingPage'));
 const InstructorPrivateTrainingAdmin = lazy(() => import('./pages/InstructorPrivateTrainingAdmin'));
 const ProgramsPage = lazy(() => import('./pages/ProgramsPage'));
@@ -117,6 +119,14 @@ export default function App() {
                         element={
                             <ProtectedRoute>
                                 <InstructorEventCheckIn />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="instructor/discounts"
+                        element={
+                            <ProtectedRoute>
+                                <InstructorDiscountsAdmin />
                             </ProtectedRoute>
                         }
                     />

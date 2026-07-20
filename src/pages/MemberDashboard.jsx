@@ -3,6 +3,7 @@ import {
     BookOpen,
     CalendarClock,
     HeartPulse,
+    TicketPercent,
     LogOut,
     Settings2,
     UserCog,
@@ -155,6 +156,24 @@ export default function MemberDashboard() {
                                     <p>Create packages, record completed sessions, and adjust credits with an audit note.</p>
                                     <Link to="/instructor/private-training" className="text-link">
                                         Manage private training <ArrowRight size={17} aria-hidden="true" />
+                                    </Link>
+                                </article>
+
+
+                                <article className="dashboard-card dashboard-card--instructor">
+                                    <div className="dashboard-card__heading">
+                                        <TicketPercent aria-hidden="true" />
+                                        <div>
+                                            <p className="eyebrow">Commerce</p>
+                                            <h3>Discounts and promotion codes</h3>
+                                        </div>
+                                    </div>
+                                    <p>
+                                        Create event and private-training codes, set eligibility,
+                                        and review redemption limits.
+                                    </p>
+                                    <Link to="/instructor/discounts" className="text-link">
+                                        Manage discounts <ArrowRight size={17} aria-hidden="true" />
                                     </Link>
                                 </article>
 
