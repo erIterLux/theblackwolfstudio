@@ -80,3 +80,16 @@ export async function signEventWaiver(payload) {
     const response = await callable('signEventWaiver')(payload);
     return response.data;
 }
+
+export async function getEventCheckIn(eventId) {
+    const response = await callable('getEventCheckIn')({ eventId });
+    return response.data;
+}
+
+export async function setEventParticipantCheckIn(participantId, action = 'check_in') {
+    const response = await callable('setEventParticipantCheckIn')({
+        participantId,
+        action,
+    });
+    return response.data;
+}

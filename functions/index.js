@@ -220,6 +220,18 @@ exports.listEventsAdmin = onCall({
     timeoutSeconds: 60,
 }, async (request) => loadEventService().handleListEventsAdmin(request));
 
+exports.getEventCheckIn = onCall({
+    invoker: 'public',
+    memory: '512MiB',
+    timeoutSeconds: 60,
+}, async (request) => loadEventService().handleGetEventCheckIn(request));
+
+exports.setEventParticipantCheckIn = onCall({
+    invoker: 'public',
+    memory: '256MiB',
+    timeoutSeconds: 30,
+}, async (request) => loadEventService().handleSetEventParticipantCheckIn(request));
+
 function loadWaiverService() {
     return require('./events/waiverService');
 }

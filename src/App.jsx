@@ -19,6 +19,7 @@ const EventSuccessPage = lazy(() => import('./pages/EventSuccessPage'));
 const EventWaiverPage = lazy(() => import('./pages/EventWaiverPage'));
 const MemberEventsPage = lazy(() => import('./pages/MemberEventsPage'));
 const InstructorEventsAdmin = lazy(() => import('./pages/InstructorEventsAdmin'));
+const InstructorEventCheckIn = lazy(() => import('./pages/InstructorEventCheckIn'));
 const MemberPrivateTrainingPage = lazy(() => import('./pages/MemberPrivateTrainingPage'));
 const InstructorPrivateTrainingAdmin = lazy(() => import('./pages/InstructorPrivateTrainingAdmin'));
 const ProgramsPage = lazy(() => import('./pages/ProgramsPage'));
@@ -108,6 +109,14 @@ export default function App() {
                         element={
                             <ProtectedRoute>
                                 <InstructorEventsAdmin />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="instructor/events/:eventId/check-in"
+                        element={
+                            <ProtectedRoute>
+                                <InstructorEventCheckIn />
                             </ProtectedRoute>
                         }
                     />

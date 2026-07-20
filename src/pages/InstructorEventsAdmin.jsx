@@ -2,6 +2,7 @@ import {
     ArrowLeft,
     CalendarDays,
     CircleDollarSign,
+    ClipboardCheck,
     MapPin,
     Plus,
     RefreshCw,
@@ -582,7 +583,22 @@ export default function InstructorEventsAdmin() {
                             <p className="eyebrow">Participant tracking</p>
                             <h2>{selectedEventId ? 'Registrations for selected event' : 'Select an event to view registrations'}</h2>
                         </div>
-                        {selectedEventId && <span>{selectedRegistrations.reduce((total, item) => total + Number(item.participantCount || 0), 0)} participants</span>}
+                        {selectedEventId && (
+                            <div className="events-admin-section-actions">
+                                <span>
+                                    {selectedRegistrations.reduce(
+                                        (total, item) => total + Number(item.participantCount || 0),
+                                        0,
+                                    )} participants
+                                </span>
+                                <Link
+                                    className="button button--small"
+                                    to={`/instructor/events/${encodeURIComponent(selectedEventId)}/check-in`}
+                                >
+                                    <ClipboardCheck size={16} /> Open check-in
+                                </Link>
+                            </div>
+                        )}
                     </div>
 
                     {selectedEventId && !selectedRegistrations.length && <p>No registrations for this event yet.</p>}

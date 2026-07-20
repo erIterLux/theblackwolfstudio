@@ -694,6 +694,286 @@ async function handleListEventsAdmin(request) {
     return { events, registrations };
 }
 
+
+function registrationCheckInStatus(checkedInCount, participantCount) {
+    const checkedIn = Math.max(0, Number(checkedInCount || 0));
+    const total = Math.max(0, Number(participantCount || 0));
+    if (!checkedIn) return 'not_checked_in';
+    if (total > 0 && checkedIn >= total) return 'complete';
+    return 'partial';
+}
+
+async function handleGetEventCheckIn(request) {
+    requireInstructor(request);
+    const eventId = clean(request.data?.eventId, 160);
+    if (!eventId) {
+        throw new HttpsError('invalid-argument', 'Event ID is required.');
+    }
+
+    const [eventSnapshot, registrationsSnapshot, participantsSnapshot] = await Promise.all([
+        db.collection('events').doc(eventId).get(),
+        db.collection('eventRegistrations').where('eventId', '==', eventId).limit(500).get(),
+        db.collection('eventParticipants').where('eventId', '==', eventId).limit(2000).get(),
+    ]);
+
+    if (!eventSnapshot.exists) {
+        throw new HttpsError('not-found', 'That event was not found.');
+    }
+
+    const registrations = registrationsSnapshot.docs.map((item) => ({
+        id: item.id,
+        ...item.data(),
+    }));
+    const registrationsById = new Map(
+        registrations.map((registration) => [registration.id, registration]),
+    );
+
+    const participants = participantsSnapshot.docs
+        .map((item) => {
+            const participant = { id: item.id, ...item.data() };
+            const registration = registrationsById.get(participant.registrationId) || {};
+            return {
+                ...participant,
+                purchaser: registration.purchaser || null,
+                registrationStatus:
+                    participant.registrationStatus
+                    || registration.registrationStatus
+                    || 'confirmed',
+            };
+        })
+        .sort((left, right) => (
+            String(left.fullName || '').localeCompare(String(right.fullName || ''))
+        ));
+
+    const waiverRequired = eventSnapshot.data()?.waiverRequired !== false;
+    const checkedInCount = participants.filter(
+        (participant) => participant.checkInStatus === 'checked_in',
+    ).length;
+    const waiverCompleteCount = participants.filter(
+        (participant) => (
+            !waiverRequired
+            || participant.waiverStatus === 'signed'
+            || participant.waiverStatus === 'not_required'
+        ),
+    ).length;
+
+    return {
+        event: serialize({
+            id: eventSnapshot.id,
+            ...eventSnapshot.data(),
+        }),
+        participants: serialize(participants),
+        summary: {
+            registeredCount: participants.length,
+            waiverCompleteCount,
+            checkedInCount,
+            waitingCount: Math.max(0, participants.length - checkedInCount),
+            blockedCount: waiverRequired
+                ? participants.filter((participant) => participant.waiverStatus !== 'signed').length
+                : 0,
+        },
+    };
+}
+
+async function handleSetEventParticipantCheckIn(request) {
+    const instructorUid = requireInstructor(request);
+    const participantIdValue = clean(request.data?.participantId, 180);
+    const requestedAction = clean(request.data?.action || 'check_in', 40);
+    const action = requestedAction === 'undo' ? 'undo' : 'check_in';
+
+    if (!participantIdValue) {
+        throw new HttpsError('invalid-argument', 'Participant ID is required.');
+    }
+
+    const participantRef = db.collection('eventParticipants').doc(participantIdValue);
+    const historyRef = db.collection('eventCheckInHistory').doc();
+    let response = null;
+
+    await db.runTransaction(async (transaction) => {
+        const participantSnapshot = await transaction.get(participantRef);
+        if (!participantSnapshot.exists) {
+            throw new HttpsError('not-found', 'That event participant was not found.');
+        }
+
+        const participant = participantSnapshot.data() || {};
+        const registrationRef = db.collection('eventRegistrations').doc(participant.registrationId);
+        const eventRef = db.collection('events').doc(participant.eventId);
+        const [registrationSnapshot, eventSnapshot] = await Promise.all([
+            transaction.get(registrationRef),
+            transaction.get(eventRef),
+        ]);
+
+        if (!registrationSnapshot.exists || !eventSnapshot.exists) {
+            throw new HttpsError(
+                'failed-precondition',
+                'The participant registration or event could not be found.',
+            );
+        }
+
+        const registration = registrationSnapshot.data() || {};
+        const event = eventSnapshot.data() || {};
+        const currentStatus = participant.checkInStatus || 'not_checked_in';
+        const participantCount = Math.max(
+            1,
+            Number(registration.participantCount || 1),
+        );
+        const currentCheckedInCount = Math.max(
+            0,
+            Number(registration.checkedInCount || 0),
+        );
+        const currentEventCheckedInCount = Math.max(
+            0,
+            Number(event.checkedInCount || 0),
+        );
+
+        if (event.status === 'canceled' || event.status === 'archived') {
+            throw new HttpsError(
+                'failed-precondition',
+                'Check-in is unavailable for a canceled or archived event.',
+            );
+        }
+        if (
+            participant.registrationStatus !== 'confirmed'
+            || registration.registrationStatus !== 'confirmed'
+        ) {
+            throw new HttpsError(
+                'failed-precondition',
+                'Only confirmed participants can be checked in.',
+            );
+        }
+
+        if (action === 'check_in') {
+            if (currentStatus === 'checked_in') {
+                response = {
+                    participantId: participantIdValue,
+                    checkInStatus: 'checked_in',
+                    checkInAt: serialize(participant.checkInAt || null),
+                    unchanged: true,
+                };
+                return;
+            }
+
+            const waiverRequired = event.waiverRequired !== false;
+            const waiverComplete = (
+                participant.waiverStatus === 'signed'
+                || participant.waiverStatus === 'not_required'
+            );
+            if (waiverRequired && !waiverComplete) {
+                throw new HttpsError(
+                    'failed-precondition',
+                    `${participant.fullName || 'This participant'} must sign the event waiver before check-in.`,
+                );
+            }
+
+            const checkedInAt = admin.firestore.Timestamp.now();
+            const nextCheckedInCount = Math.min(
+                participantCount,
+                currentCheckedInCount + 1,
+            );
+
+            transaction.set(participantRef, {
+                checkInStatus: 'checked_in',
+                checkInAt: checkedInAt,
+                checkInBy: instructorUid,
+                checkInMethod: 'instructor',
+                lastCheckInChangeAt: checkedInAt,
+                lastCheckInChangedBy: instructorUid,
+                updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+            }, { merge: true });
+
+            transaction.set(registrationRef, {
+                checkedInCount: nextCheckedInCount,
+                checkInStatus: registrationCheckInStatus(
+                    nextCheckedInCount,
+                    participantCount,
+                ),
+                updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+            }, { merge: true });
+
+            transaction.set(eventRef, {
+                checkedInCount: currentEventCheckedInCount + 1,
+                updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+            }, { merge: true });
+
+            transaction.set(historyRef, {
+                eventId: participant.eventId,
+                registrationId: participant.registrationId,
+                participantId: participantIdValue,
+                participantName: participant.fullName || null,
+                action: 'check_in',
+                changedBy: instructorUid,
+                changedAt: checkedInAt,
+                createdAt: admin.firestore.FieldValue.serverTimestamp(),
+            });
+
+            response = {
+                participantId: participantIdValue,
+                checkInStatus: 'checked_in',
+                checkInAt: serialize(checkedInAt),
+                unchanged: false,
+            };
+            return;
+        }
+
+        if (currentStatus !== 'checked_in') {
+            response = {
+                participantId: participantIdValue,
+                checkInStatus: 'not_checked_in',
+                checkInAt: null,
+                unchanged: true,
+            };
+            return;
+        }
+
+        const changedAt = admin.firestore.Timestamp.now();
+        const nextCheckedInCount = Math.max(0, currentCheckedInCount - 1);
+
+        transaction.set(participantRef, {
+            checkInStatus: 'not_checked_in',
+            checkInAt: admin.firestore.FieldValue.delete(),
+            checkInBy: admin.firestore.FieldValue.delete(),
+            checkInMethod: admin.firestore.FieldValue.delete(),
+            lastCheckInChangeAt: changedAt,
+            lastCheckInChangedBy: instructorUid,
+            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        }, { merge: true });
+
+        transaction.set(registrationRef, {
+            checkedInCount: nextCheckedInCount,
+            checkInStatus: registrationCheckInStatus(
+                nextCheckedInCount,
+                participantCount,
+            ),
+            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        }, { merge: true });
+
+        transaction.set(eventRef, {
+            checkedInCount: Math.max(0, currentEventCheckedInCount - 1),
+            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        }, { merge: true });
+
+        transaction.set(historyRef, {
+            eventId: participant.eventId,
+            registrationId: participant.registrationId,
+            participantId: participantIdValue,
+            participantName: participant.fullName || null,
+            action: 'undo_check_in',
+            changedBy: instructorUid,
+            changedAt,
+            createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+
+        response = {
+            participantId: participantIdValue,
+            checkInStatus: 'not_checked_in',
+            checkInAt: null,
+            unchanged: false,
+        };
+    });
+
+    return response;
+}
+
 module.exports = {
     MAX_EVENT_PARTICIPANTS_PER_ORDER,
     RESERVATION_MINUTES,
@@ -706,4 +986,6 @@ module.exports = {
     handleGetEventRegistration,
     handleListMyEventRegistrations,
     handleListEventsAdmin,
+    handleGetEventCheckIn,
+    handleSetEventParticipantCheckIn,
 };

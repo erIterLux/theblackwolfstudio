@@ -732,3 +732,232 @@
         justify-content: flex-start;
     }
 }
+
+/* Pass 6: participant-by-participant event check-in */
+.events-admin-section-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.75rem;
+}
+
+.event-check-in-page {
+    min-height: 70vh;
+}
+
+.event-check-in-heading {
+    align-items: flex-start;
+}
+
+.event-check-in-event-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.85rem 1.25rem;
+    margin: 1.25rem 0;
+    padding: 1rem 1.1rem;
+    border: 1px solid var(--event-border);
+    border-radius: 18px;
+    background: #fff;
+}
+
+    .event-check-in-event-meta span {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        color: var(--event-muted);
+    }
+
+.event-check-in-summary {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.9rem;
+    margin: 1.25rem 0;
+}
+
+    .event-check-in-summary article {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 0.15rem 0.65rem;
+        align-items: center;
+        padding: 1rem;
+        border: 1px solid var(--event-border);
+        border-radius: 18px;
+        background: #fff;
+    }
+
+        .event-check-in-summary article svg {
+            grid-row: 1 / span 2;
+        }
+
+    .event-check-in-summary strong {
+        font-size: 1.7rem;
+        line-height: 1;
+    }
+
+    .event-check-in-summary span {
+        color: var(--event-muted);
+        font-size: 0.9rem;
+    }
+
+.event-check-in-controls {
+    display: grid;
+    grid-template-columns: minmax(260px, 1fr) auto;
+    gap: 1rem;
+    align-items: center;
+    margin: 1.25rem 0;
+}
+
+.event-check-in-search {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    padding: 0 0.9rem;
+    border: 1px solid var(--event-border);
+    border-radius: 14px;
+    background: #fff;
+}
+
+    .event-check-in-search input {
+        min-width: 0;
+        width: 100%;
+        border: 0;
+        background: transparent;
+        box-shadow: none;
+    }
+
+.event-check-in-filters {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 0.45rem;
+}
+
+    .event-check-in-filters button {
+        min-height: 40px;
+        padding: 0.55rem 0.8rem;
+        border: 1px solid var(--event-border);
+        border-radius: 999px;
+        background: #fff;
+        color: var(--event-text);
+        cursor: pointer;
+    }
+
+        .event-check-in-filters button.is-active {
+            border-color: #17130f;
+            background: #17130f;
+            color: #fff;
+        }
+
+.event-check-in-list {
+    display: grid;
+    gap: 0.85rem;
+}
+
+.event-check-in-person {
+    display: grid;
+    grid-template-columns: minmax(240px, 1fr) minmax(220px, auto) auto;
+    gap: 1rem;
+    align-items: center;
+    padding: 1rem;
+    border: 1px solid var(--event-border);
+    border-radius: 18px;
+    background: #fff;
+}
+
+    .event-check-in-person.is-checked-in {
+        border-color: #7ba987;
+        background: #f3faf5;
+    }
+
+    .event-check-in-person.is-blocked {
+        background: #fffaf0;
+    }
+
+.event-check-in-person__identity {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.8rem;
+    min-width: 0;
+}
+
+.event-check-in-person__initials {
+    display: grid;
+    flex: 0 0 auto;
+    width: 46px;
+    height: 46px;
+    place-items: center;
+    border-radius: 50%;
+    background: #17130f;
+    color: #fff;
+    font-weight: 800;
+}
+
+.event-check-in-person__identity h2 {
+    margin: 0;
+    font-size: 1.05rem;
+}
+
+.event-check-in-person__identity p {
+    margin: 0.15rem 0 0;
+    color: var(--event-muted);
+    overflow-wrap: anywhere;
+}
+
+.event-check-in-person__statuses {
+    display: grid;
+    justify-items: start;
+    gap: 0.4rem;
+}
+
+.event-check-in-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.9rem;
+}
+
+    .event-check-in-status.is-complete {
+        color: #2d6a3f;
+    }
+
+    .event-check-in-status.is-warning {
+        color: #9a5b00;
+    }
+
+.event-check-in-person__actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 0.55rem;
+}
+
+@media (max-width: 980px) {
+    .event-check-in-summary {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .event-check-in-controls,
+    .event-check-in-person {
+        grid-template-columns: 1fr;
+    }
+
+    .event-check-in-filters,
+    .event-check-in-person__actions {
+        justify-content: flex-start;
+    }
+}
+
+@media (max-width: 620px) {
+    .events-admin-section-actions {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .event-check-in-summary {
+        grid-template-columns: 1fr;
+    }
+
+    .event-check-in-person {
+        padding: 0.9rem;
+    }
+}
