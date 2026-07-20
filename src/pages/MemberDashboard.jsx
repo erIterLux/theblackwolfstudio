@@ -166,7 +166,7 @@ export default function MemberDashboard() {
                                             <h3>Dates and registrations</h3>
                                         </div>
                                     </div>
-                                    <p>Create events and track every paid participant as an individual registration.</p>
+                                    <p>Create paid or free events and track every participant as an individual registration.</p>
                                     <Link to="/instructor/events" className="text-link">
                                         Manage events <ArrowRight size={17} aria-hidden="true" />
                                     </Link>

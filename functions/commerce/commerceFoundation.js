@@ -112,10 +112,13 @@ function sanitizePurchaser(raw, request) {
 function priceForOffer(offer, quantity) {
     const pricingModel = clean(offer.pricingModel || 'flat', 40);
     const count = positiveInteger(quantity, 1, 12, 1);
+    const allowsFree = offer.purchaseType === 'event';
 
     if (pricingModel === 'per_participant') {
         const unit = cents(offer.unitAmountCents);
-        if (!unit) throw new HttpsError('failed-precondition', 'This offer does not have a valid price.');
+        if (unit === 0 && !allowsFree) {
+            throw new HttpsError('failed-precondition', 'This offer does not have a valid price.');
+        }
         return {
             quantity: count,
             unitAmountCents: unit,
@@ -126,8 +129,10 @@ function priceForOffer(offer, quantity) {
 
     if (pricingModel === 'participant_tiers') {
         const tierMap = offer.participantAmountsCents || {};
-        const total = cents(tierMap[String(count)] ?? tierMap[count]);
-        if (!total) {
+        const configuredValue = tierMap[String(count)] ?? tierMap[count];
+        const total = cents(configuredValue);
+        if ((configuredValue === undefined || configuredValue === null || configuredValue === '')
+            || (total === 0 && !allowsFree)) {
             throw new HttpsError(
                 'failed-precondition',
                 `This offer is not configured for ${count} participant${count === 1 ? '' : 's'}.`,
@@ -141,8 +146,12 @@ function priceForOffer(offer, quantity) {
         };
     }
 
-    const total = cents(offer.amountCents);
-    if (!total) throw new HttpsError('failed-precondition', 'This offer does not have a valid price.');
+    const configuredValue = offer.amountCents;
+    const total = cents(configuredValue);
+    if ((configuredValue === undefined || configuredValue === null || configuredValue === '')
+        || (total === 0 && !allowsFree)) {
+        throw new HttpsError('failed-precondition', 'This offer does not have a valid price.');
+    }
     return {
         quantity: 1,
         unitAmountCents: total,
@@ -413,14 +422,19 @@ async function handleCreateStudioCheckout(request, dependencies = {}) {
     if (!origin) throw new HttpsError('failed-precondition', 'APP_ORIGIN is not configured.');
 
     const orderRef = db.collection('studioOrders').doc();
-
     const accessToken = createAccessToken();
-    const stripe = stripeClient(dependencies.stripeSecretKey);
-    const stripeCustomerId = await findOrCreateStripeCustomer({
-        stripe,
-        uid: request.auth?.uid || null,
-        purchaser,
-    });
+    const isFreeRegistration = offer.purchaseType === 'event' && quote.totalCents === 0;
+    let stripe = null;
+    let stripeCustomerId = null;
+
+    if (!isFreeRegistration) {
+        stripe = stripeClient(dependencies.stripeSecretKey);
+        stripeCustomerId = await findOrCreateStripeCustomer({
+            stripe,
+            uid: request.auth?.uid || null,
+            purchaser,
+        });
+    }
 
     if (offer.purchaseType === 'event') {
         const { prepareEventReservation } = require('../events/eventService');
@@ -463,13 +477,50 @@ async function handleCreateStudioCheckout(request, dependencies = {}) {
             totalCents: quote.totalCents,
             discount: quote.discount,
         },
-        paymentStatus: 'pending',
-        fulfillmentStatus: 'pending',
+        paymentStatus: isFreeRegistration ? 'paid' : 'pending',
+        paymentMethod: isFreeRegistration ? 'free_registration' : 'stripe',
+        fulfillmentStatus: isFreeRegistration ? 'confirmed' : 'pending',
+        paidAt: isFreeRegistration
+            ? admin.firestore.FieldValue.serverTimestamp()
+            : null,
         accessTokenHash: hashToken(accessToken),
         stripeCustomerId: stripeCustomerId || null,
         createdAt: admin.firestore.FieldValue.serverTimestamp(),
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     };
+
+    const successUrl = offer.purchaseType === 'private_training'
+        ? `${origin}/private-training/success?order_id=${orderRef.id}&access_token=${accessToken}`
+        : `${origin}/events/success?order_id=${orderRef.id}&access_token=${accessToken}`;
+    const cancelUrl = `${origin}/${offer.purchaseType === 'event' ? 'events' : 'private-training'}?purchase=canceled`;
+
+    if (isFreeRegistration) {
+        try {
+            await orderRef.set(order);
+            const { ensureEventRegistrationFromOrder } = require('../events/eventService');
+            await ensureEventRegistrationFromOrder(orderRef.id);
+            if (quote.discount?.source === 'promotion') {
+                await incrementDiscountRedemption(quote.discount.discountId);
+            }
+        } catch (error) {
+            await orderRef.set({
+                paymentStatus: 'registration_failed',
+                checkoutError: clean(error?.message, 800),
+                updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+            }, { merge: true });
+            const { releaseEventReservation } = require('../events/eventService');
+            await releaseEventReservation(orderRef.id, 'registration_failed');
+            throw error;
+        }
+
+        return {
+            url: successUrl,
+            orderId: orderRef.id,
+            accessToken,
+            quote,
+            freeRegistration: true,
+        };
+    }
 
     const sessionPayload = {
         mode: 'payment',
@@ -491,10 +542,8 @@ async function handleCreateStudioCheckout(request, dependencies = {}) {
             },
             quantity: 1,
         }],
-        success_url: offer.purchaseType === 'private_training'
-            ? `${origin}/private-training/success?order_id=${orderRef.id}&access_token=${accessToken}`
-            : `${origin}/events/success?order_id=${orderRef.id}&access_token=${accessToken}`,
-        cancel_url: `${origin}/${offer.purchaseType === 'event' ? 'events' : 'private-training'}?purchase=canceled`,
+        success_url: successUrl,
+        cancel_url: cancelUrl,
         metadata: {
             orderId: orderRef.id,
             firebaseUid: request.auth?.uid || '',
