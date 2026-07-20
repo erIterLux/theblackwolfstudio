@@ -2,15 +2,15 @@
 .event-success-page,
 .member-events-page,
 .events-admin-page {
-  --event-border: rgba(21, 18, 16, 0.14);
-  --event-muted: rgba(21, 18, 16, 0.68);
+    --event-border: rgba(21, 18, 16, 0.14);
+    --event-muted: rgba(21, 18, 16, 0.68);
 }
 
 .event-card-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1.5rem;
-  margin-top: 2rem;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.5rem;
+    margin-top: 2rem;
 }
 
 .event-card,
@@ -21,26 +21,26 @@
 .events-admin-list,
 .events-admin-registrations,
 .events-admin-registration-card {
-  border: 1px solid var(--event-border);
-  background: #fff;
-  box-shadow: 0 16px 40px rgba(24, 18, 14, 0.06);
+    border: 1px solid var(--event-border);
+    background: #fff;
+    box-shadow: 0 16px 40px rgba(24, 18, 14, 0.06);
 }
 
 .event-card {
-  display: flex;
-  flex-direction: column;
-  gap: 1.4rem;
-  padding: 1.5rem;
-  border-radius: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 1.4rem;
+    padding: 1.5rem;
+    border-radius: 24px;
 }
 
-.event-card h2,
-.event-checkout h2,
-.member-event-card h2,
-.events-admin-page h2,
-.events-admin-page h3 {
-  margin: 0;
-}
+    .event-card h2,
+    .event-checkout h2,
+    .member-event-card h2,
+    .events-admin-page h2,
+    .events-admin-page h3 {
+        margin: 0;
+    }
 
 .event-card__status-row,
 .event-card__footer,
@@ -50,443 +50,685 @@
 .events-admin-section-heading,
 .events-admin-registration-card__heading,
 .member-event-card__heading {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
 }
 
 .event-card__status-row {
-  color: var(--event-muted);
-  font-size: 0.9rem;
+    color: var(--event-muted);
+    font-size: 0.9rem;
 }
 
 .event-state,
 .event-person-status {
-  display: inline-flex;
-  align-items: center;
-  width: fit-content;
-  border-radius: 999px;
-  padding: 0.38rem 0.72rem;
-  font-size: 0.78rem;
-  font-weight: 800;
-  letter-spacing: 0.02em;
-  text-transform: capitalize;
+    display: inline-flex;
+    align-items: center;
+    width: fit-content;
+    border-radius: 999px;
+    padding: 0.38rem 0.72rem;
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+    text-transform: capitalize;
 }
 
-.event-state.is-open,
-.event-person-status.is-confirmed {
-  color: #205a3a;
-  background: #e8f4ec;
-}
+    .event-state.is-open,
+    .event-person-status.is-confirmed {
+        color: #205a3a;
+        background: #e8f4ec;
+    }
 
-.event-state.is-sold_out,
-.event-state.is-closed,
-.event-person-status.is-pending {
-  color: #7b4d13;
-  background: #fff1d7;
-}
+    .event-state.is-sold_out,
+    .event-state.is-closed,
+    .event-person-status.is-pending {
+        color: #7b4d13;
+        background: #fff1d7;
+    }
 
-.event-state.is-not_open,
-.event-person-status.is-neutral {
-  color: #4f4b47;
-  background: #efedeb;
-}
+    .event-state.is-not_open,
+    .event-person-status.is-neutral {
+        color: #4f4b47;
+        background: #efedeb;
+    }
 
 .event-card__details,
 .dashboard-event-meta,
 .member-event-card__meta {
-  display: grid;
-  gap: 0.65rem;
-  color: var(--event-muted);
+    display: grid;
+    gap: 0.65rem;
+    color: var(--event-muted);
 }
 
-.event-card__details span,
-.dashboard-event-meta span,
-.member-event-card__meta span,
-.member-event-participants > div > div:last-child span,
-.events-admin-participant-list > div > div:last-child span {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
+    .event-card__details span,
+    .dashboard-event-meta span,
+    .member-event-card__meta span,
+    .member-event-participants > div > div:last-child span,
+    .events-admin-participant-list > div > div:last-child span {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
 
 .event-card__footer {
-  margin-top: auto;
-  padding-top: 1rem;
-  border-top: 1px solid var(--event-border);
+    margin-top: auto;
+    padding-top: 1rem;
+    border-top: 1px solid var(--event-border);
 }
 
-.event-card__footer > div {
-  display: grid;
-  gap: 0.2rem;
-}
+    .event-card__footer > div {
+        display: grid;
+        gap: 0.2rem;
+    }
 
-.event-card__footer span {
-  color: var(--event-muted);
-  font-size: 0.82rem;
-}
+    .event-card__footer span {
+        color: var(--event-muted);
+        font-size: 0.82rem;
+    }
 
-.event-card__footer strong {
-  font-size: 1.35rem;
-}
+    .event-card__footer strong {
+        font-size: 1.35rem;
+    }
 
 .event-checkout {
-  max-width: 980px;
-  margin: 0 auto;
-  padding: clamp(1.25rem, 3vw, 2.5rem);
-  border-radius: 28px;
+    max-width: 980px;
+    margin: 0 auto;
+    padding: clamp(1.25rem, 3vw, 2.5rem);
+    border-radius: 28px;
 }
 
 .event-checkout__heading {
-  align-items: flex-start;
-  margin-bottom: 1.5rem;
+    align-items: flex-start;
+    margin-bottom: 1.5rem;
 }
 
 .event-registration-explainer,
 .event-waiver-preview {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.85rem;
-  padding: 1rem 1.1rem;
-  border-radius: 18px;
-  background: #f2eee7;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.85rem;
+    padding: 1rem 1.1rem;
+    border-radius: 18px;
+    background: #f2eee7;
 }
 
-.event-registration-explainer p,
-.event-waiver-preview p {
-  margin: 0.2rem 0 0;
-}
+    .event-registration-explainer p,
+    .event-waiver-preview p {
+        margin: 0.2rem 0 0;
+    }
 
 .event-checkout__section {
-  display: grid;
-  gap: 1rem;
-  padding: 1.5rem 0;
-  border-bottom: 1px solid var(--event-border);
+    display: grid;
+    gap: 1rem;
+    padding: 1.5rem 0;
+    border-bottom: 1px solid var(--event-border);
 }
 
 .event-checkout__section-heading {
-  justify-content: flex-start;
-  align-items: flex-start;
+    justify-content: flex-start;
+    align-items: flex-start;
 }
 
-.event-checkout__section-heading > svg,
-.events-admin-panel-heading svg,
-.events-admin-subheading svg {
-  flex: 0 0 auto;
-}
+    .event-checkout__section-heading > svg,
+    .events-admin-panel-heading svg,
+    .events-admin-subheading svg {
+        flex: 0 0 auto;
+    }
 
-.event-checkout__section-heading p {
-  margin: 0.25rem 0 0;
-  color: var(--event-muted);
-}
+    .event-checkout__section-heading p {
+        margin: 0.25rem 0 0;
+        color: var(--event-muted);
+    }
 
 .event-participant-forms {
-  display: grid;
-  gap: 1rem;
+    display: grid;
+    gap: 1rem;
 }
 
 .event-participant-form {
-  display: grid;
-  gap: 1rem;
-  min-width: 0;
-  margin: 0;
-  padding: 1rem;
-  border: 1px solid var(--event-border);
-  border-radius: 18px;
+    display: grid;
+    gap: 1rem;
+    min-width: 0;
+    margin: 0;
+    padding: 1rem;
+    border: 1px solid var(--event-border);
+    border-radius: 18px;
 }
 
-.event-participant-form legend {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.45rem;
-  padding: 0 0.35rem;
-  font-weight: 800;
-}
+    .event-participant-form legend {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        padding: 0 0.35rem;
+        font-weight: 800;
+    }
 
 .checkbox-row--field {
-  align-self: end;
-  min-height: 48px;
+    align-self: end;
+    min-height: 48px;
 }
 
 .event-checkout__actions {
-  display: flex;
-  justify-content: flex-end;
-  padding-top: 1.5rem;
+    display: flex;
+    justify-content: flex-end;
+    padding-top: 1.5rem;
 }
 
 .event-success-page__inner {
-  max-width: 900px;
-  text-align: center;
+    max-width: 900px;
+    text-align: center;
 }
 
 .event-confirmation-card {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1rem;
-  margin: 2rem 0;
-  padding: 1.25rem;
-  border-radius: 22px;
-  text-align: left;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+    margin: 2rem 0;
+    padding: 1.25rem;
+    border-radius: 22px;
+    text-align: left;
 }
 
-.event-confirmation-card > div {
-  display: grid;
-  gap: 0.3rem;
-}
+    .event-confirmation-card > div {
+        display: grid;
+        gap: 0.3rem;
+    }
 
-.event-confirmation-card span {
-  color: var(--event-muted);
-  font-size: 0.82rem;
-}
+    .event-confirmation-card span {
+        color: var(--event-muted);
+        font-size: 0.82rem;
+    }
 
-.event-confirmation-card strong {
-  display: flex;
-  align-items: center;
-  gap: 0.45rem;
-}
+    .event-confirmation-card strong {
+        display: flex;
+        align-items: center;
+        gap: 0.45rem;
+    }
 
 .event-next-steps {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0.75rem;
-  margin-bottom: 2rem;
-  text-align: left;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.75rem;
+    margin-bottom: 2rem;
+    text-align: left;
 }
 
-.event-next-steps > div {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  gap: 0.65rem;
-  align-items: center;
-  padding: 1rem;
-  border: 1px solid var(--event-border);
-  border-radius: 18px;
-  background: #fff;
-}
+    .event-next-steps > div {
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        gap: 0.65rem;
+        align-items: center;
+        padding: 1rem;
+        border: 1px solid var(--event-border);
+        border-radius: 18px;
+        background: #fff;
+    }
 
-.event-next-steps > div > span {
-  display: grid;
-  place-items: center;
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  background: #17130f;
-  color: #fff;
-  font-weight: 800;
-}
+        .event-next-steps > div > span {
+            display: grid;
+            place-items: center;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: #17130f;
+            color: #fff;
+            font-weight: 800;
+        }
 
-.event-next-steps p {
-  margin: 0.2rem 0 0;
-  color: var(--event-muted);
-  font-size: 0.84rem;
-}
+    .event-next-steps p {
+        margin: 0.2rem 0 0;
+        color: var(--event-muted);
+        font-size: 0.84rem;
+    }
 
 .event-confirmed-participants,
 .member-event-participants,
 .events-admin-participant-list {
-  display: grid;
-  gap: 0.7rem;
-  text-align: left;
+    display: grid;
+    gap: 0.7rem;
+    text-align: left;
 }
 
-.event-confirmed-participants article,
-.member-event-participants > div,
-.events-admin-participant-list > div {
-  display: flex;
-  justify-content: space-between;
-  gap: 1rem;
-  padding: 0.9rem 1rem;
-  border: 1px solid var(--event-border);
-  border-radius: 16px;
-  background: #fff;
-}
+    .event-confirmed-participants article,
+    .member-event-participants > div,
+    .events-admin-participant-list > div {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: 0.9rem 1rem;
+        border: 1px solid var(--event-border);
+        border-radius: 16px;
+        background: #fff;
+    }
 
-.event-confirmed-participants article > div,
-.member-event-participants > div > div,
-.events-admin-participant-list > div > div {
-  display: grid;
-  gap: 0.35rem;
-}
+        .event-confirmed-participants article > div,
+        .member-event-participants > div > div,
+        .events-admin-participant-list > div > div {
+            display: grid;
+            gap: 0.35rem;
+        }
 
-.event-confirmed-participants article > div:last-child {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-}
+            .event-confirmed-participants article > div:last-child {
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: flex-end;
+            }
 
 .event-member-summary {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 1rem;
-  margin: 1.5rem 0 2rem;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+    margin: 1.5rem 0 2rem;
 }
 
-.event-member-summary > div {
-  display: grid;
-  gap: 0.2rem;
-  padding: 1rem;
-  border-radius: 18px;
-  background: rgba(255, 255, 255, 0.08);
-}
+    .event-member-summary > div {
+        display: grid;
+        gap: 0.2rem;
+        padding: 1rem;
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.08);
+    }
 
-.event-member-summary strong {
-  font-size: 1.8rem;
-}
+    .event-member-summary strong {
+        font-size: 1.8rem;
+    }
 
 .member-event-list {
-  display: grid;
-  gap: 1.25rem;
+    display: grid;
+    gap: 1.25rem;
 }
 
 .member-event-card {
-  display: grid;
-  gap: 1.1rem;
-  padding: 1.4rem;
-  border-radius: 22px;
+    display: grid;
+    gap: 1.1rem;
+    padding: 1.4rem;
+    border-radius: 22px;
 }
 
 .member-event-card__meta {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .dashboard-event-highlight {
-  display: grid;
-  gap: 0.25rem;
-  margin: 0.7rem 0;
+    display: grid;
+    gap: 0.25rem;
+    margin: 0.7rem 0;
 }
 
-.dashboard-event-highlight strong {
-  font-size: 1.15rem;
-}
+    .dashboard-event-highlight strong {
+        font-size: 1.15rem;
+    }
 
 .events-admin-layout {
-  display: grid;
-  grid-template-columns: minmax(240px, 0.34fr) minmax(0, 1fr);
-  gap: 1.25rem;
-  align-items: start;
+    display: grid;
+    grid-template-columns: minmax(240px, 0.34fr) minmax(0, 1fr);
+    gap: 1.25rem;
+    align-items: start;
 }
 
 .events-admin-list,
 .events-admin-editor,
 .events-admin-registrations {
-  border-radius: 22px;
+    border-radius: 22px;
 }
 
 .events-admin-list {
-  overflow: hidden;
+    overflow: hidden;
 }
 
 .events-admin-panel-heading,
 .events-admin-section-heading {
-  padding: 1rem 1.1rem;
-  border-bottom: 1px solid var(--event-border);
+    padding: 1rem 1.1rem;
+    border-bottom: 1px solid var(--event-border);
 }
 
-.events-admin-panel-heading > div,
-.events-admin-subheading,
-.events-admin-section-heading > div {
-  display: flex;
-  align-items: center;
-  gap: 0.55rem;
-}
+    .events-admin-panel-heading > div,
+    .events-admin-subheading,
+    .events-admin-section-heading > div {
+        display: flex;
+        align-items: center;
+        gap: 0.55rem;
+    }
 
 .events-admin-list > button {
-  display: grid;
-  width: 100%;
-  gap: 0.25rem;
-  padding: 1rem 1.1rem;
-  border: 0;
-  border-bottom: 1px solid var(--event-border);
-  background: transparent;
-  text-align: left;
-  cursor: pointer;
+    display: grid;
+    width: 100%;
+    gap: 0.25rem;
+    padding: 1rem 1.1rem;
+    border: 0;
+    border-bottom: 1px solid var(--event-border);
+    background: transparent;
+    text-align: left;
+    cursor: pointer;
 }
 
-.events-admin-list > button.is-active {
-  background: #f1ebe1;
-}
+    .events-admin-list > button.is-active {
+        background: #f1ebe1;
+    }
 
-.events-admin-list > button span,
-.events-admin-list > button small {
-  color: var(--event-muted);
-}
+    .events-admin-list > button span,
+    .events-admin-list > button small {
+        color: var(--event-muted);
+    }
 
 .events-admin-editor {
-  display: grid;
-  gap: 1rem;
-  padding: 1.25rem;
+    display: grid;
+    gap: 1rem;
+    padding: 1.25rem;
 }
 
-.events-admin-editor > .events-admin-panel-heading {
-  margin: -1.25rem -1.25rem 0;
-}
+    .events-admin-editor > .events-admin-panel-heading {
+        margin: -1.25rem -1.25rem 0;
+    }
 
 .events-admin-subheading {
-  margin-top: 0.5rem;
+    margin-top: 0.5rem;
 }
 
 .events-admin-registrations {
-  margin-top: 1.5rem;
-  padding-bottom: 1rem;
+    margin-top: 1.5rem;
+    padding-bottom: 1rem;
 }
 
 .events-admin-registration-list {
-  display: grid;
-  gap: 1rem;
-  padding: 1rem;
+    display: grid;
+    gap: 1rem;
+    padding: 1rem;
 }
 
 .events-admin-registration-card {
-  overflow: hidden;
-  border-radius: 18px;
-  box-shadow: none;
+    overflow: hidden;
+    border-radius: 18px;
+    box-shadow: none;
 }
 
 .events-admin-registration-card__heading {
-  padding: 1rem;
-  border-bottom: 1px solid var(--event-border);
+    padding: 1rem;
+    border-bottom: 1px solid var(--event-border);
 }
 
-.events-admin-registration-card__heading > div {
-  display: grid;
-  gap: 0.2rem;
-}
+    .events-admin-registration-card__heading > div {
+        display: grid;
+        gap: 0.2rem;
+    }
 
 .events-admin-participant-list {
-  padding: 1rem;
+    padding: 1rem;
 }
 
 @media (max-width: 900px) {
-  .event-card-grid,
-  .events-admin-layout {
-    grid-template-columns: 1fr;
-  }
+    .event-card-grid,
+    .events-admin-layout {
+        grid-template-columns: 1fr;
+    }
 
-  .event-next-steps,
-  .member-event-card__meta {
-    grid-template-columns: 1fr;
-  }
+    .event-next-steps,
+    .member-event-card__meta {
+        grid-template-columns: 1fr;
+    }
 }
 
 @media (max-width: 680px) {
-  .event-card__footer,
-  .event-checkout__heading,
-  .event-confirmed-participants article,
-  .member-event-card__heading,
-  .member-event-participants > div,
-  .events-admin-registration-card__heading,
-  .events-admin-participant-list > div {
+    .event-card__footer,
+    .event-checkout__heading,
+    .event-confirmed-participants article,
+    .member-event-card__heading,
+    .member-event-participants > div,
+    .events-admin-registration-card__heading,
+    .events-admin-participant-list > div {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .event-confirmation-card,
+    .event-member-summary {
+        grid-template-columns: 1fr;
+    }
+
+    .event-confirmed-participants article > div:last-child {
+        justify-content: flex-start;
+    }
+}
+
+/* Pass 5: event-specific waiver signing */
+.event-waiver-admin-note {
+    display: grid;
+    gap: 0.25rem;
+    padding: 0.9rem 1rem;
+    border: 1px solid var(--event-border);
+    border-radius: 14px;
+    background: #f7f2e9;
+}
+
+    .event-waiver-admin-note span {
+        color: var(--event-muted);
+        font-size: 0.92rem;
+    }
+
+.event-participant-actions,
+.member-event-participant-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.55rem;
+}
+
+.button--small {
+    min-height: 36px;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.88rem;
+}
+
+.waiver-page {
+    min-height: 70vh;
+}
+
+.waiver-shell {
+    width: min(920px, 100%);
+}
+
+.waiver-shell--message,
+.waiver-page__header {
+    text-align: center;
+}
+
+.waiver-shell--message {
+    display: grid;
+    justify-items: center;
+    gap: 1rem;
+    padding: 4rem 1rem;
+}
+
+.waiver-page__header {
+    display: grid;
+    justify-items: center;
+    gap: 0.55rem;
+    margin-bottom: 1.5rem;
+}
+
+.waiver-page__icon {
+    display: grid;
+    width: 62px;
+    height: 62px;
+    place-items: center;
+    border-radius: 50%;
+    background: #181818;
+    color: #fff;
+}
+
+    .waiver-page__icon svg {
+        width: 30px;
+        height: 30px;
+    }
+
+.waiver-event-summary,
+.waiver-terms-card,
+.waiver-signer-card,
+.waiver-complete-card {
+    border: 1px solid var(--event-border);
+    border-radius: 20px;
+    background: #fff;
+    box-shadow: 0 18px 50px rgba(26, 22, 17, 0.08);
+}
+
+.waiver-event-summary {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+    padding: 1rem 1.15rem;
+    margin-bottom: 1.25rem;
+}
+
+    .waiver-event-summary > div {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.65rem;
+    }
+
+    .waiver-event-summary span {
+        display: grid;
+        gap: 0.2rem;
+        color: var(--event-muted);
+    }
+
+    .waiver-event-summary strong {
+        color: var(--event-text);
+    }
+
+.waiver-form {
+    display: grid;
+    gap: 1.25rem;
+}
+
+.waiver-terms-card,
+.waiver-signer-card {
+    padding: 1.35rem;
+}
+
+.waiver-terms-card__heading {
+    display: flex;
     align-items: flex-start;
-    flex-direction: column;
-  }
+    justify-content: space-between;
+    gap: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--event-border);
+}
 
-  .event-confirmation-card,
-  .event-member-summary {
-    grid-template-columns: 1fr;
-  }
+    .waiver-terms-card__heading > span {
+        white-space: nowrap;
+        color: var(--event-muted);
+        font-size: 0.9rem;
+    }
 
-  .event-confirmed-participants article > div:last-child {
-    justify-content: flex-start;
-  }
+.waiver-terms-copy {
+    max-height: 460px;
+    overflow-y: auto;
+    padding: 1.15rem 0.25rem 0.25rem 0;
+    white-space: pre-wrap;
+    line-height: 1.7;
+}
+
+.waiver-signer-card {
+    display: grid;
+    gap: 1rem;
+}
+
+.waiver-checkbox-row {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.9rem 1rem;
+    border: 1px solid var(--event-border);
+    border-radius: 14px;
+    background: #fbf8f2;
+}
+
+    .waiver-checkbox-row input {
+        width: 20px;
+        height: 20px;
+        margin-top: 0.1rem;
+    }
+
+.signature-pad {
+    display: grid;
+    gap: 0.65rem;
+}
+
+.signature-pad__heading {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+    .signature-pad__heading > div {
+        display: grid;
+        gap: 0.2rem;
+    }
+
+    .signature-pad__heading span,
+    .signature-pad > p,
+    .waiver-page__legal-note {
+        color: var(--event-muted);
+        font-size: 0.9rem;
+    }
+
+.signature-pad canvas {
+    width: 100%;
+    height: 220px;
+    border: 2px dashed #918779;
+    border-radius: 14px;
+    background: #fff;
+    cursor: crosshair;
+    touch-action: none;
+}
+
+.signature-pad.is-disabled canvas {
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.waiver-complete-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1.25rem;
+    margin: 1.25rem 0;
+}
+
+    .waiver-complete-card > svg {
+        flex: 0 0 auto;
+    }
+
+    .waiver-complete-card.is-warning {
+        background: #fff7df;
+    }
+
+.waiver-page__legal-note {
+    margin-top: 1.25rem;
+    text-align: center;
+}
+
+@media (max-width: 760px) {
+    .waiver-event-summary {
+        grid-template-columns: 1fr;
+    }
+
+    .waiver-terms-card__heading,
+    .signature-pad__heading {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .signature-pad canvas {
+        height: 180px;
+    }
+
+    .event-participant-actions,
+    .member-event-participant-actions {
+        justify-content: flex-start;
+    }
 }

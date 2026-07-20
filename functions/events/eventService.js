@@ -43,6 +43,38 @@ function requiredNonNegativeCents(value, fieldName) {
     return Math.round(number);
 }
 
+function waiverReady(waiver) {
+    return Boolean(
+        clean(waiver?.version, 80)
+        && clean(waiver?.title, 220)
+        && clean(waiver?.body, 30000)
+        && clean(waiver?.acknowledgement, 1500),
+    );
+}
+
+function sanitizeWaiver(rawWaiver, waiverRequired, status) {
+    const waiver = {
+        version: clean(rawWaiver?.version, 80),
+        title: clean(rawWaiver?.title, 220),
+        body: clean(rawWaiver?.body, 30000),
+        acknowledgement: clean(rawWaiver?.acknowledgement, 1500),
+        minorAcknowledgement: clean(
+            rawWaiver?.minorAcknowledgement
+            || 'I am the participant’s parent or legal guardian and am authorized to sign on their behalf.',
+            1500,
+        ),
+    };
+
+    if (waiverRequired && status === 'published' && !waiverReady(waiver)) {
+        throw new HttpsError(
+            'invalid-argument',
+            'Add the waiver version, title, attorney-approved waiver text, and acknowledgement before publishing the event.',
+        );
+    }
+
+    return waiver;
+}
+
 function serialize(value) {
     if (value == null) return value;
     if (value instanceof admin.firestore.Timestamp) return value.toDate().toISOString();
@@ -201,6 +233,7 @@ function publicEvent(snapshot) {
         pricePerParticipantCents: Number(event.pricePerParticipantCents || 0),
         memberDiscountEligible: event.memberDiscountEligible !== false,
         waiverRequired: event.waiverRequired !== false,
+        waiverReady: waiverReady(event.waiver || {}),
     });
 }
 
@@ -237,6 +270,8 @@ function sanitizeEvent(data, instructorUid) {
         data?.pricePerParticipantCents,
         'an event price per participant',
     );
+    const waiverRequired = data?.waiverRequired !== false;
+    const waiver = sanitizeWaiver(data?.waiver, waiverRequired, status);
 
     const registrationOpensAt = timestamp(
         data?.registrationOpensAt || new Date(),
@@ -280,7 +315,8 @@ function sanitizeEvent(data, instructorUid) {
         currency: clean(data?.currency || 'usd', 8).toLowerCase(),
         pricePerParticipantCents,
         memberDiscountEligible: data?.memberDiscountEligible !== false,
-        waiverRequired: data?.waiverRequired !== false,
+        waiverRequired,
+        waiver,
         updatedBy: instructorUid,
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     };
@@ -427,6 +463,7 @@ async function prepareEventReservation({
                 location: event.location || {},
                 waiverRequired: event.waiverRequired !== false,
             },
+            waiverSnapshot: event.waiver || null,
             createdAt: reservationSnapshot.data()?.createdAt || admin.firestore.FieldValue.serverTimestamp(),
             updatedAt: admin.firestore.FieldValue.serverTimestamp(),
         }, { merge: true });
@@ -530,6 +567,9 @@ async function ensureEventRegistrationFromOrder(orderId) {
             pricing: order.pricing || null,
             paymentStatus: 'paid',
             registrationStatus: 'confirmed',
+            waiverSnapshot: reservation.waiverSnapshot || event.waiver || null,
+            waiversRequiredCount: event.waiverRequired === false ? 0 : count,
+            waiversSignedCount: 0,
             waiverStatus: event.waiverRequired === false ? 'not_required' : 'pending',
             checkInStatus: 'not_checked_in',
             stripeCheckoutSessionId: order.stripeCheckoutSessionId || null,
@@ -566,6 +606,8 @@ async function ensureEventRegistrationFromOrder(orderId) {
         if (reservationSnapshot.exists) transaction.delete(reservationRef);
     });
 
+    const { ensureWaiversForRegistration } = require('./waiverService');
+    await ensureWaiversForRegistration(id);
     return id;
 }
 
@@ -582,13 +624,16 @@ async function authorizeRegistration(request, registration) {
 }
 
 async function participantsForRegistration(registrationId) {
+    const { ensureWaiversForRegistration, decorateParticipantsWithWaiverAccess } = require('./waiverService');
+    await ensureWaiversForRegistration(registrationId);
     const snapshot = await db.collection('eventParticipants')
         .where('registrationId', '==', registrationId)
         .limit(MAX_EVENT_PARTICIPANTS_PER_ORDER)
         .get();
-    return snapshot.docs
-        .map((item) => serialize({ id: item.id, ...item.data() }))
+    const participants = snapshot.docs
+        .map((item) => ({ id: item.id, ...item.data() }))
         .sort((left, right) => String(left.fullName || '').localeCompare(String(right.fullName || '')));
+    return decorateParticipantsWithWaiverAccess(participants);
 }
 
 async function handleGetEventRegistration(request) {

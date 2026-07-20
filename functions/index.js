@@ -220,6 +220,22 @@ exports.listEventsAdmin = onCall({
     timeoutSeconds: 60,
 }, async (request) => loadEventService().handleListEventsAdmin(request));
 
+function loadWaiverService() {
+    return require('./events/waiverService');
+}
+
+exports.getEventWaiver = onCall({
+    invoker: 'public',
+    memory: '256MiB',
+    timeoutSeconds: 30,
+}, async (request) => loadWaiverService().handleGetEventWaiver(request));
+
+exports.signEventWaiver = onCall({
+    invoker: 'public',
+    memory: '512MiB',
+    timeoutSeconds: 60,
+}, async (request) => loadWaiverService().handleSignEventWaiver(request));
+
 exports.wolfGuideChat = onCall({
     invoker: 'public',
     secrets: [geminiApiKey],

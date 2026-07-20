@@ -151,6 +151,15 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    match /eventWaivers/{waiverId} {
+      allow read: if isInstructor();
+      allow write: if false;
+    }
+
+    match /eventWaiverAccess/{accessId} {
+      allow read, write: if false;
+    }
+
     match /stripeEvents/{eventId} {
       allow read, write: if false;
     }

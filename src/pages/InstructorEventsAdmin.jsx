@@ -74,6 +74,12 @@ function validateDraft(draft) {
     if (pricePerParticipantCents == null) {
         return 'Enter a price of 0 or greater. Use 0 for a free event.';
     }
+    if (draft.waiverRequired && draft.status === 'published') {
+        if (!String(draft.waiverVersion || '').trim()) return 'Enter a waiver version before publishing.';
+        if (!String(draft.waiverTitle || '').trim()) return 'Enter a waiver title before publishing.';
+        if (!String(draft.waiverBody || '').trim()) return 'Paste the attorney-approved waiver text before publishing.';
+        if (!String(draft.waiverAcknowledgement || '').trim()) return 'Enter the waiver acknowledgement before publishing.';
+    }
 
     return '';
 }
@@ -103,6 +109,11 @@ function emptyEvent() {
         currency: 'usd',
         memberDiscountEligible: true,
         waiverRequired: true,
+        waiverVersion: '1',
+        waiverTitle: 'Event Participation Waiver',
+        waiverBody: '',
+        waiverAcknowledgement: 'I confirm that I have read and agree to the event waiver above.',
+        waiverMinorAcknowledgement: 'I am the participant’s parent or legal guardian and am authorized to sign on their behalf.',
     };
 }
 
@@ -128,6 +139,11 @@ function toDraft(event) {
         currency: event.currency || 'usd',
         memberDiscountEligible: event.memberDiscountEligible !== false,
         waiverRequired: event.waiverRequired !== false,
+        waiverVersion: event.waiver?.version || '1',
+        waiverTitle: event.waiver?.title || 'Event Participation Waiver',
+        waiverBody: event.waiver?.body || '',
+        waiverAcknowledgement: event.waiver?.acknowledgement || 'I confirm that I have read and agree to the event waiver above.',
+        waiverMinorAcknowledgement: event.waiver?.minorAcknowledgement || 'I am the participant’s parent or legal guardian and am authorized to sign on their behalf.',
     };
 }
 
@@ -251,7 +267,14 @@ export default function InstructorEventsAdmin() {
                 pricePerParticipantCents: cents(draft.price),
                 currency: draft.currency,
                 memberDiscountEligible: draft.memberDiscountEligible,
-                waiverRequired: draft.waiverRequired,
+                waiverRequired: true,
+                waiver: {
+                    version: draft.waiverVersion,
+                    title: draft.waiverTitle,
+                    body: draft.waiverBody,
+                    acknowledgement: draft.waiverAcknowledgement,
+                    minorAcknowledgement: draft.waiverMinorAcknowledgement,
+                },
             });
             await load();
             const eventId = result?.eventId || draft.id;
@@ -471,9 +494,57 @@ export default function InstructorEventsAdmin() {
                             <input type="checkbox" checked={draft.memberDiscountEligible} onChange={(event) => updateDraft({ memberDiscountEligible: event.target.checked })} />
                             Eligible for automatic member pricing
                         </label>
-                        <label className="checkbox-row">
-                            <input type="checkbox" checked={draft.waiverRequired} onChange={(event) => updateDraft({ waiverRequired: event.target.checked })} />
-                            Require a separate waiver for every participant
+                        <div className="events-admin-subheading"><ShieldCheck /><h3>Event waiver</h3></div>
+                        <div className="event-waiver-admin-note">
+                            <strong>A separate waiver is required for every participant.</strong>
+                            <span>Use attorney-approved language. Each signature is stored against this event and waiver version.</span>
+                        </div>
+                        <div className="form-row">
+                            <label>
+                                Waiver version
+                                <input
+                                    required={draft.status === 'published'}
+                                    value={draft.waiverVersion}
+                                    onChange={(event) => updateDraft({ waiverVersion: event.target.value })}
+                                    placeholder="1 or 2026-01"
+                                />
+                            </label>
+                            <label>
+                                Waiver title
+                                <input
+                                    required={draft.status === 'published'}
+                                    value={draft.waiverTitle}
+                                    onChange={(event) => updateDraft({ waiverTitle: event.target.value })}
+                                />
+                            </label>
+                        </div>
+                        <label>
+                            Attorney-approved waiver text
+                            <textarea
+                                required={draft.status === 'published'}
+                                rows="12"
+                                value={draft.waiverBody}
+                                onChange={(event) => updateDraft({ waiverBody: event.target.value })}
+                                placeholder="Paste the complete waiver language here."
+                            />
+                        </label>
+                        <label>
+                            Adult participant acknowledgement
+                            <textarea
+                                required={draft.status === 'published'}
+                                rows="2"
+                                value={draft.waiverAcknowledgement}
+                                onChange={(event) => updateDraft({ waiverAcknowledgement: event.target.value })}
+                            />
+                        </label>
+                        <label>
+                            Parent or guardian acknowledgement
+                            <textarea
+                                required={draft.status === 'published'}
+                                rows="2"
+                                value={draft.waiverMinorAcknowledgement}
+                                onChange={(event) => updateDraft({ waiverMinorAcknowledgement: event.target.value })}
+                            />
                         </label>
 
                         <button className="button" type="submit" disabled={busy}>

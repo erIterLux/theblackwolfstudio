@@ -2,6 +2,7 @@ import {
     CalendarCheck2,
     CheckCircle2,
     Clock3,
+    Copy,
     Home,
     ShieldCheck,
     UserCheck,
@@ -24,6 +25,15 @@ function formatDateTime(value) {
     });
 }
 
+function readableStatus(value) {
+    return String(value || '').replaceAll('_', ' ');
+}
+
+function waiverPath(participant) {
+    const token = participant?.waiverAccessToken || '';
+    return `/events/waiver/${encodeURIComponent(participant.id)}${token ? `?token=${encodeURIComponent(token)}` : ''}`;
+}
+
 export default function EventSuccessPage() {
     const [searchParams] = useSearchParams();
     const orderId = searchParams.get('order_id') || '';
@@ -42,6 +52,7 @@ export default function EventSuccessPage() {
     const [participants, setParticipants] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const [copiedId, setCopiedId] = useState('');
 
     useEffect(() => {
         if (!tokenFromUrl) return;
@@ -104,6 +115,14 @@ export default function EventSuccessPage() {
 
     const paid = order?.paymentStatus === 'paid';
     const freeRegistration = paid && Number(order?.pricing?.totalCents || 0) === 0;
+    const signedCount = participants.filter((participant) => participant.waiverStatus === 'signed').length;
+
+    const copyWaiverLink = async (participant) => {
+        const url = new URL(waiverPath(participant), window.location.origin).toString();
+        await navigator.clipboard.writeText(url);
+        setCopiedId(participant.id);
+        window.setTimeout(() => setCopiedId(''), 1800);
+    };
 
     return (
         <section className="section section--light event-success-page">
@@ -153,7 +172,7 @@ export default function EventSuccessPage() {
                             </div>
                             <div>
                                 <span>2</span>
-                                <div><strong>Event waiver</strong><p>Required separately for each person</p></div>
+                                <div><strong>Event waiver</strong><p>{signedCount} of {participants.length} signed</p></div>
                                 <ShieldCheck aria-hidden="true" />
                             </div>
                             <div>
@@ -165,19 +184,41 @@ export default function EventSuccessPage() {
 
                         <div className="event-confirmed-participants">
                             <p className="footer-heading">Registered participants</p>
-                            {participants.map((participant) => (
-                                <article key={participant.id}>
-                                    <div>
-                                        <strong>{participant.fullName}</strong>
-                                        <span>{participant.email}</span>
-                                    </div>
-                                    <div>
-                                        <span className="event-person-status is-confirmed">Registered</span>
-                                        <span className="event-person-status is-pending">Waiver pending</span>
-                                        <span className="event-person-status is-neutral">Not checked in</span>
-                                    </div>
-                                </article>
-                            ))}
+                            {participants.map((participant) => {
+                                const canOpen = participant.waiverStatus === 'pending' && participant.waiverAccessToken;
+                                return (
+                                    <article key={participant.id}>
+                                        <div>
+                                            <strong>{participant.fullName}</strong>
+                                            <span>{participant.email}</span>
+                                        </div>
+                                        <div className="event-participant-actions">
+                                            <span className="event-person-status is-confirmed">Registered</span>
+                                            <span className={`event-person-status${participant.waiverStatus === 'signed' ? ' is-confirmed' : ' is-pending'}`}>
+                                                Waiver {readableStatus(participant.waiverStatus)}
+                                            </span>
+                                            <span className="event-person-status is-neutral">Not checked in</span>
+                                            {canOpen && (
+                                                <>
+                                                    <Link className="button button--small" to={waiverPath(participant)}>
+                                                        Sign waiver
+                                                    </Link>
+                                                    <button
+                                                        className="text-link"
+                                                        type="button"
+                                                        onClick={() => copyWaiverLink(participant)}
+                                                    >
+                                                        <Copy size={15} /> {copiedId === participant.id ? 'Copied' : 'Copy signing link'}
+                                                    </button>
+                                                </>
+                                            )}
+                                            {participant.waiverStatus === 'setup_required' && (
+                                                <small>The instructor must finish the waiver setup.</small>
+                                            )}
+                                        </div>
+                                    </article>
+                                );
+                            })}
                         </div>
                     </>
                 )}
