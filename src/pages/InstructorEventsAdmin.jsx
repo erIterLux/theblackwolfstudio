@@ -14,6 +14,7 @@ import {
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import useStudioRole from '../hooks/useStudioRole';
+import { BLACK_WOLF_EVENT_WAIVER, standardBlackWolfWaiverFields } from '../config/blackWolfEventWaiver';
 import { listEventsAdmin, saveEvent } from '../services/events';
 
 function toLocalInput(value) {
@@ -77,7 +78,7 @@ function validateDraft(draft) {
     if (draft.waiverRequired && draft.status === 'published') {
         if (!String(draft.waiverVersion || '').trim()) return 'Enter a waiver version before publishing.';
         if (!String(draft.waiverTitle || '').trim()) return 'Enter a waiver title before publishing.';
-        if (!String(draft.waiverBody || '').trim()) return 'Paste the attorney-approved waiver text before publishing.';
+        if (!String(draft.waiverBody || '').trim()) return 'The Black Wolf Studio waiver text is required before publishing.';
         if (!String(draft.waiverAcknowledgement || '').trim()) return 'Enter the waiver acknowledgement before publishing.';
     }
 
@@ -109,11 +110,7 @@ function emptyEvent() {
         currency: 'usd',
         memberDiscountEligible: true,
         waiverRequired: true,
-        waiverVersion: '1',
-        waiverTitle: 'Event Participation Waiver',
-        waiverBody: '',
-        waiverAcknowledgement: 'I confirm that I have read and agree to the event waiver above.',
-        waiverMinorAcknowledgement: 'I am the participant’s parent or legal guardian and am authorized to sign on their behalf.',
+        ...standardBlackWolfWaiverFields(),
     };
 }
 
@@ -139,11 +136,11 @@ function toDraft(event) {
         currency: event.currency || 'usd',
         memberDiscountEligible: event.memberDiscountEligible !== false,
         waiverRequired: event.waiverRequired !== false,
-        waiverVersion: event.waiver?.version || '1',
-        waiverTitle: event.waiver?.title || 'Event Participation Waiver',
-        waiverBody: event.waiver?.body || '',
-        waiverAcknowledgement: event.waiver?.acknowledgement || 'I confirm that I have read and agree to the event waiver above.',
-        waiverMinorAcknowledgement: event.waiver?.minorAcknowledgement || 'I am the participant’s parent or legal guardian and am authorized to sign on their behalf.',
+        waiverVersion: event.waiver?.version || BLACK_WOLF_EVENT_WAIVER.version,
+        waiverTitle: event.waiver?.title || BLACK_WOLF_EVENT_WAIVER.title,
+        waiverBody: event.waiver?.body || BLACK_WOLF_EVENT_WAIVER.body,
+        waiverAcknowledgement: event.waiver?.acknowledgement || BLACK_WOLF_EVENT_WAIVER.acknowledgement,
+        waiverMinorAcknowledgement: event.waiver?.minorAcknowledgement || BLACK_WOLF_EVENT_WAIVER.minorAcknowledgement,
     };
 }
 
@@ -202,6 +199,25 @@ export default function InstructorEventsAdmin() {
     );
 
     const updateDraft = (patch) => setDraft((current) => ({ ...current, ...patch }));
+
+    const applyStandardWaiver = () => {
+        const currentBody = String(draft.waiverBody || '').trim();
+        const standardBody = BLACK_WOLF_EVENT_WAIVER.body.trim();
+        const replacingCustomWaiver = currentBody && currentBody !== standardBody;
+
+        if (
+            replacingCustomWaiver
+            && !window.confirm(
+                'Replace the current waiver fields with The Black Wolf Studio standard New Jersey waiver?',
+            )
+        ) {
+            return;
+        }
+
+        updateDraft(standardBlackWolfWaiverFields());
+        setMessage('The Black Wolf Studio standard waiver was applied. Save the event to keep it.');
+        setMessageType('success');
+    };
 
     const updateStart = (nextStart) => {
         setDraft((current) => {
@@ -497,7 +513,14 @@ export default function InstructorEventsAdmin() {
                         <div className="events-admin-subheading"><ShieldCheck /><h3>Event waiver</h3></div>
                         <div className="event-waiver-admin-note">
                             <strong>A separate waiver is required for every participant.</strong>
-                            <span>Use attorney-approved language. Each signature is stored against this event and waiver version.</span>
+                            <span>The standard waiver is based on the New Jersey language supplied for The Black Wolf Studio. Each signature is stored against this event and waiver version.</span>
+                            <button
+                                className="button button--dark-ghost"
+                                type="button"
+                                onClick={applyStandardWaiver}
+                            >
+                                <ShieldCheck size={17} /> Use Black Wolf standard waiver
+                            </button>
                         </div>
                         <div className="form-row">
                             <label>
@@ -519,13 +542,13 @@ export default function InstructorEventsAdmin() {
                             </label>
                         </div>
                         <label>
-                            Attorney-approved waiver text
+                            The Black Wolf Studio waiver text
                             <textarea
                                 required={draft.status === 'published'}
                                 rows="12"
                                 value={draft.waiverBody}
                                 onChange={(event) => updateDraft({ waiverBody: event.target.value })}
-                                placeholder="Paste the complete waiver language here."
+                                placeholder="The Black Wolf Studio standard waiver will appear here."
                             />
                         </label>
                         <label>

@@ -60,7 +60,7 @@ function sanitizeWaiver(rawWaiver, waiverRequired, status) {
         acknowledgement: clean(rawWaiver?.acknowledgement, 1500),
         minorAcknowledgement: clean(
             rawWaiver?.minorAcknowledgement
-            || 'I am the participant’s parent or legal guardian and am authorized to sign on their behalf.',
+            || 'I certify that I am the participant’s parent or legal guardian and am authorized to sign on the participant’s behalf. I have read and understand all of the terms of this Release, consent to the minor participant’s participation in the Activities, and agree to the Release on the minor participant’s behalf and in my individual capacity to the fullest extent permitted by law.',
             1500,
         ),
     };
