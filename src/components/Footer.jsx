@@ -16,7 +16,7 @@ export default function Footer() {
                     <p className="footer-heading">Explore</p>
                     <div className="footer-links">
                         <Link to="/programs">Programs</Link>
-                        <Link to="/schedule">Schedule</Link>
+                        <Link to="/events">Events</Link>
                         <Link to="/private-training">Private training</Link>
                         <Link to="/membership">Membership</Link>
                         <Link to="/login">Member login</Link>

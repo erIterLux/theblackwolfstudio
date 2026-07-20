@@ -182,6 +182,44 @@ exports.adjustPrivateTrainingCredits = onCall({
     timeoutSeconds: 30,
 }, async (request) => loadPrivateTrainingService().handleAdjustPrivateTrainingCredits(request));
 
+
+// ============================================================
+// Events and individual participant registration
+// ============================================================
+function loadEventService() {
+    return require('./events/eventService');
+}
+
+exports.listPublishedEvents = onCall({
+    invoker: 'public',
+    memory: '256MiB',
+    timeoutSeconds: 30,
+}, async () => loadEventService().handleListPublishedEvents());
+
+exports.saveEvent = onCall({
+    invoker: 'public',
+    memory: '256MiB',
+    timeoutSeconds: 30,
+}, async (request) => loadEventService().handleSaveEvent(request));
+
+exports.getEventRegistration = onCall({
+    invoker: 'public',
+    memory: '256MiB',
+    timeoutSeconds: 30,
+}, async (request) => loadEventService().handleGetEventRegistration(request));
+
+exports.listMyEventRegistrations = onCall({
+    invoker: 'public',
+    memory: '256MiB',
+    timeoutSeconds: 30,
+}, async (request) => loadEventService().handleListMyEventRegistrations(request));
+
+exports.listEventsAdmin = onCall({
+    invoker: 'public',
+    memory: '512MiB',
+    timeoutSeconds: 60,
+}, async (request) => loadEventService().handleListEventsAdmin(request));
+
 exports.wolfGuideChat = onCall({
     invoker: 'public',
     secrets: [geminiApiKey],

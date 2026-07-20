@@ -128,6 +128,29 @@ service cloud.firestore {
       }
     }
 
+    match /events/{eventId} {
+      allow read: if resource.data.status == 'published' || isInstructor();
+      allow write: if false;
+    }
+
+    match /eventReservations/{reservationId} {
+      allow read, write: if false;
+    }
+
+    match /eventRegistrations/{registrationId} {
+      allow read: if isInstructor()
+        || (signedIn() && resource.data.uid == request.auth.uid);
+      allow write: if false;
+    }
+
+    match /eventParticipants/{participantId} {
+      allow read: if isInstructor()
+        || (signedIn()
+          && (resource.data.purchaserUid == request.auth.uid
+            || resource.data.memberUid == request.auth.uid));
+      allow write: if false;
+    }
+
     match /stripeEvents/{eventId} {
       allow read, write: if false;
     }

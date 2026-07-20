@@ -6,7 +6,7 @@ import Logo from './Logo';
 
 const navItems = [
     ['Programs', '/programs'],
-    ['Schedule', '/schedule'],
+    ['Events', '/events'],
     ['Private Training', '/private-training'],
     ['Membership', '/membership'],
     ['Contact', '/contact'],

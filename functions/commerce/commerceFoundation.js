@@ -393,6 +393,7 @@ async function handleCreateStudioCheckout(request, dependencies = {}) {
     const purchaser = sanitizePurchaser(request.data?.purchaser, request);
     let participants = [];
     let privateTraining = null;
+    let eventReservation = null;
 
     if (offer.purchaseType === 'private_training') {
         const {
@@ -412,6 +413,7 @@ async function handleCreateStudioCheckout(request, dependencies = {}) {
     if (!origin) throw new HttpsError('failed-precondition', 'APP_ORIGIN is not configured.');
 
     const orderRef = db.collection('studioOrders').doc();
+
     const accessToken = createAccessToken();
     const stripe = stripeClient(dependencies.stripeSecretKey);
     const stripeCustomerId = await findOrCreateStripeCustomer({
@@ -419,6 +421,19 @@ async function handleCreateStudioCheckout(request, dependencies = {}) {
         uid: request.auth?.uid || null,
         purchaser,
     });
+
+    if (offer.purchaseType === 'event') {
+        const { prepareEventReservation } = require('../events/eventService');
+        eventReservation = await prepareEventReservation({
+            eventId: offer.id,
+            orderId: orderRef.id,
+            uid: request.auth?.uid || null,
+            purchaser,
+            quantity: quote.quantity,
+            rawParticipants: request.data?.participants,
+        });
+        participants = eventReservation.participants;
+    }
 
     const order = {
         id: orderRef.id,
@@ -431,6 +446,15 @@ async function handleCreateStudioCheckout(request, dependencies = {}) {
         participantCount: participants.length || quote.quantity,
         participants,
         privateTraining,
+        event: eventReservation ? {
+            eventId: offer.id,
+            startsAt: eventReservation.event.startsAt || null,
+            endsAt: eventReservation.event.endsAt || null,
+            timezone: eventReservation.event.timezone || 'America/New_York',
+            location: eventReservation.event.location || {},
+            waiverRequired: eventReservation.event.waiverRequired !== false,
+            reservationExpiresAt: eventReservation.expiresAt,
+        } : null,
         pricingModel: quote.pricingModel,
         currency: quote.currency,
         pricing: {
@@ -446,8 +470,6 @@ async function handleCreateStudioCheckout(request, dependencies = {}) {
         createdAt: admin.firestore.FieldValue.serverTimestamp(),
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     };
-
-    await orderRef.set(order);
 
     const sessionPayload = {
         mode: 'payment',
@@ -490,10 +512,14 @@ async function handleCreateStudioCheckout(request, dependencies = {}) {
                 offerId: offer.id,
             },
         },
+        ...(offer.purchaseType === 'event' ? {
+            expires_at: Math.floor(Date.now() / 1000) + 35 * 60,
+        } : {}),
     };
 
     let session;
     try {
+        await orderRef.set(order);
         session = await stripe.checkout.sessions.create(
             sessionPayload,
             { idempotencyKey: `studio-order-${orderRef.id}` },
@@ -504,6 +530,10 @@ async function handleCreateStudioCheckout(request, dependencies = {}) {
             checkoutError: clean(error?.message, 800),
             updatedAt: admin.firestore.FieldValue.serverTimestamp(),
         }, { merge: true });
+        if (offer.purchaseType === 'event') {
+            const { releaseEventReservation } = require('../events/eventService');
+            await releaseEventReservation(orderRef.id, 'checkout_failed');
+        }
         throw error;
     }
 
@@ -770,6 +800,19 @@ async function handleOneTimeCheckoutEvent({ eventType, session }) {
             ensurePrivateTrainingPurchaseFromOrder,
         } = require('../privateTraining/privateTrainingService');
         await ensurePrivateTrainingPurchaseFromOrder(orderId);
+    }
+
+    if (purchaseType === 'event') {
+        const {
+            ensureEventRegistrationFromOrder,
+            releaseEventReservation,
+        } = require('../events/eventService');
+
+        if (paymentStatus === 'paid') {
+            await ensureEventRegistrationFromOrder(orderId);
+        } else if (paymentStatus === 'failed' || paymentStatus === 'expired') {
+            await releaseEventReservation(orderId, paymentStatus);
+        }
     }
 
     return true;

@@ -5,6 +5,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import './styles/progression.css';
 import './styles/content.css';
 import './styles/private-training.css';
+import './styles/events.css';
 
 const ContactPage = lazy(() => import('./pages/ContactPage'));
 const HomePage = lazy(() => import('./pages/HomePage'));
@@ -13,6 +14,10 @@ const MemberDashboard = lazy(() => import('./pages/MemberDashboard'));
 const MembershipPage = lazy(() => import('./pages/MembershipPage'));
 const PrivateTrainingPage = lazy(() => import('./pages/PrivateTrainingPage'));
 const PrivateTrainingSuccessPage = lazy(() => import('./pages/PrivateTrainingSuccessPage'));
+const EventsPage = lazy(() => import('./pages/EventsPage'));
+const EventSuccessPage = lazy(() => import('./pages/EventSuccessPage'));
+const MemberEventsPage = lazy(() => import('./pages/MemberEventsPage'));
+const InstructorEventsAdmin = lazy(() => import('./pages/InstructorEventsAdmin'));
 const MemberPrivateTrainingPage = lazy(() => import('./pages/MemberPrivateTrainingPage'));
 const InstructorPrivateTrainingAdmin = lazy(() => import('./pages/InstructorPrivateTrainingAdmin'));
 const ProgramsPage = lazy(() => import('./pages/ProgramsPage'));
@@ -20,7 +25,6 @@ const ProgressionPage = lazy(() => import('./pages/ProgressionPage'));
 const InstructorProgressionAdmin = lazy(() => import('./pages/InstructorProgressionAdmin'));
 const InstructorContentAdmin = lazy(() => import('./pages/InstructorContentAdmin'));
 const MemberLibraryPage = lazy(() => import('./pages/MemberLibraryPage'));
-const SchedulePage = lazy(() => import('./pages/SchedulePage'));
 
 function RouteLoader() {
     return <div className="page-loader">Loading…</div>;
@@ -33,7 +37,9 @@ export default function App() {
                 <Route element={<AppShell />}>
                     <Route index element={<HomePage />} />
                     <Route path="programs" element={<ProgramsPage />} />
-                    <Route path="schedule" element={<SchedulePage />} />
+                    <Route path="schedule" element={<EventsPage />} />
+                    <Route path="events" element={<EventsPage />} />
+                    <Route path="events/success" element={<EventSuccessPage />} />
                     <Route path="membership" element={<MembershipPage />} />
                     <Route path="private-training" element={<PrivateTrainingPage />} />
                     <Route path="private-training/success" element={<PrivateTrainingSuccessPage />} />
@@ -64,6 +70,14 @@ export default function App() {
                         }
                     />
                     <Route
+                        path="member/events"
+                        element={
+                            <ProtectedRoute>
+                                <MemberEventsPage />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
                         path="member/private-training"
                         element={
                             <ProtectedRoute>
@@ -84,6 +98,14 @@ export default function App() {
                         element={
                             <ProtectedRoute>
                                 <InstructorContentAdmin />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="instructor/events"
+                        element={
+                            <ProtectedRoute>
+                                <InstructorEventsAdmin />
                             </ProtectedRoute>
                         }
                     />

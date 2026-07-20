@@ -12,6 +12,7 @@ import { Link } from 'react-router-dom';
 import MembershipStatusCard from '../components/membership/MembershipStatusCard';
 import ProgressionSummaryCard from '../components/progression/ProgressionSummaryCard';
 import PrivateTrainingSummaryCard from '../components/private-training/PrivateTrainingSummaryCard';
+import EventSummaryCard from '../components/events/EventSummaryCard';
 import WolfGuidePanel from '../components/wolf-guide/WolfGuidePanel';
 import { useAuth } from '../context/AuthContext';
 import useStudioRole from '../hooks/useStudioRole';
@@ -51,6 +52,8 @@ export default function MemberDashboard() {
                     <MembershipStatusCard />
 
                     <PrivateTrainingSummaryCard />
+
+                    <EventSummaryCard />
 
                     <article className="dashboard-card dashboard-card--library">
                         <div className="dashboard-card__heading">
@@ -152,6 +155,20 @@ export default function MemberDashboard() {
                                     <p>Create packages, record completed sessions, and adjust credits with an audit note.</p>
                                     <Link to="/instructor/private-training" className="text-link">
                                         Manage private training <ArrowRight size={17} aria-hidden="true" />
+                                    </Link>
+                                </article>
+
+                                <article className="dashboard-card dashboard-card--instructor">
+                                    <div className="dashboard-card__heading">
+                                        <CalendarClock aria-hidden="true" />
+                                        <div>
+                                            <p className="eyebrow">Events</p>
+                                            <h3>Dates and registrations</h3>
+                                        </div>
+                                    </div>
+                                    <p>Create events and track every paid participant as an individual registration.</p>
+                                    <Link to="/instructor/events" className="text-link">
+                                        Manage events <ArrowRight size={17} aria-hidden="true" />
                                     </Link>
                                 </article>
                             </div>
