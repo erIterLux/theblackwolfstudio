@@ -4,6 +4,7 @@ import {
     CalendarClock,
     HeartPulse,
     TicketPercent,
+    ReceiptText,
     LogOut,
     Settings2,
     UserCog,
@@ -14,6 +15,7 @@ import MembershipStatusCard from '../components/membership/MembershipStatusCard'
 import ProgressionSummaryCard from '../components/progression/ProgressionSummaryCard';
 import PrivateTrainingSummaryCard from '../components/private-training/PrivateTrainingSummaryCard';
 import EventSummaryCard from '../components/events/EventSummaryCard';
+import PurchaseSummaryCard from '../components/purchases/PurchaseSummaryCard';
 import WolfGuidePanel from '../components/wolf-guide/WolfGuidePanel';
 import { useAuth } from '../context/AuthContext';
 import useStudioRole from '../hooks/useStudioRole';
@@ -55,6 +57,8 @@ export default function MemberDashboard() {
                     <PrivateTrainingSummaryCard />
 
                     <EventSummaryCard />
+
+                    <PurchaseSummaryCard />
 
                     <article className="dashboard-card dashboard-card--library">
                         <div className="dashboard-card__heading">
@@ -174,6 +178,20 @@ export default function MemberDashboard() {
                                     </p>
                                     <Link to="/instructor/discounts" className="text-link">
                                         Manage discounts <ArrowRight size={17} aria-hidden="true" />
+                                    </Link>
+                                </article>
+
+                                <article className="dashboard-card dashboard-card--instructor">
+                                    <div className="dashboard-card__heading">
+                                        <ReceiptText aria-hidden="true" />
+                                        <div>
+                                            <p className="eyebrow">Commerce</p>
+                                            <h3>Orders and payments</h3>
+                                        </div>
+                                    </div>
+                                    <p>Review membership invoices, one-time purchases, discounts, and receipt availability.</p>
+                                    <Link to="/instructor/commerce/orders" className="text-link">
+                                        View orders <ArrowRight size={17} aria-hidden="true" />
                                     </Link>
                                 </article>
 

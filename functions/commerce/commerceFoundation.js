@@ -818,7 +818,7 @@ async function incrementDiscountRedemption(discountId) {
     }, { merge: true });
 }
 
-async function handleOneTimeCheckoutEvent({ eventType, session }) {
+async function handleOneTimeCheckoutEvent({ eventType, session, stripe = null }) {
     const purchaseType = clean(session?.metadata?.purchaseType, 40);
     const orderId = clean(session?.metadata?.orderId, 160);
     if (!PURCHASE_TYPES.has(purchaseType) || !orderId) return false;
@@ -866,6 +866,11 @@ async function handleOneTimeCheckoutEvent({ eventType, session }) {
 
     if (firstPaidTransition && order.pricing?.discount?.source === 'promotion') {
         await incrementDiscountRedemption(order.pricing.discount.discountId);
+    }
+
+    if (paymentStatus === 'paid' && stripe) {
+        const { syncOneTimeReceipt } = require('../purchases/purchaseHistoryService');
+        await syncOneTimeReceipt({ stripe, session, orderRef, order: { id: orderId, ...order } });
     }
 
     if (paymentStatus === 'paid' && purchaseType === 'private_training') {

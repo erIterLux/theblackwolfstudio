@@ -134,6 +134,38 @@ exports.listCommerceFoundationAdmin = onCall({
 
 
 // ============================================================
+// Purchase history, receipts, and commerce reporting
+// ============================================================
+function loadPurchaseHistoryService() {
+    return require('./purchases/purchaseHistoryService');
+}
+
+exports.listMyPurchaseHistory = onCall({
+    invoker: 'public',
+    secrets: [stripeSecretKey],
+    memory: '512MiB',
+    timeoutSeconds: 90,
+}, async (request) => loadPurchaseHistoryService().handleListMyPurchaseHistory(request, {
+    stripeSecretKey,
+}));
+
+exports.getPurchaseReceipt = onCall({
+    invoker: 'public',
+    secrets: [stripeSecretKey],
+    memory: '256MiB',
+    timeoutSeconds: 60,
+}, async (request) => loadPurchaseHistoryService().handleGetPurchaseReceipt(request, {
+    stripeSecretKey,
+}));
+
+exports.listCommerceOrdersAdmin = onCall({
+    invoker: 'public',
+    memory: '512MiB',
+    timeoutSeconds: 60,
+}, async (request) => loadPurchaseHistoryService().handleListCommerceOrdersAdmin(request));
+
+
+// ============================================================
 // Private training packages and session credits
 // ============================================================
 function loadPrivateTrainingService() {
@@ -251,7 +283,7 @@ exports.signEventWaiver = onCall({
 exports.wolfGuideChat = onCall({
     invoker: 'public',
     secrets: [geminiApiKey],
-    memory: '1024MiB',
+    memory: '512MiB',
     timeoutSeconds: 120,
 }, async (request) => {
     const { handleWolfGuideChat } = require('./ai/wolfGuide');

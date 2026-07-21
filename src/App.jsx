@@ -7,6 +7,7 @@ import './styles/content.css';
 import './styles/private-training.css';
 import './styles/events.css';
 import './styles/commerce-admin.css';
+import './styles/purchases.css';
 
 const ContactPage = lazy(() => import('./pages/ContactPage'));
 const HomePage = lazy(() => import('./pages/HomePage'));
@@ -22,6 +23,9 @@ const MemberEventsPage = lazy(() => import('./pages/MemberEventsPage'));
 const InstructorEventsAdmin = lazy(() => import('./pages/InstructorEventsAdmin'));
 const InstructorEventCheckIn = lazy(() => import('./pages/InstructorEventCheckIn'));
 const InstructorDiscountsAdmin = lazy(() => import('./pages/InstructorDiscountsAdmin'));
+const MemberPurchasesPage = lazy(() => import('./pages/MemberPurchasesPage'));
+const OrderDetailsPage = lazy(() => import('./pages/OrderDetailsPage'));
+const InstructorOrdersAdmin = lazy(() => import('./pages/InstructorOrdersAdmin'));
 const MemberPrivateTrainingPage = lazy(() => import('./pages/MemberPrivateTrainingPage'));
 const InstructorPrivateTrainingAdmin = lazy(() => import('./pages/InstructorPrivateTrainingAdmin'));
 const ProgramsPage = lazy(() => import('./pages/ProgramsPage'));
@@ -48,6 +52,7 @@ export default function App() {
                     <Route path="membership" element={<MembershipPage />} />
                     <Route path="private-training" element={<PrivateTrainingPage />} />
                     <Route path="private-training/success" element={<PrivateTrainingSuccessPage />} />
+                    <Route path="order/:orderId" element={<OrderDetailsPage />} />
                     <Route path="contact" element={<ContactPage />} />
                     <Route path="login" element={<LoginPage />} />
                     <Route
@@ -91,6 +96,14 @@ export default function App() {
                         }
                     />
                     <Route
+                        path="member/purchases"
+                        element={
+                            <ProtectedRoute>
+                                <MemberPurchasesPage />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
                         path="instructor/progression"
                         element={
                             <ProtectedRoute>
@@ -127,6 +140,14 @@ export default function App() {
                         element={
                             <ProtectedRoute>
                                 <InstructorDiscountsAdmin />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="instructor/commerce/orders"
+                        element={
+                            <ProtectedRoute>
+                                <InstructorOrdersAdmin />
                             </ProtectedRoute>
                         }
                     />

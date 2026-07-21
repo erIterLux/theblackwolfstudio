@@ -224,7 +224,12 @@ export default function EventSuccessPage() {
                 )}
 
                 <div className="purchase-success-actions">
-                    <Link className="button" to="/events">
+                    {orderId && (
+                        <Link className="button" to={`/order/${encodeURIComponent(orderId)}`}>
+                            View purchase details
+                        </Link>
+                    )}
+                    <Link className="button button--dark-ghost" to="/events">
                         View more events
                     </Link>
                     <Link className="button button--dark-ghost" to="/">

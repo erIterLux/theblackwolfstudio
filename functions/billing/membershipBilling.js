@@ -311,6 +311,7 @@ async function handleStripeWebhook(req, res, dependencies = {}) {
                 const handledOneTimePurchase = await handleOneTimeCheckoutEvent({
                     eventType: event.type,
                     session,
+                    stripe,
                 });
 
                 if (!handledOneTimePurchase && event.type === 'checkout.session.completed') {
@@ -337,10 +338,20 @@ async function handleStripeWebhook(req, res, dependencies = {}) {
                 break;
             case 'invoice.paid': {
                 const invoice = event.data.object;
+                const uid = await findUidForStripeObject(invoice);
                 const subscriptionId = typeof invoice.subscription === 'string' ? invoice.subscription : invoice.subscription?.id;
+                let membership = null;
                 if (subscriptionId) {
                     const subscription = await stripe.subscriptions.retrieve(subscriptionId);
-                    await syncSubscription({ stripe, subscription, eventType: event.type, priceMap });
+                    membership = await syncSubscription({ stripe, subscription, eventType: event.type, priceMap });
+                }
+                if (uid) {
+                    if (!membership) {
+                        const snapshot = await membershipRef(uid).get();
+                        membership = snapshot.data() || {};
+                    }
+                    const { recordMembershipInvoice } = require('../purchases/purchaseHistoryService');
+                    await recordMembershipInvoice({ invoice, uid, membership });
                 }
                 break;
             }
@@ -352,6 +363,8 @@ async function handleStripeWebhook(req, res, dependencies = {}) {
                     const snap = await ref.get();
                     const member = snap.data() || {};
                     await ref.set({ status: 'past_due', active: false, wolfGuideAccess: false, updatedAt: admin.firestore.FieldValue.serverTimestamp() }, { merge: true });
+                    const { recordMembershipInvoice } = require('../purchases/purchaseHistoryService');
+                    await recordMembershipInvoice({ invoice, uid, membership: member });
                     await safeMembershipEmail({
                         type: 'paymentFailed',
                         to: member.email || invoice.customer_email,
