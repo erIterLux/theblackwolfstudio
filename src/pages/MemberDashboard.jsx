@@ -2,6 +2,7 @@ import {
     ArrowRight,
     BookOpen,
     CalendarClock,
+    CalendarDays,
     HeartPulse,
     TicketPercent,
     ReceiptText,
@@ -154,12 +155,40 @@ export default function MemberDashboard() {
                                         <CalendarClock aria-hidden="true" />
                                         <div>
                                             <p className="eyebrow">Private training</p>
-                                            <h3>Packages and session credits</h3>
+                                            <h3>Booking calendar</h3>
                                         </div>
                                     </div>
-                                    <p>Create packages, record completed sessions, and adjust credits with an audit note.</p>
+                                    <p>Confirm sessions, reschedule bookings, and record completion or no-shows.</p>
+                                    <Link to="/instructor/private-training/calendar" className="text-link">
+                                        Open booking calendar <ArrowRight size={17} aria-hidden="true" />
+                                    </Link>
+                                </article>
+
+                                <article className="dashboard-card dashboard-card--instructor">
+                                    <div className="dashboard-card__heading">
+                                        <CalendarDays aria-hidden="true" />
+                                        <div>
+                                            <p className="eyebrow">Private training</p>
+                                            <h3>Availability</h3>
+                                        </div>
+                                    </div>
+                                    <p>Set recurring hours, booking notice, cancellation rules, and blocked dates.</p>
+                                    <Link to="/instructor/availability" className="text-link">
+                                        Manage availability <ArrowRight size={17} aria-hidden="true" />
+                                    </Link>
+                                </article>
+
+                                <article className="dashboard-card dashboard-card--instructor">
+                                    <div className="dashboard-card__heading">
+                                        <CalendarClock aria-hidden="true" />
+                                        <div>
+                                            <p className="eyebrow">Private training</p>
+                                            <h3>Packages and credits</h3>
+                                        </div>
+                                    </div>
+                                    <p>Create packages, review balances, and make documented credit adjustments.</p>
                                     <Link to="/instructor/private-training" className="text-link">
-                                        Manage private training <ArrowRight size={17} aria-hidden="true" />
+                                        Manage packages <ArrowRight size={17} aria-hidden="true" />
                                     </Link>
                                 </article>
 

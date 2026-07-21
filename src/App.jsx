@@ -8,6 +8,7 @@ import './styles/private-training.css';
 import './styles/events.css';
 import './styles/commerce-admin.css';
 import './styles/purchases.css';
+import './styles/private-booking.css';
 
 const ContactPage = lazy(() => import('./pages/ContactPage'));
 const HomePage = lazy(() => import('./pages/HomePage'));
@@ -28,6 +29,9 @@ const OrderDetailsPage = lazy(() => import('./pages/OrderDetailsPage'));
 const InstructorOrdersAdmin = lazy(() => import('./pages/InstructorOrdersAdmin'));
 const MemberPrivateTrainingPage = lazy(() => import('./pages/MemberPrivateTrainingPage'));
 const InstructorPrivateTrainingAdmin = lazy(() => import('./pages/InstructorPrivateTrainingAdmin'));
+const PrivateTrainingBookingPage = lazy(() => import('./pages/PrivateTrainingBookingPage'));
+const InstructorAvailabilityAdmin = lazy(() => import('./pages/InstructorAvailabilityAdmin'));
+const InstructorPrivateTrainingCalendar = lazy(() => import('./pages/InstructorPrivateTrainingCalendar'));
 const ProgramsPage = lazy(() => import('./pages/ProgramsPage'));
 const ProgressionPage = lazy(() => import('./pages/ProgressionPage'));
 const InstructorProgressionAdmin = lazy(() => import('./pages/InstructorProgressionAdmin'));
@@ -96,6 +100,14 @@ export default function App() {
                         }
                     />
                     <Route
+                        path="member/private-training/book"
+                        element={
+                            <ProtectedRoute>
+                                <PrivateTrainingBookingPage />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
                         path="member/purchases"
                         element={
                             <ProtectedRoute>
@@ -156,6 +168,22 @@ export default function App() {
                         element={
                             <ProtectedRoute>
                                 <InstructorPrivateTrainingAdmin />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="instructor/availability"
+                        element={
+                            <ProtectedRoute>
+                                <InstructorAvailabilityAdmin />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="instructor/private-training/calendar"
+                        element={
+                            <ProtectedRoute>
+                                <InstructorPrivateTrainingCalendar />
                             </ProtectedRoute>
                         }
                     />

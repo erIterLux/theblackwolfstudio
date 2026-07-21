@@ -128,6 +128,33 @@ service cloud.firestore {
       }
     }
 
+    match /instructorAvailability/{instructorUid} {
+      allow read: if isInstructor();
+      allow write: if false;
+
+      match /overrides/{overrideId} {
+        allow read: if isInstructor();
+        allow write: if false;
+      }
+    }
+
+    match /privateTrainingBookings/{bookingId} {
+      allow read: if isInstructor()
+        || (signedIn() && resource.data.uid == request.auth.uid);
+      allow write: if false;
+
+      match /history/{historyId} {
+        allow read: if isInstructor()
+          || (signedIn()
+            && get(/databases/$(database)/documents/privateTrainingBookings/$(bookingId)).data.uid == request.auth.uid);
+        allow write: if false;
+      }
+    }
+
+    match /privateTrainingBookingDays/{dayId} {
+      allow read, write: if false;
+    }
+
     match /events/{eventId} {
       allow read: if resource.data.status == 'published' || isInstructor();
       allow write: if false;

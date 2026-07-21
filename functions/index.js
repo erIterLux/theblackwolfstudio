@@ -1,6 +1,7 @@
 const admin = require('firebase-admin');
 const { onDocumentCreated, onDocumentWritten } = require('firebase-functions/v2/firestore');
 const { onCall, onRequest } = require('firebase-functions/v2/https');
+const { onSchedule } = require('firebase-functions/v2/scheduler');
 const { defineSecret, defineString } = require('firebase-functions/params');
 
 if (!admin.apps.length) admin.initializeApp();
@@ -213,6 +214,98 @@ exports.adjustPrivateTrainingCredits = onCall({
     memory: '256MiB',
     timeoutSeconds: 30,
 }, async (request) => loadPrivateTrainingService().handleAdjustPrivateTrainingCredits(request));
+
+
+// ============================================================
+// Private training booking, availability, and reminders
+// ============================================================
+function loadPrivateTrainingBookingService() {
+    return require('./privateTraining/bookingService');
+}
+
+exports.getMyInstructorAvailability = onCall({
+    invoker: 'public',
+    memory: '256MiB',
+    timeoutSeconds: 30,
+}, async (request) => loadPrivateTrainingBookingService().handleGetMyInstructorAvailability(request));
+
+exports.saveMyInstructorAvailability = onCall({
+    invoker: 'public',
+    memory: '256MiB',
+    timeoutSeconds: 30,
+}, async (request) => loadPrivateTrainingBookingService().handleSaveMyInstructorAvailability(request));
+
+exports.saveInstructorAvailabilityOverride = onCall({
+    invoker: 'public',
+    memory: '256MiB',
+    timeoutSeconds: 30,
+}, async (request) => loadPrivateTrainingBookingService().handleSaveInstructorAvailabilityOverride(request));
+
+exports.deleteInstructorAvailabilityOverride = onCall({
+    invoker: 'public',
+    memory: '256MiB',
+    timeoutSeconds: 30,
+}, async (request) => loadPrivateTrainingBookingService().handleDeleteInstructorAvailabilityOverride(request));
+
+exports.listPrivateTrainingAvailability = onCall({
+    invoker: 'public',
+    memory: '512MiB',
+    timeoutSeconds: 60,
+}, async (request) => loadPrivateTrainingBookingService().handleListPrivateTrainingAvailability(request));
+
+exports.createPrivateTrainingBooking = onCall({
+    invoker: 'public',
+    memory: '512MiB',
+    timeoutSeconds: 60,
+}, async (request) => loadPrivateTrainingBookingService().handleCreatePrivateTrainingBooking(request));
+
+exports.listMyPrivateTrainingBookings = onCall({
+    invoker: 'public',
+    memory: '256MiB',
+    timeoutSeconds: 30,
+}, async (request) => loadPrivateTrainingBookingService().handleListMyPrivateTrainingBookings(request));
+
+exports.listPrivateTrainingBookingsAdmin = onCall({
+    invoker: 'public',
+    memory: '512MiB',
+    timeoutSeconds: 60,
+}, async (request) => loadPrivateTrainingBookingService().handleListPrivateTrainingBookingsAdmin(request));
+
+exports.updatePrivateTrainingBooking = onCall({
+    invoker: 'public',
+    memory: '512MiB',
+    timeoutSeconds: 60,
+}, async (request) => loadPrivateTrainingBookingService().handleUpdatePrivateTrainingBooking(request));
+
+exports.notifyOnPrivateTrainingBookingWritten = onDocumentWritten({
+    document: 'privateTrainingBookings/{bookingId}',
+    secrets: [gmailEmail, gmailAppPassword],
+    retry: true,
+}, async (event) => {
+    const { handlePrivateTrainingBookingWritten } = require('./notifications/privateTrainingBookingEmails');
+    return handlePrivateTrainingBookingWritten(event, {
+        gmailEmail,
+        gmailAppPassword,
+        appOrigin: appOrigin.value(),
+        studioNotificationEmail: studioNotificationEmail.value(),
+    });
+});
+
+exports.sendPrivateTrainingReminders = onSchedule({
+    schedule: 'every 60 minutes',
+    timeZone: 'America/New_York',
+    secrets: [gmailEmail, gmailAppPassword],
+    memory: '256MiB',
+    timeoutSeconds: 120,
+}, async () => {
+    const { handlePrivateTrainingReminders } = require('./notifications/privateTrainingBookingEmails');
+    return handlePrivateTrainingReminders({
+        gmailEmail,
+        gmailAppPassword,
+        appOrigin: appOrigin.value(),
+        studioNotificationEmail: studioNotificationEmail.value(),
+    });
+});
 
 
 // ============================================================
