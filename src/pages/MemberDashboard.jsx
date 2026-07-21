@@ -1,5 +1,6 @@
 import {
     ArrowRight,
+    BarChart3,
     BookOpen,
     CalendarClock,
     CalendarDays,
@@ -221,6 +222,20 @@ export default function MemberDashboard() {
                                     <p>Review membership invoices, one-time purchases, discounts, and receipt availability.</p>
                                     <Link to="/instructor/commerce/orders" className="text-link">
                                         View orders <ArrowRight size={17} aria-hidden="true" />
+                                    </Link>
+                                </article>
+
+                                <article className="dashboard-card dashboard-card--instructor">
+                                    <div className="dashboard-card__heading">
+                                        <BarChart3 aria-hidden="true" />
+                                        <div>
+                                            <p className="eyebrow">Operations</p>
+                                            <h3>Studio reports</h3>
+                                        </div>
+                                    </div>
+                                    <p>Review revenue, attendance, memberships, outstanding credits, member follow-up, and system health.</p>
+                                    <Link to="/instructor/reports" className="text-link">
+                                        Open reports <ArrowRight size={17} aria-hidden="true" />
                                     </Link>
                                 </article>
 

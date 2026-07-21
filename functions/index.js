@@ -309,6 +309,74 @@ exports.sendPrivateTrainingReminders = onSchedule({
 
 
 // ============================================================
+// Studio reporting, analytics, exports, and health checks
+// ============================================================
+function loadReportService() {
+    return require('./reports/reportService');
+}
+
+exports.getStudioReportSummary = onCall({
+    invoker: 'public',
+    memory: '1GiB',
+    timeoutSeconds: 120,
+}, async (request) => loadReportService().handleGetStudioReportSummary(request));
+
+exports.getRevenueReport = onCall({
+    invoker: 'public',
+    memory: '1GiB',
+    timeoutSeconds: 120,
+}, async (request) => loadReportService().handleGetRevenueReport(request));
+
+exports.getMembershipReport = onCall({
+    invoker: 'public',
+    memory: '1GiB',
+    timeoutSeconds: 120,
+}, async (request) => loadReportService().handleGetMembershipReport(request));
+
+exports.getEventReport = onCall({
+    invoker: 'public',
+    memory: '1GiB',
+    timeoutSeconds: 120,
+}, async (request) => loadReportService().handleGetEventReport(request));
+
+exports.getPrivateTrainingReport = onCall({
+    invoker: 'public',
+    memory: '1GiB',
+    timeoutSeconds: 120,
+}, async (request) => loadReportService().handleGetPrivateTrainingReport(request));
+
+exports.getAttendanceReport = onCall({
+    invoker: 'public',
+    memory: '1GiB',
+    timeoutSeconds: 120,
+}, async (request) => loadReportService().handleGetAttendanceReport(request));
+
+exports.getMemberEngagementReport = onCall({
+    invoker: 'public',
+    memory: '1GiB',
+    timeoutSeconds: 120,
+}, async (request) => loadReportService().handleGetMemberEngagementReport(request));
+
+exports.getSystemHealthReport = onCall({
+    invoker: 'public',
+    memory: '1GiB',
+    timeoutSeconds: 120,
+}, async (request) => loadReportService().handleGetSystemHealthReport(request));
+
+exports.exportStudioReport = onCall({
+    invoker: 'public',
+    memory: '1GiB',
+    timeoutSeconds: 120,
+}, async (request) => loadReportService().handleExportStudioReport(request));
+
+exports.repairStudioReportCounters = onCall({
+    invoker: 'public',
+    memory: '1GiB',
+    timeoutSeconds: 120,
+}, async (request) => loadReportService().handleRepairStudioReportCounters(request));
+
+
+// ============================================================
 // Events and individual participant registration
 // ============================================================
 function loadEventService() {
