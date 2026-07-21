@@ -251,8 +251,8 @@ exports.signEventWaiver = onCall({
 exports.wolfGuideChat = onCall({
     invoker: 'public',
     secrets: [geminiApiKey],
-    memory: '512MiB',
-    timeoutSeconds: 60,
+    memory: '1024MiB',
+    timeoutSeconds: 120,
 }, async (request) => {
     const { handleWolfGuideChat } = require('./ai/wolfGuide');
     return handleWolfGuideChat(request, {

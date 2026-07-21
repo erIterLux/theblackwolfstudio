@@ -7,6 +7,12 @@ const LIVE_STATUSES = new Set(['active', 'trialing']);
 const MAX_MESSAGE_LENGTH = 1800;
 const MAX_TURNS_PER_HOUR = 40;
 const MAX_TURNS_PER_DAY = 120;
+const GEMINI_REQUEST_TIMEOUT_MS = 18000;
+const GEMINI_FALLBACK_TIMEOUT_MS = 12000;
+const GEMINI_FALLBACK_MODEL = 'gemini-3.1-flash-lite';
+const CURRICULUM_QUERY_LIMIT = 100;
+const CURRICULUM_SOURCE_LIMIT = 3;
+const CURRICULUM_TEXT_LIMIT = 2600;
 
 const CRISIS_PATTERN = /\b(suicid(?:e|al)|kill myself|hurt myself|self[- ]harm|overdose|can'?t stay safe|someone is attacking me|active attacker|immediate danger|medical emergency|can'?t breathe|chest pain)\b/i;
 const MEDICAL_PATTERN = /\b(diagnose|diagnosis|medication|prescription|dosage|therapy treatment plan|treat my trauma|ptsd treatment|medical advice)\b/i;
@@ -212,7 +218,7 @@ async function getRelevantCurriculumContext(message, progressionState) {
     const snapshot = await admin.firestore()
         .collection('progressionContent')
         .where('status', '==', 'published')
-        .limit(200)
+        .limit(CURRICULUM_QUERY_LIMIT)
         .get();
 
     const messageTokens = tokenize(message);
@@ -238,7 +244,7 @@ async function getRelevantCurriculumContext(message, progressionState) {
         }))
         .sort((left, right) => right.score - left.score)
         .filter((entry, index) => entry.score > 0 || index < 2)
-        .slice(0, 5);
+        .slice(0, CURRICULUM_SOURCE_LIMIT);
 
     const sources = ranked.map(({ item }) => ({
         id: item.id,
@@ -250,7 +256,7 @@ async function getRelevantCurriculumContext(message, progressionState) {
     const context = ranked.map(({ item }, index) => [
         `Studio reference ${index + 1}: ${item.title}`,
         `Summary: ${item.summary}`,
-        cleanText(item.aiText, 6500),
+        cleanText(item.aiText, CURRICULUM_TEXT_LIMIT),
     ].join('\n')).join('\n\n');
 
     return {
@@ -259,13 +265,67 @@ async function getRelevantCurriculumContext(message, progressionState) {
     };
 }
 
+function getGeminiStatus(error) {
+    const value = Number(
+        error?.status
+        || error?.statusCode
+        || error?.response?.status
+        || error?.cause?.status
+        || 0,
+    );
+    return Number.isFinite(value) ? value : 0;
+}
+
+function getGeminiMessage(error) {
+    return cleanText(
+        error?.message
+        || error?.cause?.message
+        || error?.response?.statusText
+        || 'Unknown Gemini error',
+        800,
+    );
+}
+
+function isConversationStateError(error) {
+    const status = getGeminiStatus(error);
+    const message = getGeminiMessage(error).toLowerCase();
+    return [400, 404, 409].includes(status)
+        && /(previous|interaction|conversation|state|not found|invalid)/i.test(message);
+}
+
+function isTransientGeminiError(error) {
+    const status = getGeminiStatus(error);
+    const message = getGeminiMessage(error).toLowerCase();
+    return [429, 500, 502, 503, 504].includes(status)
+        || /(timeout|timed out|deadline|unavailable|overloaded|econnreset|etimedout|fetch failed)/i.test(message);
+}
+
+async function createGeminiInteraction({
+    GoogleGenAI,
+    apiKey,
+    request,
+    timeoutMs,
+    attempts,
+}) {
+    const ai = new GoogleGenAI({
+        apiKey,
+        httpOptions: {
+            timeout: timeoutMs,
+            retryOptions: { attempts },
+        },
+    });
+
+    return ai.interactions.create(request);
+}
+
 async function callGemini({ apiKey, model, message, previousInteractionId, memberState, progressionContext, curriculumContext }) {
     const { GoogleGenAI } = await import('@google/genai');
-    const ai = new GoogleGenAI({ apiKey });
     const contextLines = [
         memberState ? `Member check-in: ${cleanText(memberState, 120)}` : '',
-        progressionContext ? `Member progression context:\n${progressionContext}` : '',
-        curriculumContext ? `Relevant published studio references:\n${curriculumContext}` : '',
+        progressionContext ? `Member progression context:
+${progressionContext}` : '',
+        curriculumContext ? `Relevant published studio references:
+${curriculumContext}` : '',
         `Member question: ${message}`,
     ].filter(Boolean);
     const input = contextLines.join('\n\n');
@@ -278,15 +338,66 @@ async function callGemini({ apiKey, model, message, previousInteractionId, membe
     };
     if (previousInteractionId) request.previous_interaction_id = previousInteractionId;
 
+    const startedAt = Date.now();
+
     try {
-        return await ai.interactions.create(request);
-    } catch (error) {
-        if (previousInteractionId) {
-            logger.warn('Gemini conversation state was unavailable; retrying without prior interaction.', { error: error?.message });
-            delete request.previous_interaction_id;
-            return ai.interactions.create(request);
+        const interaction = await createGeminiInteraction({
+            GoogleGenAI,
+            apiKey,
+            request,
+            timeoutMs: GEMINI_REQUEST_TIMEOUT_MS,
+            attempts: 2,
+        });
+        return { interaction, modelUsed: model, latencyMs: Date.now() - startedAt };
+    } catch (firstError) {
+        if (previousInteractionId && isConversationStateError(firstError)) {
+            logger.warn('Gemini conversation state was unavailable; retrying stateless.', {
+                status: getGeminiStatus(firstError),
+                error: getGeminiMessage(firstError),
+            });
+
+            const statelessRequest = { ...request };
+            delete statelessRequest.previous_interaction_id;
+
+            const interaction = await createGeminiInteraction({
+                GoogleGenAI,
+                apiKey,
+                request: statelessRequest,
+                timeoutMs: GEMINI_REQUEST_TIMEOUT_MS,
+                attempts: 1,
+            });
+            return { interaction, modelUsed: model, latencyMs: Date.now() - startedAt };
         }
-        throw error;
+
+        if (model !== GEMINI_FALLBACK_MODEL && isTransientGeminiError(firstError)) {
+            logger.warn('Primary Gemini model was unavailable; trying the low-latency fallback model.', {
+                primaryModel: model,
+                fallbackModel: GEMINI_FALLBACK_MODEL,
+                status: getGeminiStatus(firstError),
+                error: getGeminiMessage(firstError),
+            });
+
+            const fallbackRequest = {
+                ...request,
+                model: GEMINI_FALLBACK_MODEL,
+            };
+            delete fallbackRequest.previous_interaction_id;
+
+            const interaction = await createGeminiInteraction({
+                GoogleGenAI,
+                apiKey,
+                request: fallbackRequest,
+                timeoutMs: GEMINI_FALLBACK_TIMEOUT_MS,
+                attempts: 1,
+            });
+            return {
+                interaction,
+                modelUsed: GEMINI_FALLBACK_MODEL,
+                latencyMs: Date.now() - startedAt,
+            };
+        }
+
+        throw firstError;
     }
 }
 
@@ -317,7 +428,11 @@ async function handleWolfGuideChat(request, dependencies = {}) {
     if (!apiKey) throw new HttpsError('failed-precondition', 'Gemini API key is not configured.');
 
     try {
-        const interaction = await callGemini({
+        const {
+            interaction,
+            modelUsed,
+            latencyMs,
+        } = await callGemini({
             apiKey,
             model: dependencies.geminiModel || 'gemini-3.5-flash',
             message,
@@ -331,12 +446,14 @@ async function handleWolfGuideChat(request, dependencies = {}) {
 
         await logMessage(conversationRef, 'assistant', answer, {
             category: 'education',
-            modelUsed: true,
+            modelUsed,
+            latencyMs,
             sourceIds: curriculum.sources.map((source) => source.id),
         });
         await conversationRef.set({
             previousInteractionId: interaction.id || admin.firestore.FieldValue.delete(),
-            model: dependencies.geminiModel || 'gemini-3.5-flash',
+            model: modelUsed,
+            lastLatencyMs: latencyMs,
             updatedAt: admin.firestore.FieldValue.serverTimestamp(),
             lastCategory: 'education',
         }, { merge: true });
@@ -348,8 +465,28 @@ async function handleWolfGuideChat(request, dependencies = {}) {
             sources: curriculum.sources,
         };
     } catch (error) {
-        logger.error('Wolf Guide Gemini request failed.', error);
-        throw new HttpsError('unavailable', 'Wolf Guide is temporarily unavailable. Please try again shortly.');
+        const status = getGeminiStatus(error);
+        const errorMessage = getGeminiMessage(error);
+        logger.error('Wolf Guide Gemini request failed.', {
+            status,
+            error: errorMessage,
+            name: error?.name || 'Error',
+            hasPreviousInteractionId: Boolean(conversation.previousInteractionId),
+            configuredModel: dependencies.geminiModel || 'gemini-3.5-flash',
+            stack: cleanText(error?.stack, 1800),
+        });
+
+        if (status === 429) {
+            throw new HttpsError(
+                'resource-exhausted',
+                'Wolf Guide is handling a high number of requests. Please wait a moment and try again.',
+            );
+        }
+
+        throw new HttpsError(
+            'unavailable',
+            'Wolf Guide is temporarily unavailable. Please try again shortly.',
+        );
     }
 }
 
