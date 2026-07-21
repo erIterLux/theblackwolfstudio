@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import Logo from './Logo';
+import NotificationBell from './notifications/NotificationBell';
 
 const navItems = [
     ['Programs', '/programs'],
@@ -38,6 +39,7 @@ export default function Header() {
                             {label}
                         </NavLink>
                     ))}
+                    {user && <NotificationBell onNavigate={closeMenu} />}
                     <NavLink className="button button--small button--ghost" to={user ? '/member' : '/login'} onClick={closeMenu}>
                         {user ? 'Member Home' : 'Member Login'}
                     </NavLink>

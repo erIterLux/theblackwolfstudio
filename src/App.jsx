@@ -10,6 +10,7 @@ import './styles/commerce-admin.css';
 import './styles/purchases.css';
 import './styles/private-booking.css';
 import './styles/reports.css';
+import './styles/notifications.css';
 
 const ContactPage = lazy(() => import('./pages/ContactPage'));
 const HomePage = lazy(() => import('./pages/HomePage'));
@@ -34,6 +35,8 @@ const PrivateTrainingBookingPage = lazy(() => import('./pages/PrivateTrainingBoo
 const InstructorAvailabilityAdmin = lazy(() => import('./pages/InstructorAvailabilityAdmin'));
 const InstructorPrivateTrainingCalendar = lazy(() => import('./pages/InstructorPrivateTrainingCalendar'));
 const InstructorReportsPage = lazy(() => import('./pages/InstructorReportsPage'));
+const NotificationsPage = lazy(() => import('./pages/NotificationsPage'));
+const InstructorAnnouncementsAdmin = lazy(() => import('./pages/InstructorAnnouncementsAdmin'));
 const ProgramsPage = lazy(() => import('./pages/ProgramsPage'));
 const ProgressionPage = lazy(() => import('./pages/ProgressionPage'));
 const InstructorProgressionAdmin = lazy(() => import('./pages/InstructorProgressionAdmin'));
@@ -114,6 +117,14 @@ export default function App() {
                         element={
                             <ProtectedRoute>
                                 <MemberPurchasesPage />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="member/notifications"
+                        element={
+                            <ProtectedRoute>
+                                <NotificationsPage />
                             </ProtectedRoute>
                         }
                     />
@@ -202,6 +213,14 @@ export default function App() {
                         element={
                             <ProtectedRoute>
                                 <InstructorReportsPage />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="instructor/announcements"
+                        element={
+                            <ProtectedRoute>
+                                <InstructorAnnouncementsAdmin />
                             </ProtectedRoute>
                         }
                     />

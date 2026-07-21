@@ -5,6 +5,7 @@ import {
     CalendarClock,
     CalendarDays,
     HeartPulse,
+    Megaphone,
     TicketPercent,
     ReceiptText,
     LogOut,
@@ -18,6 +19,7 @@ import ProgressionSummaryCard from '../components/progression/ProgressionSummary
 import PrivateTrainingSummaryCard from '../components/private-training/PrivateTrainingSummaryCard';
 import EventSummaryCard from '../components/events/EventSummaryCard';
 import PurchaseSummaryCard from '../components/purchases/PurchaseSummaryCard';
+import NotificationSummaryCard from '../components/notifications/NotificationSummaryCard';
 import WolfGuidePanel from '../components/wolf-guide/WolfGuidePanel';
 import { useAuth } from '../context/AuthContext';
 import useStudioRole from '../hooks/useStudioRole';
@@ -61,6 +63,8 @@ export default function MemberDashboard() {
                     <EventSummaryCard />
 
                     <PurchaseSummaryCard />
+
+                    <NotificationSummaryCard />
 
                     <article className="dashboard-card dashboard-card--library">
                         <div className="dashboard-card__heading">
@@ -236,6 +240,20 @@ export default function MemberDashboard() {
                                     <p>Review revenue, attendance, memberships, outstanding credits, member follow-up, and system health.</p>
                                     <Link to="/instructor/reports" className="text-link">
                                         Open reports <ArrowRight size={17} aria-hidden="true" />
+                                    </Link>
+                                </article>
+
+                                <article className="dashboard-card dashboard-card--instructor">
+                                    <div className="dashboard-card__heading">
+                                        <Megaphone aria-hidden="true" />
+                                        <div>
+                                            <p className="eyebrow">Communications</p>
+                                            <h3>Studio announcements</h3>
+                                        </div>
+                                    </div>
+                                    <p>Publish important updates directly to member and instructor notification centers.</p>
+                                    <Link to="/instructor/announcements" className="text-link">
+                                        Manage announcements <ArrowRight size={17} aria-hidden="true" />
                                     </Link>
                                 </article>
 

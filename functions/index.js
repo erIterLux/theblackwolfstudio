@@ -377,6 +377,93 @@ exports.repairStudioReportCounters = onCall({
 
 
 // ============================================================
+// Unified in-app notifications and studio announcements
+// ============================================================
+function loadNotificationService() {
+    return require('./notifications/notificationService');
+}
+
+exports.listMyNotifications = onCall({
+    invoker: 'public',
+    memory: '256MiB',
+    timeoutSeconds: 30,
+}, async (request) => loadNotificationService().handleListMyNotifications(request));
+
+exports.markNotificationRead = onCall({
+    invoker: 'public',
+    memory: '256MiB',
+    timeoutSeconds: 30,
+}, async (request) => loadNotificationService().handleMarkNotificationRead(request));
+
+exports.markAllNotificationsRead = onCall({
+    invoker: 'public',
+    memory: '256MiB',
+    timeoutSeconds: 30,
+}, async (request) => loadNotificationService().handleMarkAllNotificationsRead(request));
+
+exports.getMyNotificationPreferences = onCall({
+    invoker: 'public',
+    memory: '256MiB',
+    timeoutSeconds: 30,
+}, async (request) => loadNotificationService().handleGetMyNotificationPreferences(request));
+
+exports.saveMyNotificationPreferences = onCall({
+    invoker: 'public',
+    memory: '256MiB',
+    timeoutSeconds: 30,
+}, async (request) => loadNotificationService().handleSaveMyNotificationPreferences(request));
+
+exports.listStudioAnnouncementsAdmin = onCall({
+    invoker: 'public',
+    memory: '256MiB',
+    timeoutSeconds: 30,
+}, async (request) => loadNotificationService().handleListStudioAnnouncementsAdmin(request));
+
+exports.saveStudioAnnouncement = onCall({
+    invoker: 'public',
+    memory: '512MiB',
+    timeoutSeconds: 120,
+}, async (request) => loadNotificationService().handleSaveStudioAnnouncement(request));
+
+exports.notifyInAppOnPrivateTrainingBookingWritten = onDocumentWritten({
+    document: 'privateTrainingBookings/{bookingId}',
+    retry: true,
+}, async (event) => loadNotificationService().handlePrivateTrainingBookingWritten(event));
+
+exports.notifyInAppOnMembershipWritten = onDocumentWritten({
+    document: 'memberships/{userId}',
+    retry: true,
+}, async (event) => loadNotificationService().handleMembershipWritten(event));
+
+exports.notifyInAppOnStudioOrderWritten = onDocumentWritten({
+    document: 'studioOrders/{orderId}',
+    retry: true,
+}, async (event) => loadNotificationService().handleStudioOrderWritten(event));
+
+exports.notifyInAppOnProgressionReviewWritten = onDocumentWritten({
+    document: 'progressionReviews/{reviewId}',
+    retry: true,
+}, async (event) => loadNotificationService().handleProgressionReviewWritten(event));
+
+exports.notifyInAppOnProgressionFeedbackCreated = onDocumentCreated({
+    document: 'progressionProfiles/{memberUid}/levels/{levelId}/categories/{categoryId}/feedback/{feedbackId}',
+    retry: true,
+}, async (event) => loadNotificationService().handleProgressionFeedbackCreated(event));
+
+exports.notifyInAppOnEventRegistrationWritten = onDocumentWritten({
+    document: 'eventRegistrations/{registrationId}',
+    retry: true,
+}, async (event) => loadNotificationService().handleEventRegistrationWritten(event));
+
+exports.createScheduledStudioNotifications = onSchedule({
+    schedule: 'every 60 minutes',
+    timeZone: 'America/New_York',
+    memory: '512MiB',
+    timeoutSeconds: 180,
+}, async () => loadNotificationService().handleCreateScheduledStudioNotifications());
+
+
+// ============================================================
 // Events and individual participant registration
 // ============================================================
 function loadEventService() {
