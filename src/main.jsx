@@ -16,21 +16,25 @@ import './styles/dashboard-refinement.css';
 import './styles/app-shells.css';
 import './styles/operational-design-system.css';
 import './styles/workflow-refinement.css';
+import './styles/verification-hardening.css';
 import App from './App';
+import AppErrorBoundary from './components/system/AppErrorBoundary';
 import { AuthProvider } from './context/AuthContext';
 import { AppSessionProvider } from './context/AppSessionContext';
 import { NotificationProvider } from './context/NotificationContext';
 
 createRoot(document.getElementById('root')).render(
     <StrictMode>
-        <BrowserRouter>
-            <AuthProvider>
-                <AppSessionProvider>
-                    <NotificationProvider>
-                        <App />
-                    </NotificationProvider>
-                </AppSessionProvider>
-            </AuthProvider>
-        </BrowserRouter>
+        <AppErrorBoundary>
+            <BrowserRouter>
+                <AuthProvider>
+                    <AppSessionProvider>
+                        <NotificationProvider>
+                            <App />
+                        </NotificationProvider>
+                    </AppSessionProvider>
+                </AuthProvider>
+            </BrowserRouter>
+        </AppErrorBoundary>
     </StrictMode>,
 );

@@ -1,0 +1,295 @@
+/* Refinement Pass 6: responsive, accessibility, and runtime hardening. */
+
+html {
+  min-width: 320px;
+  overflow-x: clip;
+}
+
+body,
+#root {
+  min-width: 320px;
+}
+
+img,
+svg,
+video,
+canvas {
+  max-width: 100%;
+}
+
+:where(p, li, dd, td, th, a, button, label, input, textarea, select) {
+  overflow-wrap: anywhere;
+}
+
+.network-status {
+  position: fixed;
+  z-index: 2000;
+  right: max(1rem, env(safe-area-inset-right));
+  bottom: max(1rem, env(safe-area-inset-bottom));
+  max-width: min(460px, calc(100vw - 2rem));
+  padding: .85rem 1rem;
+  border: 1px solid transparent;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, .25);
+  font-size: .88rem;
+  font-weight: 800;
+}
+
+.network-status--offline {
+  color: #44210b;
+  background: #fff0d9;
+  border-color: #d99d53;
+}
+
+.network-status--restored {
+  color: #143e2c;
+  background: #e7f6ee;
+  border-color: #8cc6a8;
+}
+
+.system-state-page,
+.not-found-page {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: clamp(2rem, 6vw, 5rem) 0;
+  color: var(--ui-on-dark, #f6f3ed);
+  background:
+    radial-gradient(circle at 80% 10%, rgba(93, 115, 139, .18), transparent 28rem),
+    #0a0d11;
+}
+
+.system-state-card,
+.not-found-card {
+  width: min(760px, calc(100% - 32px));
+  padding: clamp(1.5rem, 5vw, 3rem);
+  color: #171b20;
+  background: #f6f3ed;
+  border-left: 5px solid #5d738b;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, .28);
+}
+
+.system-state-card h1,
+.not-found-card h1 {
+  margin-bottom: 1rem;
+  color: #171b20;
+  font-size: clamp(2.5rem, 7vw, 5.5rem);
+}
+
+.system-state-card p,
+.not-found-card p {
+  color: #5c646d;
+}
+
+.system-state-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .75rem;
+  margin-top: 1.5rem;
+}
+
+.system-error-details {
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid #d9d6cf;
+}
+
+.system-error-details pre {
+  max-height: 280px;
+  overflow: auto;
+  padding: .9rem;
+  color: #f6f3ed;
+  background: #111820;
+  font-size: .75rem;
+  white-space: pre-wrap;
+}
+
+.not-found-page.member-page {
+  min-height: calc(100vh - var(--portal-topbar-height));
+}
+
+.not-found-page .container {
+  display: grid;
+  place-items: center;
+}
+
+.not-found-card .button {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  margin-top: 1rem;
+}
+
+.site-nav-backdrop {
+  display: none;
+}
+
+/* Long operational tables remain usable without widening the whole page. */
+.portal-main :where(
+  .report-table-wrap,
+  .commerce-admin-table-wrap,
+  .purchase-table-wrap,
+  .events-admin-table-wrap,
+  .notification-table-wrap
+) {
+  max-width: 100%;
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  scrollbar-gutter: stable;
+}
+
+.portal-main table {
+  max-width: 100%;
+}
+
+.portal-main :where(.button, button, a, input, select, textarea) {
+  scroll-margin: calc(var(--portal-topbar-height, 76px) + 1rem);
+}
+
+/* Keep action groups reachable on narrow screens. */
+.portal-main :where(
+  .member-header,
+  .booking-panel__heading,
+  .report-header,
+  .report-toolbar,
+  .availability-edit-state,
+  .announcement-admin-header,
+  .commerce-admin-header
+) {
+  min-width: 0;
+}
+
+@media (max-width: 980px) {
+  .site-nav-backdrop {
+    position: fixed;
+    z-index: 0;
+    inset: 0;
+    display: block;
+    padding: 0;
+    background: rgba(0, 0, 0, .48);
+    border: 0;
+  }
+
+  .site-header:has(.site-nav.is-open) {
+    z-index: 400;
+  }
+
+  .site-header:has(.site-nav.is-open) .site-header__inner {
+    position: relative;
+    z-index: 1;
+  }
+
+  .site-header .site-nav.is-open {
+    z-index: 2;
+    max-height: calc(100vh - 88px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  .portal-sidebar.is-open {
+    overscroll-behavior: contain;
+  }
+}
+
+@media (max-width: 700px) {
+  .network-status {
+    right: .75rem;
+    bottom: max(.75rem, env(safe-area-inset-bottom));
+    left: .75rem;
+    max-width: none;
+  }
+
+  .portal-topbar,
+  .site-header__inner {
+    padding-right: max(.8rem, env(safe-area-inset-right));
+    padding-left: max(.8rem, env(safe-area-inset-left));
+  }
+
+  .portal-main .container {
+    width: min(100% - 28px, var(--ui-content-width));
+  }
+
+  .system-state-actions,
+  .portal-main :where(
+    .member-header__actions,
+    .booking-step-actions,
+    .report-toolbar__actions,
+    .availability-edit-state__actions,
+    .announcement-actions,
+    .commerce-admin-actions
+  ) {
+    display: grid;
+    grid-template-columns: 1fr;
+    width: 100%;
+  }
+
+  .system-state-actions > *,
+  .portal-main :where(
+    .member-header__actions,
+    .booking-step-actions,
+    .report-toolbar__actions,
+    .availability-edit-state__actions,
+    .announcement-actions,
+    .commerce-admin-actions
+  ) > * {
+    width: 100%;
+  }
+
+  .portal-main :where(.report-table-wrap, .commerce-admin-table-wrap) {
+    margin-inline: -2px;
+  }
+
+  .portal-main table {
+    font-size: .86rem;
+  }
+}
+
+@media (max-width: 420px) {
+  .portal-topbar__actions {
+    gap: .25rem;
+  }
+
+  .portal-topbar .notification-bell,
+  .portal-switch-link,
+  .portal-menu-button {
+    width: 40px;
+    min-width: 40px;
+    height: 40px;
+  }
+
+  .portal-topbar .brand__mark-wrap {
+    width: 44px;
+    height: 44px;
+    flex-basis: 44px;
+  }
+
+  .portal-topbar .brand__mark {
+    width: 40px;
+    height: 40px;
+  }
+}
+
+@media print {
+  .portal-topbar,
+  .portal-sidebar,
+  .site-header,
+  .site-footer,
+  .network-status,
+  .notification-bell,
+  .button,
+  button {
+    display: none !important;
+  }
+
+  .portal-layout,
+  .portal-main {
+    display: block;
+    overflow: visible;
+    color: #000;
+    background: #fff;
+  }
+
+  .portal-main > :where(.member-page, .notification-page, .announcement-admin-page) {
+    color: #000;
+    background: #fff;
+  }
+}

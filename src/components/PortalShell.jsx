@@ -4,11 +4,20 @@ import {
     Menu,
     X,
 } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import NotificationBell from './notifications/NotificationBell';
 import Logo from './Logo';
+
+const FOCUSABLE_SELECTOR = [
+    'a[href]',
+    'button:not([disabled])',
+    'input:not([disabled])',
+    'select:not([disabled])',
+    'textarea:not([disabled])',
+    '[tabindex]:not([tabindex="-1"])',
+].join(',');
 
 function PortalNav({ groups, onNavigate }) {
     return (
@@ -50,24 +59,62 @@ export default function PortalShell({
     const [menuOpen, setMenuOpen] = useState(false);
     const { pathname } = useLocation();
     const { user, signOutUser } = useAuth();
+    const menuButtonRef = useRef(null);
+    const sidebarRef = useRef(null);
 
     useEffect(() => {
         setMenuOpen(false);
     }, [pathname]);
 
     useEffect(() => {
+        const desktopQuery = window.matchMedia('(min-width: 981px)');
+        const handleDesktop = (event) => {
+            if (event.matches) setMenuOpen(false);
+        };
+        desktopQuery.addEventListener('change', handleDesktop);
+        return () => desktopQuery.removeEventListener('change', handleDesktop);
+    }, []);
+
+    useEffect(() => {
         if (!menuOpen) return undefined;
 
         const previousOverflow = document.body.style.overflow;
+        const previousFocus = document.activeElement;
+        const focusNavigation = window.requestAnimationFrame(() => {
+            sidebarRef.current?.querySelector(FOCUSABLE_SELECTOR)?.focus();
+        });
+
         const handleKeyDown = (event) => {
-            if (event.key === 'Escape') setMenuOpen(false);
+            if (event.key === 'Escape') {
+                event.preventDefault();
+                setMenuOpen(false);
+                return;
+            }
+
+            if (event.key !== 'Tab' || !sidebarRef.current) return;
+            const focusable = [...sidebarRef.current.querySelectorAll(FOCUSABLE_SELECTOR)]
+                .filter((element) => !element.hasAttribute('disabled'));
+            if (!focusable.length) return;
+
+            const first = focusable[0];
+            const last = focusable.at(-1);
+            if (event.shiftKey && document.activeElement === first) {
+                event.preventDefault();
+                last.focus();
+            } else if (!event.shiftKey && document.activeElement === last) {
+                event.preventDefault();
+                first.focus();
+            }
         };
 
         document.body.style.overflow = 'hidden';
         window.addEventListener('keydown', handleKeyDown);
         return () => {
+            window.cancelAnimationFrame(focusNavigation);
             document.body.style.overflow = previousOverflow;
             window.removeEventListener('keydown', handleKeyDown);
+            if (previousFocus instanceof HTMLElement) previousFocus.focus();
+            else menuButtonRef.current?.focus();
         };
     }, [menuOpen]);
 
@@ -84,13 +131,14 @@ export default function PortalShell({
             <header className="portal-topbar">
                 <div className="portal-topbar__brand">
                     <button
+                        ref={menuButtonRef}
                         className="portal-menu-button"
                         type="button"
                         aria-controls={`${mode}-portal-navigation`}
                         aria-expanded={menuOpen}
+                        aria-label={menuOpen ? 'Close workspace navigation' : 'Open workspace navigation'}
                         onClick={() => setMenuOpen((current) => !current)}
                     >
-                        <span className="sr-only">Toggle workspace navigation</span>
                         {menuOpen ? <X size={22} aria-hidden="true" /> : <Menu size={22} aria-hidden="true" />}
                     </button>
                     <Logo to={homePath} label={`${title} home`} />
@@ -115,8 +163,10 @@ export default function PortalShell({
 
             <div className="portal-layout">
                 <aside
+                    ref={sidebarRef}
                     className={`portal-sidebar${menuOpen ? ' is-open' : ''}`}
                     id={`${mode}-portal-navigation`}
+                    aria-label={`${title} navigation`}
                 >
                     <div className="portal-sidebar__context">
                         <p className="eyebrow">{mode === 'instructor' ? 'Studio operations' : 'Your training'}</p>
@@ -150,7 +200,13 @@ export default function PortalShell({
                     />
                 )}
 
-                <main className="portal-main" id="main-content" tabIndex={-1}>
+                <main
+                    className="portal-main"
+                    id="main-content"
+                    tabIndex={-1}
+                    inert={menuOpen ? true : undefined}
+                    aria-hidden={menuOpen ? 'true' : undefined}
+                >
                     <Outlet />
                 </main>
             </div>
