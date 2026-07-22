@@ -635,7 +635,13 @@ function reminderBucket(hours) {
 }
 
 async function createScheduledPrivateTrainingNotifications() {
-    const snapshot = await db.collection('privateTrainingBookings').limit(500).get();
+    const now = Date.now();
+    const snapshot = await db.collection('privateTrainingBookings')
+        .where('startsAt', '>=', admin.firestore.Timestamp.fromDate(new Date(now + 30 * 60 * 1000)))
+        .where('startsAt', '<=', admin.firestore.Timestamp.fromDate(new Date(now + 27 * 60 * 60 * 1000)))
+        .orderBy('startsAt', 'asc')
+        .limit(1000)
+        .get();
     let created = 0;
     for (const item of snapshot.docs) {
         const booking = item.data() || {};
@@ -665,7 +671,13 @@ async function createScheduledPrivateTrainingNotifications() {
 }
 
 async function createScheduledEventNotifications() {
-    const snapshot = await db.collection('eventRegistrations').limit(500).get();
+    const now = Date.now();
+    const snapshot = await db.collection('eventRegistrations')
+        .where('eventSnapshot.startsAt', '>=', admin.firestore.Timestamp.fromDate(new Date(now + 21 * 60 * 60 * 1000)))
+        .where('eventSnapshot.startsAt', '<=', admin.firestore.Timestamp.fromDate(new Date(now + 27 * 60 * 60 * 1000)))
+        .orderBy('eventSnapshot.startsAt', 'asc')
+        .limit(1000)
+        .get();
     let created = 0;
     for (const item of snapshot.docs) {
         const registration = item.data() || {};
@@ -698,7 +710,13 @@ async function createScheduledEventNotifications() {
 }
 
 async function createScheduledCreditNotifications() {
-    const snapshot = await db.collection('privateTrainingPurchases').limit(500).get();
+    const now = Date.now();
+    const snapshot = await db.collection('privateTrainingPurchases')
+        .where('expiresAt', '>=', admin.firestore.Timestamp.fromDate(new Date(now)))
+        .where('expiresAt', '<=', admin.firestore.Timestamp.fromDate(new Date(now + 15 * 24 * 60 * 60 * 1000)))
+        .orderBy('expiresAt', 'asc')
+        .limit(1000)
+        .get();
     let created = 0;
     for (const item of snapshot.docs) {
         const purchase = item.data() || {};
