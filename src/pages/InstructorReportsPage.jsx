@@ -9,6 +9,7 @@ import {
     Dumbbell,
     HeartPulse,
     RefreshCw,
+    Search,
     ShieldCheck,
     TicketCheck,
     Users,
@@ -76,6 +77,13 @@ const EXPORTS = [
     ['discounts', 'Discounts'],
     ['refunds', 'Refunds'],
 ];
+
+const TAB_EXPORTS = {
+    revenue: ['revenue', 'Export revenue'],
+    memberships: ['memberships', 'Export memberships'],
+    events: ['event_attendance', 'Export event attendance'],
+    privateTraining: ['private_attendance', 'Export private attendance'],
+};
 
 function formatMoney(cents, currency = 'USD') {
     return new Intl.NumberFormat('en-US', {
@@ -165,6 +173,10 @@ export default function InstructorReportsPage() {
     const [repairing, setRepairing] = useState(false);
     const [message, setMessage] = useState('');
     const [loadingMore, setLoadingMore] = useState(false);
+    const [tableQuery, setTableQuery] = useState('');
+    const [eventSort, setEventSort] = useState('date');
+    const [attendanceType, setAttendanceType] = useState('all');
+    const [attendanceStatus, setAttendanceStatus] = useState('all');
 
     const payload = useMemo(() => (
         preset === 'custom'
@@ -210,6 +222,13 @@ export default function InstructorReportsPage() {
         if (roleLoading || !isInstructor || !customRangeReady) return;
         queueMicrotask(() => load());
     }, [roleLoading, isInstructor, customRangeReady, load]);
+
+    useEffect(() => {
+        setTableQuery('');
+        setEventSort('date');
+        setAttendanceType('all');
+        setAttendanceStatus('all');
+    }, [payloadKey, tab]);
 
     const download = async (type) => {
         setExporting(type);
@@ -297,6 +316,36 @@ export default function InstructorReportsPage() {
         }
     };
 
+
+    const filteredEvents = useMemo(() => {
+        const query = tableQuery.trim().toLowerCase();
+        const rows = [...(data?.events?.events || [])].filter((event) => (
+            !query
+            || String(event.title || '').toLowerCase().includes(query)
+            || String(event.status || '').toLowerCase().includes(query)
+        ));
+        rows.sort((left, right) => {
+            if (eventSort === 'participants') return Number(right.participants || 0) - Number(left.participants || 0);
+            if (eventSort === 'attendance') return Number(right.attendanceRate || 0) - Number(left.attendanceRate || 0);
+            if (eventSort === 'revenue') return Number(right.netCents || 0) - Number(left.netCents || 0);
+            return new Date(left.startsAt || 0) - new Date(right.startsAt || 0);
+        });
+        return rows;
+    }, [data?.events?.events, eventSort, tableQuery]);
+
+    const filteredAttendance = useMemo(() => {
+        const query = tableQuery.trim().toLowerCase();
+        return (data?.attendance?.rows || []).filter((row) => {
+            if (attendanceType !== 'all' && row.type !== attendanceType) return false;
+            if (attendanceStatus !== 'all' && row.status !== attendanceStatus) return false;
+            if (!query) return true;
+            return [row.participantName, row.title, row.instructorName, row.status, row.type]
+                .some((value) => String(value || '').toLowerCase().includes(query));
+        });
+    }, [attendanceStatus, attendanceType, data?.attendance?.rows, tableQuery]);
+
+    const contextualExport = TAB_EXPORTS[tab] || null;
+
     if (!roleLoading && !isInstructor) {
         return <section className="section section--light"><div className="container"><h1>Instructor access required</h1></div></section>;
     }
@@ -320,9 +369,16 @@ export default function InstructorReportsPage() {
                         <h1>Studio reports</h1>
                         <p>Revenue, attendance, memberships, private-training obligations, member attention, and system health in one place.</p>
                     </div>
-                    <button type="button" className="button button--secondary" onClick={() => load({ force: true })} disabled={loading}>
-                        <RefreshCw size={17} className={loading ? 'is-spinning' : ''} /> Refresh
-                    </button>
+                    <div className="report-header-actions">
+                        {contextualExport && (
+                            <button type="button" className="button button--secondary" onClick={() => download(contextualExport[0])} disabled={Boolean(exporting)}>
+                                <Download size={17} /> {exporting === contextualExport[0] ? 'Preparing…' : contextualExport[1]}
+                            </button>
+                        )}
+                        <button type="button" className="button button--secondary" onClick={() => load({ force: true })} disabled={loading}>
+                            <RefreshCw size={17} className={loading ? 'is-spinning' : ''} /> Refresh
+                        </button>
+                    </div>
                 </div>
 
                 <div className="report-range-panel">
@@ -347,6 +403,13 @@ export default function InstructorReportsPage() {
                 {data?.meta?.truncatedCollections?.length > 0 && (
                     <p className="report-warning"><AlertTriangle size={18} /> Some large collections reached the report safety limit: {data.meta.truncatedCollections.join(', ')}. Narrow the date range before relying on totals.</p>
                 )}
+
+                <label className="report-section-select">
+                    <span>Report section</span>
+                    <select value={tab} onChange={(event) => selectTab(event.target.value)}>
+                        {TABS.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+                    </select>
+                </label>
 
                 <div className="report-tabs" role="tablist" aria-label="Studio report sections">
                     {TABS.map(([value, label]) => <button key={value} type="button" role="tab" aria-selected={tab === value} className={tab === value ? 'is-active' : ''} onClick={() => selectTab(value)}>{label}</button>)}
@@ -450,7 +513,31 @@ export default function InstructorReportsPage() {
                             <Metric icon={CheckCircle2} label="Attendance" value={`${events.totals?.attendanceRate || 0}%`} />
                             <Metric icon={CircleDollarSign} label="Net revenue" value={formatMoney(events.totals?.netRevenueCents)} />
                         </div>
-                        <div className="report-table-wrap"><table className="report-table"><thead><tr><th>Event</th><th>Capacity</th><th>Participants</th><th>Waivers</th><th>Checked in</th><th>No-shows</th><th>Attendance</th><th>Net revenue</th></tr></thead><tbody>{events.events?.map((event) => <tr key={event.id}><td><strong>{event.title}</strong><span>{formatDate(event.startsAt)} · {readable(event.status)}</span></td><td>{event.capacity || 'Open'}</td><td>{event.participants}</td><td>{event.waiversComplete}/{event.participants}</td><td>{event.checkedIn}</td><td>{event.noShows}</td><td>{event.attendanceRate}%</td><td>{formatMoney(event.netCents)}</td></tr>)}</tbody></table>{!events.events?.length && <Empty />}</div>
+                        <div className="report-table-tools">
+                            <label className="report-search-field">
+                                <Search size={17} aria-hidden="true" />
+                                <span className="sr-only">Search events</span>
+                                <input value={tableQuery} onChange={(event) => setTableQuery(event.target.value)} placeholder="Search event or status" />
+                            </label>
+                            <label>
+                                <span>Sort events</span>
+                                <select value={eventSort} onChange={(event) => setEventSort(event.target.value)}>
+                                    <option value="date">Date</option>
+                                    <option value="participants">Most participants</option>
+                                    <option value="attendance">Highest attendance</option>
+                                    <option value="revenue">Highest revenue</option>
+                                </select>
+                            </label>
+                            <small>{filteredEvents.length} of {events.events?.length || 0} events shown</small>
+                        </div>
+                        <div className="report-table-wrap">
+                            <table className="report-table">
+                                <caption>Event registration, waiver, attendance, and revenue summary</caption>
+                                <thead><tr><th>Event</th><th>Capacity</th><th>Participants</th><th>Waivers</th><th>Checked in</th><th>No-shows</th><th>Attendance</th><th>Net revenue</th></tr></thead>
+                                <tbody>{filteredEvents.map((event) => <tr key={event.id}><td><strong>{event.title}</strong><span>{formatDate(event.startsAt)} · {readable(event.status)}</span></td><td>{event.capacity || 'Open'}</td><td>{event.participants}</td><td>{event.waiversComplete}/{event.participants}</td><td>{event.checkedIn}</td><td>{event.noShows}</td><td>{event.attendanceRate}%</td><td>{formatMoney(event.netCents)}</td></tr>)}</tbody>
+                            </table>
+                            {!filteredEvents.length && <Empty>{tableQuery ? 'No events match this search.' : 'No events are available for this date range.'}</Empty>}
+                        </div>
                     </div>
                 )}
 
@@ -471,7 +558,44 @@ export default function InstructorReportsPage() {
                 {!loading && data && tab === 'attendance' && (
                     <div className="report-section-stack">
                         <div className="report-metric-grid report-metric-grid--four"><Metric icon={Users} label="Attendance records" value={attendance.totals?.records || 0} /><Metric icon={CheckCircle2} label="Attended" value={attendance.totals?.attended || 0} /><Metric icon={AlertTriangle} label="No-shows" value={attendance.totals?.noShows || 0} /><Metric icon={BarChart3} label="Attendance rate" value={`${attendance.totals?.attendanceRate || 0}%`} /></div>
-                        <div className="report-table-wrap"><table className="report-table"><thead><tr><th>Date</th><th>Type</th><th>Participant</th><th>Event or package</th><th>Instructor</th><th>Status</th></tr></thead><tbody>{attendance.rows?.map((row) => <tr key={row.id}><td>{formatDate(row.date, true)}</td><td>{row.type === 'event' ? 'Event' : 'Private training'}</td><td>{row.participantName}</td><td>{row.title}</td><td>{row.instructorName || '—'}</td><td><span className={`report-status is-${row.status}`}>{readable(row.status)}</span></td></tr>)}</tbody></table>{!attendance.rows?.length && <Empty />}</div>
+                        <div className="report-table-tools report-table-tools--attendance">
+                            <label className="report-search-field">
+                                <Search size={17} aria-hidden="true" />
+                                <span className="sr-only">Search loaded attendance records</span>
+                                <input value={tableQuery} onChange={(event) => setTableQuery(event.target.value)} placeholder="Search participant, event, package, or instructor" />
+                            </label>
+                            <label>
+                                <span>Attendance type</span>
+                                <select value={attendanceType} onChange={(event) => setAttendanceType(event.target.value)}>
+                                    <option value="all">All types</option>
+                                    <option value="event">Events</option>
+                                    <option value="private_training">Private training</option>
+                                </select>
+                            </label>
+                            <label>
+                                <span>Status</span>
+                                <select value={attendanceStatus} onChange={(event) => setAttendanceStatus(event.target.value)}>
+                                    <option value="all">All statuses</option>
+                                    <option value="attended">Attended</option>
+                                    <option value="registered">Registered</option>
+                                    <option value="requested">Awaiting confirmation</option>
+                                    <option value="confirmed">Confirmed</option>
+                                    <option value="rescheduled">Rescheduled</option>
+                                    <option value="no_show">No-show</option>
+                                    <option value="canceled">Canceled</option>
+                                    <option value="late_canceled">Canceled late</option>
+                                </select>
+                            </label>
+                            <small>{filteredAttendance.length} of {attendance.rows?.length || 0} loaded records shown</small>
+                        </div>
+                        <div className="report-table-wrap">
+                            <table className="report-table">
+                                <caption>Combined event and private-training attendance records</caption>
+                                <thead><tr><th>Date</th><th>Type</th><th>Participant</th><th>Event or package</th><th>Instructor</th><th>Status</th></tr></thead>
+                                <tbody>{filteredAttendance.map((row) => <tr key={row.id}><td>{formatDate(row.date, true)}</td><td>{row.type === 'event' ? 'Event' : 'Private training'}</td><td>{row.participantName}</td><td>{row.title}</td><td>{row.instructorName || '—'}</td><td><span className={`report-status is-${row.status}`}>{readable(row.status)}</span></td></tr>)}</tbody>
+                            </table>
+                            {!filteredAttendance.length && <Empty>{tableQuery || attendanceType !== 'all' || attendanceStatus !== 'all' ? 'No loaded attendance records match these filters.' : 'No attendance records are available for this date range.'}</Empty>}
+                        </div>
                         {data.page && (
                             <div className="report-pagination">
                                 <span>Showing {attendance.rows?.length || 0} of {data.page.totalRows || 0} records</span>

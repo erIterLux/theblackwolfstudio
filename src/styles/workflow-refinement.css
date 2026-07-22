@@ -1,0 +1,781 @@
+/* Refinement Pass 5: core workflow usability */
+
+/* ------------------------------
+   Private-training booking flow
+------------------------------ */
+.booking-workflow {
+  display: grid;
+  gap: 1rem;
+}
+
+.booking-stepper {
+  padding: .55rem;
+  background: #fff;
+  border: 1px solid var(--gray-200);
+  box-shadow: 0 12px 35px rgba(20, 23, 27, .06);
+}
+
+.booking-stepper ol {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: .35rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.booking-stepper li {
+  position: relative;
+}
+
+.booking-stepper li:not(:last-child)::after {
+  position: absolute;
+  top: 50%;
+  right: -.35rem;
+  width: .35rem;
+  height: 1px;
+  background: var(--gray-300);
+  content: '';
+}
+
+.booking-stepper button {
+  width: 100%;
+  min-height: 58px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: .55rem;
+  padding: .7rem;
+  color: #5f6872;
+  background: #f7f5f0;
+  border: 1px solid transparent;
+  font: inherit;
+  cursor: pointer;
+}
+
+.booking-stepper button > span {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  color: #4d5965;
+  background: #fff;
+  border: 1px solid var(--gray-300);
+  border-radius: 50%;
+  font-size: .78rem;
+  font-weight: 900;
+}
+
+.booking-stepper button strong {
+  font-size: .82rem;
+}
+
+.booking-stepper li.is-current button {
+  color: #fff;
+  background: var(--blue-dark);
+  border-color: var(--blue-dark);
+}
+
+.booking-stepper li.is-current button > span {
+  color: var(--blue-dark);
+  border-color: #fff;
+}
+
+.booking-stepper li.is-complete button {
+  color: #214a36;
+  background: #edf7f1;
+}
+
+.booking-stepper li.is-complete button > span {
+  color: #fff;
+  background: #2d7652;
+  border-color: #2d7652;
+}
+
+.booking-stepper button:disabled {
+  cursor: not-allowed;
+  opacity: .55;
+}
+
+.booking-workflow__layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 340px);
+  gap: 1rem;
+  align-items: start;
+}
+
+.booking-workflow__main {
+  min-width: 0;
+}
+
+.booking-step-panel {
+  min-height: 420px;
+  align-content: start;
+}
+
+.booking-panel__heading--actions {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: start;
+}
+
+.booking-panel__heading--actions .icon-button {
+  justify-self: end;
+}
+
+.booking-step-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: .75rem;
+  margin-top: auto;
+  padding-top: .75rem;
+  border-top: 1px solid var(--gray-200);
+}
+
+.booking-step-actions--end {
+  justify-content: flex-end;
+}
+
+.booking-step-actions .button {
+  min-width: 150px;
+}
+
+.booking-package-options button small {
+  color: inherit;
+  font-size: .73rem;
+  opacity: .78;
+}
+
+.booking-summary-card {
+  position: sticky;
+  top: calc(var(--portal-top-offset, 20px) + 1rem);
+  display: grid;
+  gap: 1rem;
+  padding: 1.25rem;
+  color: #fff;
+  background: #111820;
+  border: 1px solid #263544;
+  box-shadow: 0 18px 45px rgba(0, 0, 0, .18);
+}
+
+.booking-summary-card h2 {
+  margin: 0;
+  color: #fff;
+  font-size: clamp(1.35rem, 2vw, 1.8rem);
+}
+
+.booking-summary-card dl {
+  display: grid;
+  gap: .7rem;
+  margin: 0;
+}
+
+.booking-summary-card dl > div {
+  display: grid;
+  grid-template-columns: 92px 1fr;
+  gap: .65rem;
+  padding-bottom: .65rem;
+  border-bottom: 1px solid rgba(255, 255, 255, .12);
+}
+
+.booking-summary-card dt,
+.booking-summary-card small,
+.booking-summary-card p {
+  color: #bfc9d3;
+}
+
+.booking-summary-card dd {
+  margin: 0;
+  color: #fff;
+  font-weight: 800;
+  text-align: right;
+}
+
+.booking-summary-card p {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: .4rem;
+  margin: 0;
+  font-size: .84rem;
+}
+
+.booking-summary-card .eyebrow {
+  color: #b9c9d9;
+}
+
+.booking-time-toolbar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 1rem;
+  align-items: end;
+  padding: .9rem;
+  background: #f7f5f0;
+  border: 1px solid var(--gray-200);
+}
+
+.booking-time-toolbar__label {
+  display: block;
+  margin-bottom: .45rem;
+  color: #59636e;
+  font-size: .78rem;
+  font-weight: 900;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+.booking-date-options {
+  display: flex;
+  gap: .45rem;
+  overflow-x: auto;
+  padding-bottom: .15rem;
+}
+
+.booking-date-options button {
+  min-height: 42px;
+  flex: 0 0 auto;
+  padding: .55rem .75rem;
+  color: #233548;
+  background: #fff;
+  border: 1px solid var(--gray-300);
+  font: inherit;
+  font-size: .8rem;
+  font-weight: 850;
+  cursor: pointer;
+}
+
+.booking-date-options button.is-active {
+  color: #fff;
+  background: var(--blue-dark);
+  border-color: var(--blue-dark);
+}
+
+.booking-next-available {
+  white-space: nowrap;
+}
+
+.booking-review-details {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: .7rem;
+  margin: 0;
+}
+
+.booking-review-details > div {
+  display: grid;
+  gap: .25rem;
+  padding: .85rem;
+  background: #f7f5f0;
+  border: 1px solid var(--gray-200);
+}
+
+.booking-review-details dt {
+  color: #66707a;
+  font-size: .74rem;
+  font-weight: 900;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+.booking-review-details dd {
+  margin: 0;
+  color: #15191e;
+  font-weight: 800;
+}
+
+.booking-note-field {
+  display: grid;
+  gap: .4rem;
+  font-weight: 800;
+}
+
+.booking-note-field small {
+  justify-self: end;
+  color: #67717b;
+  font-weight: 600;
+}
+
+.booking-credit-notice {
+  display: grid;
+  gap: .25rem;
+  padding: .9rem 1rem;
+  color: #244832;
+  background: #edf7f1;
+  border-left: 4px solid #2d7652;
+}
+
+.booking-credit-notice span {
+  color: #4c6556;
+  font-size: .85rem;
+}
+
+/* ------------------------------
+   Instructor availability
+------------------------------ */
+.availability-edit-state {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  padding: .9rem 1rem;
+  background: #fff;
+  border: 1px solid var(--gray-200);
+}
+
+.availability-edit-state > div {
+  display: grid;
+  gap: .2rem;
+}
+
+.availability-edit-state span {
+  color: #606b75;
+  font-size: .84rem;
+}
+
+.availability-edit-state.is-dirty {
+  background: #fff8e9;
+  border-color: #e0bf75;
+}
+
+.availability-edit-state.is-saved {
+  background: #edf7f1;
+  border-color: #acd1ba;
+}
+
+.availability-shortcuts {
+  display: grid;
+  grid-template-columns: minmax(230px, 1fr) minmax(155px, .55fr) repeat(3, auto);
+  gap: .65rem;
+  align-items: end;
+  padding: .9rem;
+  background: #f7f5f0;
+  border: 1px solid var(--gray-200);
+}
+
+.availability-shortcuts > div:first-child {
+  display: flex;
+  align-items: flex-start;
+  gap: .6rem;
+}
+
+.availability-shortcuts > div:first-child > svg {
+  flex: 0 0 auto;
+  color: var(--blue);
+}
+
+.availability-shortcuts > div:first-child > div,
+.availability-shortcuts label {
+  display: grid;
+  gap: .25rem;
+}
+
+.availability-shortcuts span,
+.availability-member-preview > small {
+  color: #646e78;
+  font-size: .8rem;
+}
+
+.availability-shortcuts label {
+  font-size: .78rem;
+  font-weight: 850;
+}
+
+.availability-shortcuts .button {
+  min-height: 46px;
+  padding-inline: .75rem;
+  white-space: nowrap;
+}
+
+.availability-member-preview {
+  display: grid;
+  gap: .9rem;
+  margin-top: 1rem;
+  padding: 1rem;
+  background: #f7fafc;
+  border: 1px solid #cad6e0;
+}
+
+.availability-member-preview__heading {
+  display: flex;
+  align-items: flex-start;
+  gap: .65rem;
+}
+
+.availability-member-preview__heading > svg {
+  color: var(--blue);
+}
+
+.availability-member-preview h3,
+.availability-member-preview p {
+  margin: 0;
+}
+
+.availability-preview-metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(135px, 1fr));
+  gap: .55rem;
+}
+
+.availability-preview-metrics > div {
+  display: grid;
+  gap: .15rem;
+  padding: .75rem;
+  background: #fff;
+  border: 1px solid #d9e1e8;
+}
+
+.availability-preview-metrics strong {
+  color: #1d3e5d;
+  font-size: 1.35rem;
+}
+
+.availability-preview-metrics span {
+  color: #66717b;
+  font-size: .74rem;
+}
+
+.availability-validation {
+  display: grid;
+  gap: .45rem;
+  padding: .9rem 1rem;
+  border-left: 4px solid;
+}
+
+.availability-validation ul {
+  display: grid;
+  gap: .25rem;
+  margin: 0;
+  padding-left: 1.2rem;
+}
+
+.availability-validation.is-error {
+  color: #6f2222;
+  background: #fff0f0;
+  border-color: #b83e3e;
+}
+
+.availability-validation.is-warning {
+  color: #61430b;
+  background: #fff8e7;
+  border-color: #b98725;
+}
+
+/* ------------------------------
+   Reports
+------------------------------ */
+.report-header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: .55rem;
+}
+
+.report-section-select {
+  display: none;
+  gap: .35rem;
+  margin: 1rem 0;
+  font-weight: 850;
+}
+
+.report-table-tools {
+  display: grid;
+  grid-template-columns: minmax(240px, 1fr) minmax(175px, auto) auto;
+  gap: .7rem;
+  align-items: end;
+  padding: .85rem;
+  background: #f7f5f0;
+  border: 1px solid var(--gray-200);
+}
+
+.report-table-tools--attendance {
+  grid-template-columns: minmax(280px, 1fr) minmax(150px, auto) minmax(150px, auto) auto;
+}
+
+.report-table-tools label {
+  display: grid;
+  gap: .3rem;
+  color: #303840;
+  font-size: .78rem;
+  font-weight: 850;
+}
+
+.report-search-field {
+  position: relative;
+}
+
+.report-search-field > svg {
+  position: absolute;
+  left: .75rem;
+  bottom: 14px;
+  color: #66717b;
+  pointer-events: none;
+}
+
+.report-search-field input {
+  padding-left: 2.2rem !important;
+}
+
+.report-table-tools input,
+.report-table-tools select,
+.report-section-select select {
+  min-height: 46px;
+  padding: .65rem .75rem;
+  color: #15191e;
+  background: #fff;
+  border: 1px solid var(--gray-300);
+  font: inherit;
+}
+
+.report-table-tools > small {
+  align-self: center;
+  color: #65707b;
+  white-space: nowrap;
+}
+
+.report-table caption {
+  padding: .8rem 1rem;
+  color: #39434d;
+  background: #f7f5f0;
+  font-weight: 800;
+  text-align: left;
+}
+
+.report-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: #eef1f3;
+  box-shadow: 0 1px 0 var(--gray-300);
+}
+
+/* ------------------------------
+   Wolf Guide recovery
+------------------------------ */
+.wolf-guide-heading-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.wolf-guide-reset,
+.wolf-guide-retry {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .35rem;
+  color: #f1f4f7;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, .25);
+  font: inherit;
+  font-size: .78rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.wolf-guide-reset {
+  min-height: 40px;
+  padding: .55rem .7rem;
+}
+
+.wolf-guide-reset:disabled {
+  cursor: default;
+  opacity: .45;
+}
+
+.wolf-guide-message.is-failed {
+  outline: 2px solid #d47d7d;
+}
+
+.wolf-guide-retry {
+  margin-top: .55rem;
+  padding: .4rem .55rem;
+  color: #7a2222;
+  background: #fff;
+  border-color: #d7a0a0;
+}
+
+.wolf-guide-message.is-pending {
+  animation: wolf-guide-pulse 1.2s ease-in-out infinite;
+}
+
+.wolf-guide-composer {
+  display: grid;
+  gap: .3rem;
+}
+
+.wolf-guide-composer small,
+.wolf-guide-persistence-note {
+  color: rgba(255, 255, 255, .65);
+  font-size: .72rem;
+}
+
+.wolf-guide-composer small {
+  justify-self: end;
+}
+
+.wolf-guide-persistence-note {
+  margin: 0;
+}
+
+.wolf-guide-error {
+  margin: 0;
+  padding: .65rem .75rem;
+  color: #ffdada;
+  background: rgba(136, 28, 28, .35);
+  border: 1px solid rgba(255, 160, 160, .4);
+}
+
+@keyframes wolf-guide-pulse {
+  0%, 100% { opacity: .62; }
+  50% { opacity: 1; }
+}
+
+@media (max-width: 1050px) {
+  .booking-workflow__layout {
+    grid-template-columns: 1fr;
+  }
+
+  .booking-summary-card {
+    position: static;
+    grid-row: 1;
+  }
+
+  .booking-summary-card dl {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+
+  .booking-summary-card dl > div {
+    grid-template-columns: 1fr;
+  }
+
+  .booking-summary-card dd {
+    text-align: left;
+  }
+
+  .availability-shortcuts {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .availability-shortcuts > div:first-child {
+    grid-column: 1 / -1;
+  }
+
+  .report-table-tools,
+  .report-table-tools--attendance {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 760px) {
+  .booking-summary-card {
+    grid-row: auto;
+  }
+
+  .booking-stepper ol {
+    grid-template-columns: repeat(4, minmax(58px, 1fr));
+  }
+
+  .booking-stepper button {
+    min-height: 62px;
+    flex-direction: column;
+    gap: .25rem;
+    padding: .45rem .25rem;
+  }
+
+  .booking-stepper button strong {
+    font-size: .68rem;
+  }
+
+  .booking-stepper li:not(:last-child)::after {
+    display: none;
+  }
+
+  .booking-step-panel {
+    min-height: 0;
+  }
+
+  .booking-time-toolbar,
+  .booking-review-details {
+    grid-template-columns: 1fr;
+  }
+
+  .booking-next-available {
+    width: 100%;
+  }
+
+  .booking-summary-card dl {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .availability-edit-state,
+  .wolf-guide-heading-row {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .availability-edit-state .button,
+  .wolf-guide-reset {
+    width: 100%;
+  }
+
+  .report-tabs {
+    display: none;
+  }
+
+  .report-section-select {
+    display: grid;
+  }
+
+  .report-header-actions {
+    width: 100%;
+    justify-content: stretch;
+  }
+
+  .report-header-actions .button {
+    flex: 1 1 180px;
+  }
+}
+
+@media (max-width: 620px) {
+  .booking-package-options,
+  .booking-participant-options,
+  .booking-slot-options,
+  .booking-summary-card dl,
+  .availability-shortcuts,
+  .report-table-tools,
+  .report-table-tools--attendance {
+    grid-template-columns: 1fr;
+  }
+
+  .booking-step-actions {
+    flex-direction: column-reverse;
+  }
+
+  .booking-step-actions .button {
+    width: 100%;
+  }
+
+  .booking-slot-group {
+    grid-template-columns: 1fr;
+  }
+
+  .booking-slot-options {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .availability-shortcuts .button {
+    width: 100%;
+  }
+
+  .report-table-tools > small {
+    white-space: normal;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wolf-guide-message.is-pending {
+    animation: none;
+  }
+}

@@ -15,6 +15,7 @@ import './styles/notifications.css';
 import './styles/dashboard-refinement.css';
 import './styles/app-shells.css';
 import './styles/operational-design-system.css';
+import './styles/workflow-refinement.css';
 import App from './App';
 import { AuthProvider } from './context/AuthContext';
 import { AppSessionProvider } from './context/AppSessionContext';
