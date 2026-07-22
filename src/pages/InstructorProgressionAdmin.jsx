@@ -185,7 +185,7 @@ export default function InstructorProgressionAdmin() {
                     <h1>Instructor access required</h1>
                     <p>{roleError || 'This page is available only to configured instructors and administrators.'}</p>
                     <button className="button" type="button" onClick={refreshRole}>Check access again</button>
-                    <Link className="text-link" to="/member">Return to member home</Link>
+                    <Link className="text-link" to="/instructor">Return to instructor overview</Link>
                 </div>
             </section>
         );
@@ -195,7 +195,7 @@ export default function InstructorProgressionAdmin() {
         <section className="progression-admin-page">
             <div className="container progression-admin-shell">
                 <div className="progression-page__topline">
-                    <Link className="text-link" to="/member"><ArrowLeft size={17} /> Member home</Link>
+                    <Link className="text-link" to="/instructor"><ArrowLeft size={17} /> Instructor overview</Link>
                     <div className="progression-page__links">
                         <Link className="text-link" to="/instructor/content"><BookOpen size={17} /> Manage training references</Link>
                         <button className="text-link" type="button" onClick={loadQueue} disabled={loading}>

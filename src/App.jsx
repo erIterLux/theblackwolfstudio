@@ -1,7 +1,11 @@
 import { lazy, Suspense } from 'react';
 import { Route, Routes } from 'react-router-dom';
-import AppShell from './components/AppShell';
+import InstructorRoute from './components/InstructorRoute';
+import InstructorShell from './components/InstructorShell';
+import MarketingShell from './components/MarketingShell';
+import MemberShell from './components/MemberShell';
 import ProtectedRoute from './components/ProtectedRoute';
+import ScrollToTop from './components/ScrollToTop';
 import './styles/progression.css';
 import './styles/content.css';
 import './styles/private-training.css';
@@ -37,6 +41,7 @@ const InstructorPrivateTrainingCalendar = lazy(() => import('./pages/InstructorP
 const InstructorReportsPage = lazy(() => import('./pages/InstructorReportsPage'));
 const NotificationsPage = lazy(() => import('./pages/NotificationsPage'));
 const InstructorAnnouncementsAdmin = lazy(() => import('./pages/InstructorAnnouncementsAdmin'));
+const InstructorHome = lazy(() => import('./pages/InstructorHome'));
 const ProgramsPage = lazy(() => import('./pages/ProgramsPage'));
 const ProgressionPage = lazy(() => import('./pages/ProgressionPage'));
 const InstructorProgressionAdmin = lazy(() => import('./pages/InstructorProgressionAdmin'));
@@ -50,8 +55,9 @@ function RouteLoader() {
 export default function App() {
     return (
         <Suspense fallback={<RouteLoader />}>
+            <ScrollToTop />
             <Routes>
-                <Route element={<AppShell />}>
+                <Route element={<MarketingShell />}>
                     <Route index element={<HomePage />} />
                     <Route path="programs" element={<ProgramsPage />} />
                     <Route path="schedule" element={<EventsPage />} />
@@ -64,166 +70,48 @@ export default function App() {
                     <Route path="order/:orderId" element={<OrderDetailsPage />} />
                     <Route path="contact" element={<ContactPage />} />
                     <Route path="login" element={<LoginPage />} />
-                    <Route
-                        path="member"
-                        element={
-                            <ProtectedRoute>
-                                <MemberDashboard />
-                            </ProtectedRoute>
-                        }
-                    />
-                    <Route
-                        path="member/progression"
-                        element={
-                            <ProtectedRoute>
-                                <ProgressionPage />
-                            </ProtectedRoute>
-                        }
-                    />
-                    <Route
-                        path="member/library"
-                        element={
-                            <ProtectedRoute>
-                                <MemberLibraryPage />
-                            </ProtectedRoute>
-                        }
-                    />
-                    <Route
-                        path="member/events"
-                        element={
-                            <ProtectedRoute>
-                                <MemberEventsPage />
-                            </ProtectedRoute>
-                        }
-                    />
-                    <Route
-                        path="member/private-training"
-                        element={
-                            <ProtectedRoute>
-                                <MemberPrivateTrainingPage />
-                            </ProtectedRoute>
-                        }
-                    />
-                    <Route
-                        path="member/private-training/book"
-                        element={
-                            <ProtectedRoute>
-                                <PrivateTrainingBookingPage />
-                            </ProtectedRoute>
-                        }
-                    />
-                    <Route
-                        path="member/purchases"
-                        element={
-                            <ProtectedRoute>
-                                <MemberPurchasesPage />
-                            </ProtectedRoute>
-                        }
-                    />
-                    <Route
-                        path="member/notifications"
-                        element={
-                            <ProtectedRoute>
-                                <NotificationsPage />
-                            </ProtectedRoute>
-                        }
-                    />
-                    <Route
-                        path="instructor/progression"
-                        element={
-                            <ProtectedRoute>
-                                <InstructorProgressionAdmin />
-                            </ProtectedRoute>
-                        }
-                    />
-                    <Route
-                        path="instructor/content"
-                        element={
-                            <ProtectedRoute>
-                                <InstructorContentAdmin />
-                            </ProtectedRoute>
-                        }
-                    />
-                    <Route
-                        path="instructor/events"
-                        element={
-                            <ProtectedRoute>
-                                <InstructorEventsAdmin />
-                            </ProtectedRoute>
-                        }
-                    />
-                    <Route
-                        path="instructor/events/:eventId/check-in"
-                        element={
-                            <ProtectedRoute>
-                                <InstructorEventCheckIn />
-                            </ProtectedRoute>
-                        }
-                    />
-                    <Route
-                        path="instructor/discounts"
-                        element={
-                            <ProtectedRoute>
-                                <InstructorDiscountsAdmin />
-                            </ProtectedRoute>
-                        }
-                    />
-                    <Route
-                        path="instructor/commerce/orders"
-                        element={
-                            <ProtectedRoute>
-                                <InstructorOrdersAdmin />
-                            </ProtectedRoute>
-                        }
-                    />
-                    <Route
-                        path="instructor/private-training"
-                        element={
-                            <ProtectedRoute>
-                                <InstructorPrivateTrainingAdmin />
-                            </ProtectedRoute>
-                        }
-                    />
-                    <Route
-                        path="instructor/availability"
-                        element={
-                            <ProtectedRoute>
-                                <InstructorAvailabilityAdmin />
-                            </ProtectedRoute>
-                        }
-                    />
-                    <Route
-                        path="instructor/private-training/calendar"
-                        element={
-                            <ProtectedRoute>
-                                <InstructorPrivateTrainingCalendar />
-                            </ProtectedRoute>
-                        }
-                    />
-                    <Route
-                        path="instructor/reports"
-                        element={
-                            <ProtectedRoute>
-                                <InstructorReportsPage />
-                            </ProtectedRoute>
-                        }
-                    />
-                    <Route
-                        path="instructor/reports/:reportSection"
-                        element={
-                            <ProtectedRoute>
-                                <InstructorReportsPage />
-                            </ProtectedRoute>
-                        }
-                    />
-                    <Route
-                        path="instructor/announcements"
-                        element={
-                            <ProtectedRoute>
-                                <InstructorAnnouncementsAdmin />
-                            </ProtectedRoute>
-                        }
-                    />
+                </Route>
+
+                <Route
+                    element={(
+                        <ProtectedRoute>
+                            <MemberShell />
+                        </ProtectedRoute>
+                    )}
+                >
+                    <Route path="member" element={<MemberDashboard />} />
+                    <Route path="member/progression" element={<ProgressionPage />} />
+                    <Route path="member/library" element={<MemberLibraryPage />} />
+                    <Route path="member/events" element={<MemberEventsPage />} />
+                    <Route path="member/private-training" element={<MemberPrivateTrainingPage />} />
+                    <Route path="member/private-training/book" element={<PrivateTrainingBookingPage />} />
+                    <Route path="member/purchases" element={<MemberPurchasesPage />} />
+                    <Route path="member/notifications" element={<NotificationsPage />} />
+                </Route>
+
+                <Route
+                    element={(
+                        <ProtectedRoute>
+                            <InstructorRoute>
+                                <InstructorShell />
+                            </InstructorRoute>
+                        </ProtectedRoute>
+                    )}
+                >
+                    <Route path="instructor" element={<InstructorHome />} />
+                    <Route path="instructor/progression" element={<InstructorProgressionAdmin />} />
+                    <Route path="instructor/content" element={<InstructorContentAdmin />} />
+                    <Route path="instructor/events" element={<InstructorEventsAdmin />} />
+                    <Route path="instructor/events/:eventId/check-in" element={<InstructorEventCheckIn />} />
+                    <Route path="instructor/discounts" element={<InstructorDiscountsAdmin />} />
+                    <Route path="instructor/commerce/orders" element={<InstructorOrdersAdmin />} />
+                    <Route path="instructor/private-training" element={<InstructorPrivateTrainingAdmin />} />
+                    <Route path="instructor/availability" element={<InstructorAvailabilityAdmin />} />
+                    <Route path="instructor/private-training/calendar" element={<InstructorPrivateTrainingCalendar />} />
+                    <Route path="instructor/reports" element={<InstructorReportsPage />} />
+                    <Route path="instructor/reports/:reportSection" element={<InstructorReportsPage />} />
+                    <Route path="instructor/announcements" element={<InstructorAnnouncementsAdmin />} />
+                    <Route path="instructor/notifications" element={<NotificationsPage />} />
                 </Route>
             </Routes>
         </Suspense>

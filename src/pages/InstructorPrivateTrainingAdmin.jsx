@@ -263,7 +263,7 @@ export default function InstructorPrivateTrainingAdmin() {
             <div className="container">
                 <div className="admin-page-heading">
                     <div>
-                        <Link className="text-link" to="/member"><ArrowLeft size={17} /> Member home</Link>
+                        <Link className="text-link" to="/instructor"><ArrowLeft size={17} /> Instructor overview</Link>
                         <p className="eyebrow">Instructor tools</p>
                         <h1>Private training</h1>
                         <p>Create packages and manage session credits for groups of up to three.</p>

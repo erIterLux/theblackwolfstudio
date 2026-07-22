@@ -212,8 +212,8 @@ export default function InstructorAvailabilityAdmin() {
             <div className="container">
                 <div className="member-header member-header--refined">
                     <div>
-                        <Link className="text-link" to="/member">
-                            <ArrowLeft size={17} /> Member home
+                        <Link className="text-link" to="/instructor">
+                            <ArrowLeft size={17} /> Instructor overview
                         </Link>
                         <p className="eyebrow">Instructor availability</p>
                         <h1>Control when private sessions can be booked.</h1>

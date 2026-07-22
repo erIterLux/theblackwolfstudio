@@ -7,6 +7,7 @@ import { AppSessionProvider } from './context/AppSessionContext';
 import { NotificationProvider } from './context/NotificationContext';
 import './styles/global.css';
 import './styles/platform.css';
+import './styles/app-shells.css';
 
 createRoot(document.getElementById('root')).render(
     <StrictMode>

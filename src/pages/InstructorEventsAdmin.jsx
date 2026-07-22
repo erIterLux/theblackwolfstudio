@@ -328,7 +328,7 @@ export default function InstructorEventsAdmin() {
             <div className="container">
                 <div className="admin-page-heading">
                     <div>
-                        <Link className="text-link" to="/member"><ArrowLeft size={17} /> Member home</Link>
+                        <Link className="text-link" to="/instructor"><ArrowLeft size={17} /> Instructor overview</Link>
                         <p className="eyebrow">Instructor tools</p>
                         <h1>Events and registration</h1>
                         <p>Create paid or free events and track every participant separately. Waiver signing and check-in remain distinct states.</p>

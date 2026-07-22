@@ -11,7 +11,7 @@ import {
     SlidersHorizontal,
 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useNotificationCenter } from '../context/NotificationContext';
 import useNotifications from '../hooks/useNotifications';
 import {
@@ -67,6 +67,8 @@ function formatTime(value) {
 
 export default function NotificationsPage() {
     const navigate = useNavigate();
+    const { pathname } = useLocation();
+    const defaultHome = pathname.startsWith('/instructor') ? '/instructor' : '/member';
     const {
         unreadCount,
         loading: countLoading,
@@ -132,7 +134,7 @@ export default function NotificationsPage() {
         } catch (readError) {
             console.error('Notification could not be marked read:', readError);
         }
-        navigate(item.actionPath || '/member');
+        navigate(item.actionPath || defaultHome);
     };
 
     const refreshAll = async () => {

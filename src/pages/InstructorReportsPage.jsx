@@ -315,7 +315,7 @@ export default function InstructorReportsPage() {
             <div className="container">
                 <div className="member-header member-header--refined reports-heading">
                     <div>
-                        <Link className="text-link" to="/member"><ArrowLeft size={17} /> Member home</Link>
+                        <Link className="text-link" to="/instructor"><ArrowLeft size={17} /> Instructor overview</Link>
                         <p className="eyebrow">Instructor operations</p>
                         <h1>Studio reports</h1>
                         <p>Revenue, attendance, memberships, private-training obligations, member attention, and system health in one place.</p>
