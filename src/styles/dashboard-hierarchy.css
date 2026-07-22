@@ -1,0 +1,218 @@
+/* Refinement Pass 7: member dashboard hierarchy and lightweight brand assets */
+
+.member-dashboard-page .member-header {
+  margin-bottom: 1.35rem;
+}
+
+.member-next-step {
+  --next-step-accent: #2e6f9f;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 1rem;
+  align-items: center;
+  margin-bottom: clamp(2rem, 5vw, 3.5rem);
+  padding: clamp(1.15rem, 2.5vw, 1.65rem);
+  color: #15191e;
+  background: #ffffff;
+  border: 1px solid #d7dee5;
+  border-left: 6px solid var(--next-step-accent);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, .14);
+}
+
+.member-next-step--attention {
+  --next-step-accent: #a23d31;
+  background: #fff7f4;
+  border-color: #e9c8c1;
+}
+
+.member-next-step--notice {
+  --next-step-accent: #9a7417;
+  background: #fffaf0;
+  border-color: #eadbb7;
+}
+
+.member-next-step--upcoming {
+  --next-step-accent: #2d6891;
+  background: #f5f9fc;
+  border-color: #cbdce8;
+}
+
+.member-next-step--ready {
+  --next-step-accent: #2f7450;
+  background: #f4faf6;
+  border-color: #c9dfd1;
+}
+
+.member-next-step--loading {
+  opacity: .84;
+}
+
+.member-next-step__icon {
+  display: grid;
+  width: 48px;
+  height: 48px;
+  place-items: center;
+  color: #ffffff;
+  background: var(--next-step-accent);
+  border-radius: 50%;
+}
+
+.member-next-step__icon svg {
+  width: 23px;
+  height: 23px;
+}
+
+.member-next-step__copy {
+  display: grid;
+  gap: .2rem;
+  min-width: 0;
+}
+
+.member-next-step__copy .eyebrow,
+.member-next-step__copy h2,
+.member-next-step__copy p {
+  margin: 0;
+}
+
+.member-next-step__copy h2 {
+  color: #15191e;
+  font-size: clamp(1.55rem, 3vw, 2.25rem);
+  line-height: 1.05;
+}
+
+.member-next-step__copy p:last-child {
+  color: #5b646d;
+  font-size: .96rem;
+}
+
+.member-next-step__action {
+  white-space: nowrap;
+}
+
+.member-dashboard-section {
+  display: grid;
+  gap: 1rem;
+}
+
+.member-dashboard-section + .member-dashboard-section {
+  margin-top: clamp(2.75rem, 6vw, 4.5rem);
+  padding-top: clamp(2rem, 4vw, 3rem);
+  border-top: 1px solid rgba(255, 255, 255, .15);
+}
+
+.member-dashboard-section__heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: end;
+}
+
+.member-dashboard-section__heading .eyebrow,
+.member-dashboard-section__heading h2 {
+  margin: 0;
+}
+
+.member-dashboard-section__heading h2 {
+  max-width: 760px;
+  color: #ffffff;
+  font-size: clamp(1.65rem, 3vw, 2.5rem);
+  line-height: 1.08;
+}
+
+.member-grid--practice,
+.member-grid--secondary {
+  align-items: stretch;
+}
+
+.member-grid--practice .progression-summary-card {
+  grid-column: 1 / -1;
+}
+
+.member-grid--practice .membership-status-card {
+  grid-column: 1 / -1;
+}
+
+.member-grid--secondary {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.member-grid--secondary .dashboard-card {
+  min-height: 100%;
+}
+
+.member-reflection-grid {
+  display: grid;
+  grid-template-columns: minmax(280px, .72fr) minmax(0, 1.28fr);
+  gap: 1rem;
+  align-items: stretch;
+}
+
+.member-reflection-grid .dashboard-card--checkin,
+.member-reflection-grid .wolf-guide-panel {
+  min-width: 0;
+  height: 100%;
+}
+
+.member-reflection-grid .dashboard-card--checkin {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.member-reflection-grid .dashboard-hint {
+  margin-top: auto;
+}
+
+@media (max-width: 1100px) {
+  .member-grid--secondary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .member-grid--secondary .dashboard-card--library {
+    grid-column: 1 / -1;
+  }
+
+  .member-reflection-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 760px) {
+  .member-next-step {
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: start;
+  }
+
+  .member-next-step__action {
+    grid-column: 1 / -1;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .member-dashboard-section__heading {
+    align-items: start;
+  }
+
+  .member-grid--secondary {
+    grid-template-columns: 1fr;
+  }
+
+  .member-grid--secondary .dashboard-card--library {
+    grid-column: auto;
+  }
+}
+
+@media (max-width: 520px) {
+  .member-next-step {
+    grid-template-columns: 1fr;
+  }
+
+  .member-next-step__icon {
+    width: 42px;
+    height: 42px;
+  }
+
+  .member-next-step__action {
+    grid-column: auto;
+  }
+}

@@ -58,12 +58,11 @@ export default function LoginPage() {
     return (
         <section className="auth-page">
             <div className="auth-page__visual">
-                <img src="/images/black-wolf-mark.png" alt="" />
+                <img src="/images/black-wolf-mark-ui.png" alt="" width="256" height="256" decoding="async" />
                 <p className="eyebrow eyebrow--light">Member space</p>
                 <h1>Continue your practice between classes.</h1>
                 <p>
-                    Training notes, class resources, progress tracking, and the
-                    future Wolf Guide will live here.
+                    Training notes, class resources, progression, bookings, and Wolf Guide are available here.
                 </p>
             </div>
 

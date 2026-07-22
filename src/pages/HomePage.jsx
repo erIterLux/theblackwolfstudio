@@ -50,7 +50,7 @@ export default function HomePage() {
                         <span className="hero__dojo-post hero__dojo-post--left" />
                         <span className="hero__dojo-post hero__dojo-post--right" />
                         <span className="hero__dojo-mark">
-                            <img src="/images/black-wolf-mark.png" alt="" />
+                            <img src="/images/black-wolf-mark-hero.png" alt="" width="640" height="640" decoding="async" fetchPriority="high" />
                         </span>
                     </div>
 
@@ -122,7 +122,7 @@ export default function HomePage() {
                     <SectionHeading
                         eyebrow="Membership"
                         title="Choose a rhythm you can sustain."
-                        body="These are starter membership concepts and can be adjusted once your class model, pricing, and studio schedule are finalized."
+                        body="Choose the level of access and support that fits how you want to train. Every plan is built around consistency, progression, and sustainable practice."
                     />
                     <div className="membership-grid membership-grid--preview">
                         {memberships.map((plan) => (
@@ -150,15 +150,15 @@ export default function HomePage() {
                         </div>
                     </div>
                     <div>
-                        <p className="eyebrow">Member experience · planned feature</p>
+                        <p className="eyebrow">Member experience · available now</p>
                         <h2>A grounded AI companion, built around practice—not diagnosis.</h2>
                         <p>
-                            The future Wolf Guide can help members review techniques, choose a short regulation practice, prepare for class, and reflect after training. It should stay clearly within educational and wellness support boundaries and route urgent or clinical concerns to qualified human help.
+                            Wolf Guide helps members review techniques, choose a short regulation practice, prepare for class, and reflect after training. It stays within educational and wellness support boundaries and directs urgent or clinical concerns to qualified human help.
                         </p>
                         <div className="feature-pills">
                             <span>Technique review</span><span>Regulation prompts</span><span>Practice planning</span><span>Member context</span>
                         </div>
-                        <Link to="/login" className="button">Preview Member Space <CirclePlay size={18} /></Link>
+                        <Link to="/login" className="button">Open Member Space <CirclePlay size={18} /></Link>
                     </div>
                 </div>
             </section>

@@ -17,6 +17,7 @@ import './styles/app-shells.css';
 import './styles/operational-design-system.css';
 import './styles/workflow-refinement.css';
 import './styles/verification-hardening.css';
+import './styles/dashboard-hierarchy.css';
 import App from './App';
 import AppErrorBoundary from './components/system/AppErrorBoundary';
 import { AuthProvider } from './context/AuthContext';

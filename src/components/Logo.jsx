@@ -8,7 +8,14 @@ export default function Logo({
     return (
         <Link to={to} className="brand" aria-label={label}>
             <span className="brand__mark-wrap">
-                <img className="brand__mark" src="/images/black-wolf-mark.png" alt="" />
+                <img
+                    className="brand__mark"
+                    src="/images/black-wolf-mark-ui.png"
+                    alt=""
+                    width="256"
+                    height="256"
+                    decoding="async"
+                />
             </span>
             {!compact && (
                 <span className="brand__copy">
