@@ -1,0 +1,824 @@
+/*
+ * Refinement Pass 4
+ * Operational design-system and readability foundation.
+ *
+ * This file is intentionally loaded after every legacy feature stylesheet.
+ * It supplies semantic surface tokens, operational typography, accessible
+ * focus states, consistent controls, and safe light/dark content defaults.
+ */
+
+:root {
+  --ui-canvas: #0a0d11;
+  --ui-canvas-raised: #10151b;
+  --ui-surface: #ffffff;
+  --ui-surface-muted: #f5f3ee;
+  --ui-surface-subtle: #ece9e2;
+  --ui-border: #d9d6cf;
+  --ui-border-strong: #b9bec4;
+  --ui-ink: #171b20;
+  --ui-ink-muted: #5c646d;
+  --ui-ink-subtle: #737b84;
+  --ui-on-dark: #f6f3ed;
+  --ui-on-dark-muted: #b9c2cc;
+  --ui-accent: #435d75;
+  --ui-accent-hover: #334b61;
+  --ui-accent-soft: #e8eef3;
+  --ui-success: #0b6a4b;
+  --ui-success-bg: #e5f4ed;
+  --ui-warning: #7a5200;
+  --ui-warning-bg: #fff4d6;
+  --ui-danger: #9e2635;
+  --ui-danger-bg: #fbecef;
+  --ui-info: #315a78;
+  --ui-info-bg: #e9f1f7;
+  --ui-focus: #b8d8f2;
+  --ui-radius-sm: 6px;
+  --ui-radius-md: 10px;
+  --ui-radius-lg: 14px;
+  --ui-shadow-sm: 0 1px 2px rgba(3, 8, 14, .08), 0 8px 24px rgba(3, 8, 14, .06);
+  --ui-shadow-md: 0 18px 45px rgba(3, 8, 14, .14);
+  --ui-control-height: 46px;
+  --ui-content-width: 1220px;
+}
+
+/* Future-facing semantic utilities. New UI should use these rather than
+   inheriting colors from a page wrapper. */
+.surface-light,
+.ui-card,
+.ui-panel {
+  --surface-bg: var(--ui-surface);
+  --surface-text: var(--ui-ink);
+  --surface-muted: var(--ui-ink-muted);
+  color: var(--surface-text);
+  background: var(--surface-bg);
+}
+
+.surface-dark {
+  --surface-bg: var(--ui-canvas-raised);
+  --surface-text: var(--ui-on-dark);
+  --surface-muted: var(--ui-on-dark-muted);
+  color: var(--surface-text);
+  background: var(--surface-bg);
+}
+
+.ui-card,
+.ui-panel {
+  border: 1px solid var(--ui-border);
+  border-radius: var(--ui-radius-lg);
+  box-shadow: var(--ui-shadow-sm);
+}
+
+.ui-card { padding: clamp(1.15rem, 2.2vw, 1.65rem); }
+.ui-panel { padding: clamp(1.25rem, 2.8vw, 2rem); }
+
+/* Workspace canvas and page rhythm. */
+.portal-shell {
+  color-scheme: dark;
+  --portal-page-text: var(--ui-on-dark);
+  --portal-page-muted: var(--ui-on-dark-muted);
+  --portal-light-text: var(--ui-ink);
+  --portal-light-muted: var(--ui-ink-muted);
+}
+
+.portal-main {
+  color: var(--portal-page-text);
+  background: var(--ui-canvas);
+}
+
+.portal-main > :where(.member-page, .notification-page, .announcement-admin-page) {
+  color: var(--portal-page-text);
+  background:
+    radial-gradient(circle at 86% 4%, rgba(93, 115, 139, .13), transparent 27rem),
+    var(--ui-canvas);
+}
+
+.portal-main .member-page {
+  min-height: calc(100vh - var(--portal-topbar-height));
+  padding: clamp(2.75rem, 5vw, 4.5rem) 0 clamp(4rem, 7vw, 6.5rem);
+}
+
+.portal-main .container {
+  width: min(var(--ui-content-width), calc(100% - 48px));
+}
+
+/* Operational typography: marketing display sizes no longer leak into forms,
+   reports, calendars, or dashboards. */
+.portal-main :where(h1, h2, h3, h4) {
+  text-wrap: balance;
+}
+
+.portal-main h1 {
+  margin-bottom: .75rem;
+  font-size: clamp(2.55rem, 4.7vw, 4.75rem);
+  line-height: .96;
+  letter-spacing: .012em;
+}
+
+.portal-main h2 {
+  margin-bottom: .75rem;
+  font-size: clamp(1.75rem, 2.8vw, 2.8rem);
+  line-height: 1;
+}
+
+.portal-main h3 {
+  margin-bottom: .55rem;
+  font-size: clamp(1.15rem, 1.7vw, 1.45rem);
+  line-height: 1.18;
+}
+
+.portal-main h4 {
+  margin: 0 0 .45rem;
+  font-size: 1rem;
+  line-height: 1.3;
+}
+
+.portal-main p,
+.portal-main li,
+.portal-main label,
+.portal-main td,
+.portal-main th {
+  line-height: 1.55;
+}
+
+.portal-main .member-header {
+  margin-bottom: clamp(1.8rem, 4vw, 3rem);
+}
+
+.portal-main .member-header h1 {
+  font-size: clamp(2.7rem, 4.9vw, 4.9rem);
+}
+
+.portal-main .member-header p:last-child,
+.portal-main .admin-page-heading > p,
+.portal-main .reports-heading > p {
+  max-width: 760px;
+  color: var(--portal-page-muted);
+  font-size: 1rem;
+}
+
+.portal-main .eyebrow {
+  color: #9eb1c2;
+  font-size: .75rem;
+  line-height: 1.35;
+}
+
+.portal-main small {
+  font-size: .8125rem;
+  line-height: 1.45;
+}
+
+.portal-main :where(
+  .dashboard-hint,
+  .field-hint,
+  .booking-help,
+  .booking-note,
+  .optional-label,
+  .private-admin-purchase-meta,
+  .notification-item__meta,
+  .report-chart-legend,
+  .report-chart__column,
+  .progression-video__hint
+) {
+  font-size: .875rem;
+  line-height: 1.5;
+}
+
+/* Light surfaces receive their own ink tokens rather than inheriting white
+   text from the dark workspace. This removes the recurring white-on-white bug. */
+.portal-main :where(
+  .dashboard-card,
+  .membership-status-card,
+  .progression-category-status,
+  .booking-panel,
+  .availability-summary > div,
+  .booking-admin-summary > div,
+  .booking-admin-toolbar,
+  .booking-admin-card,
+  .member-booking-card,
+  .past-bookings-details,
+  .progression-category,
+  .progression-admin-category,
+  .evidence-history article,
+  .feedback-timeline article,
+  .feedback-composer,
+  .related-content__items a,
+  .commerce-notice,
+  .empty-state-card,
+  .private-training-values > div,
+  .private-offer-card,
+  .private-checkout__section,
+  .purchase-confirmation-card,
+  .private-credit-display,
+  .private-participant-list span,
+  .private-admin-offer-list,
+  .private-admin-offer-editor,
+  .private-admin-purchase-card,
+  .event-card,
+  .event-checkout,
+  .event-confirmation-card,
+  .member-event-card,
+  .events-admin-editor,
+  .events-admin-list,
+  .events-admin-registrations,
+  .events-admin-registration-card,
+  .event-next-steps > div,
+  .event-confirmed-participants article,
+  .member-event-participants > div,
+  .events-admin-participant-list > div,
+  .waiver-event-summary,
+  .waiver-terms-card,
+  .waiver-signer-card,
+  .waiver-complete-card,
+  .event-check-in-event-meta,
+  .event-check-in-summary article,
+  .event-check-in-search,
+  .event-check-in-person,
+  .commerce-admin-editor,
+  .commerce-admin-list,
+  .commerce-admin-note,
+  .commerce-admin-access,
+  .commerce-admin-check,
+  .commerce-admin-switch,
+  .commerce-admin-code-card,
+  .purchase-section,
+  .purchase-empty-section,
+  .notification-panel,
+  .notification-item,
+  .notification-preferences,
+  .announcement-editor,
+  .announcement-list,
+  .announcement-card,
+  .instructor-home-card,
+  .report-range-panel,
+  .report-panel,
+  .report-table-wrap,
+  .report-metric,
+  .report-health-item,
+  .report-info
+) {
+  --surface-text: var(--ui-ink);
+  --surface-muted: var(--ui-ink-muted);
+  color: var(--surface-text);
+}
+
+.portal-main :where(
+  .dashboard-card,
+  .membership-status-card,
+  .booking-panel,
+  .booking-admin-card,
+  .member-booking-card,
+  .progression-category,
+  .progression-admin-category,
+  .private-offer-card,
+  .private-checkout__section,
+  .private-admin-purchase-card,
+  .event-card,
+  .event-checkout,
+  .event-confirmation-card,
+  .member-event-card,
+  .events-admin-editor,
+  .events-admin-list,
+  .events-admin-registrations,
+  .events-admin-registration-card,
+  .waiver-event-summary,
+  .waiver-terms-card,
+  .waiver-signer-card,
+  .waiver-complete-card,
+  .event-check-in-event-meta,
+  .event-check-in-search,
+  .event-check-in-person,
+  .commerce-admin-editor,
+  .commerce-admin-list,
+  .commerce-admin-code-card,
+  .purchase-section,
+  .notification-panel,
+  .notification-preferences,
+  .announcement-editor,
+  .announcement-list,
+  .instructor-home-card,
+  .report-range-panel,
+  .report-panel,
+  .report-table-wrap,
+  .report-metric,
+  .report-health-item
+) {
+  border-radius: var(--ui-radius-lg);
+}
+
+.portal-main :where(
+  .dashboard-card,
+  .membership-status-card,
+  .booking-panel,
+  .booking-admin-card,
+  .member-booking-card,
+  .private-offer-card,
+  .private-admin-purchase-card,
+  .event-card,
+  .event-confirmation-card,
+  .member-event-card,
+  .commerce-admin-code-card,
+  .purchase-section,
+  .notification-panel,
+  .notification-preferences,
+  .instructor-home-card,
+  .report-panel,
+  .report-metric
+) {
+  box-shadow: var(--ui-shadow-sm);
+}
+
+/* Ensure nested copy on light surfaces follows the surface token. */
+.portal-main :where(
+  .dashboard-card,
+  .membership-status-card,
+  .booking-panel,
+  .booking-admin-card,
+  .member-booking-card,
+  .progression-category,
+  .progression-admin-category,
+  .private-offer-card,
+  .private-checkout__section,
+  .private-admin-purchase-card,
+  .event-card,
+  .event-checkout,
+  .event-confirmation-card,
+  .member-event-card,
+  .events-admin-editor,
+  .events-admin-list,
+  .events-admin-registrations,
+  .events-admin-registration-card,
+  .waiver-event-summary,
+  .waiver-terms-card,
+  .waiver-signer-card,
+  .waiver-complete-card,
+  .event-check-in-event-meta,
+  .event-check-in-search,
+  .event-check-in-person,
+  .commerce-admin-editor,
+  .commerce-admin-list,
+  .commerce-admin-code-card,
+  .purchase-section,
+  .notification-panel,
+  .notification-preferences,
+  .announcement-editor,
+  .announcement-list,
+  .instructor-home-card,
+  .report-range-panel,
+  .report-panel,
+  .report-table-wrap,
+  .report-metric,
+  .report-health-item
+) :where(h1, h2, h3, h4, strong, label, dt, dd, li) {
+  color: var(--surface-text);
+}
+
+.portal-main :where(
+  .dashboard-card,
+  .membership-status-card,
+  .booking-panel,
+  .booking-admin-card,
+  .member-booking-card,
+  .progression-category,
+  .progression-admin-category,
+  .private-offer-card,
+  .private-checkout__section,
+  .private-admin-purchase-card,
+  .event-card,
+  .event-checkout,
+  .event-confirmation-card,
+  .member-event-card,
+  .events-admin-editor,
+  .events-admin-list,
+  .events-admin-registrations,
+  .events-admin-registration-card,
+  .waiver-event-summary,
+  .waiver-terms-card,
+  .waiver-signer-card,
+  .waiver-complete-card,
+  .event-check-in-event-meta,
+  .event-check-in-search,
+  .event-check-in-person,
+  .commerce-admin-editor,
+  .commerce-admin-list,
+  .commerce-admin-code-card,
+  .purchase-section,
+  .notification-panel,
+  .notification-preferences,
+  .announcement-editor,
+  .announcement-list,
+  .instructor-home-card,
+  .report-range-panel,
+  .report-panel,
+  .report-table-wrap,
+  .report-metric,
+  .report-health-item
+) :where(p, small, .field-hint, .dashboard-hint) {
+  color: var(--surface-muted);
+}
+
+/* Explicit dark surfaces keep light text. */
+.portal-main :where(
+  .dashboard-card--guide,
+  .wolf-guide-panel,
+  .wolf-guide-locked
+) {
+  --surface-text: var(--ui-on-dark);
+  --surface-muted: var(--ui-on-dark-muted);
+  color: var(--surface-text);
+}
+
+.portal-main :where(
+  .dashboard-card--guide,
+  .wolf-guide-panel,
+  .wolf-guide-locked
+) :where(h1, h2, h3, h4, strong, label) {
+  color: var(--surface-text);
+}
+
+.portal-main :where(
+  .dashboard-card--guide,
+  .wolf-guide-panel,
+  .wolf-guide-locked
+) :where(p, small) {
+  color: var(--surface-muted);
+}
+
+/* Forms and controls. */
+.portal-main :where(
+  input:not([type='checkbox']):not([type='radio']):not([type='range']),
+  select,
+  textarea
+) {
+  width: 100%;
+  min-height: var(--ui-control-height);
+  padding: .72rem .8rem;
+  color: var(--ui-ink);
+  caret-color: var(--ui-ink);
+  background-color: var(--ui-surface);
+  border: 1px solid var(--ui-border-strong);
+  border-radius: var(--ui-radius-sm);
+  box-shadow: none;
+  line-height: 1.35;
+}
+
+.portal-main textarea {
+  min-height: 108px;
+  resize: vertical;
+}
+
+.portal-main :where(input, select, textarea)::placeholder {
+  color: #7c838b;
+  opacity: 1;
+}
+
+.portal-main :where(input, select, textarea):disabled {
+  color: #6f767d;
+  background: #e9e7e2;
+  cursor: not-allowed;
+}
+
+.portal-main :where(
+  .dashboard-card--guide,
+  .wolf-guide-panel,
+  .wolf-guide-locked
+) :where(
+  input:not([type='checkbox']):not([type='radio']):not([type='range']),
+  select,
+  textarea
+) {
+  color: var(--ui-on-dark);
+  caret-color: var(--ui-on-dark);
+  background: rgba(0, 0, 0, .24);
+  border-color: rgba(255, 255, 255, .24);
+}
+
+.portal-main :where(
+  .dashboard-card--guide,
+  .wolf-guide-panel,
+  .wolf-guide-locked
+) :where(input, select, textarea)::placeholder {
+  color: rgba(246, 243, 237, .62);
+}
+
+.portal-main :where(input[type='checkbox'], input[type='radio']) {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
+  accent-color: var(--ui-accent);
+}
+
+.portal-main :where(.checkbox-row, .booking-check, .commerce-admin-check, .commerce-admin-switch) {
+  min-height: 44px;
+  align-items: center;
+  gap: .65rem;
+}
+
+.portal-main fieldset {
+  min-width: 0;
+}
+
+.portal-main legend {
+  color: inherit;
+  font-weight: 850;
+}
+
+/* Consistent action hierarchy. */
+.portal-main .button {
+  min-height: 44px;
+  padding: .72rem 1rem;
+  color: #fff;
+  background: var(--ui-accent);
+  border-color: var(--ui-accent);
+  border-radius: var(--ui-radius-sm);
+  box-shadow: none;
+  font-size: .875rem;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.portal-main .button:hover:not(:disabled) {
+  background: var(--ui-accent-hover);
+  border-color: var(--ui-accent-hover);
+  box-shadow: 0 8px 22px rgba(43, 67, 88, .2);
+  transform: translateY(-1px);
+}
+
+.portal-main .button--small {
+  min-height: 40px;
+  padding: .6rem .82rem;
+  font-size: .8125rem;
+}
+
+.portal-main :where(.button--ghost, .button--dark-ghost, .button--secondary) {
+  color: var(--ui-ink);
+  background: var(--ui-surface);
+  border-color: var(--ui-border-strong);
+}
+
+.portal-main :where(.button--ghost, .button--dark-ghost, .button--secondary):hover:not(:disabled) {
+  color: var(--ui-ink);
+  background: var(--ui-accent-soft);
+  border-color: #8fa5b8;
+}
+
+.portal-main :where(.button--ghost-light) {
+  color: var(--ui-on-dark);
+  background: transparent;
+  border-color: rgba(255, 255, 255, .34);
+}
+
+.portal-main :where(.button--danger) {
+  color: #fff;
+  background: var(--ui-danger);
+  border-color: var(--ui-danger);
+}
+
+.portal-main .text-link,
+.portal-main .report-link-button {
+  min-height: 40px;
+  align-items: center;
+  color: var(--ui-accent);
+  font-size: .875rem;
+  font-weight: 800;
+}
+
+.portal-main .icon-button {
+  width: 42px;
+  min-width: 42px;
+  height: 42px;
+  display: inline-grid;
+  place-items: center;
+  padding: 0;
+  border-radius: var(--ui-radius-sm);
+}
+
+/* Accessible keyboard focus across marketing and portal surfaces. */
+:where(
+  a,
+  button,
+  input,
+  select,
+  textarea,
+  summary,
+  [tabindex]:not([tabindex='-1'])
+):focus-visible {
+  outline: 3px solid var(--ui-focus);
+  outline-offset: 3px;
+}
+
+.portal-main :where(input, select, textarea):focus-visible {
+  border-color: var(--ui-accent);
+  outline: 3px solid rgba(86, 132, 169, .28);
+  outline-offset: 1px;
+}
+
+/* Alerts and status messaging. */
+.portal-main .form-status {
+  min-height: 44px;
+  padding: .78rem .9rem;
+  border: 1px solid transparent;
+  border-left-width: 4px;
+  border-radius: var(--ui-radius-sm);
+  font-size: .875rem;
+  line-height: 1.5;
+}
+
+.portal-main .form-status--success {
+  color: var(--ui-success);
+  background: var(--ui-success-bg);
+  border-color: #a7d7c4;
+  border-left-color: var(--ui-success);
+}
+
+.portal-main .form-status--error {
+  color: var(--ui-danger);
+  background: var(--ui-danger-bg);
+  border-color: #efb7c0;
+  border-left-color: var(--ui-danger);
+}
+
+.portal-main :where(.report-warning, .config-warning, .booking-no-slots) {
+  color: var(--ui-warning);
+  background: var(--ui-warning-bg);
+  border-color: #e8cc83;
+}
+
+.portal-main :where(
+  .membership-state,
+  .booking-status,
+  .event-person-status,
+  .purchase-status,
+  .report-status,
+  .event-check-in-status,
+  .announcement-priority
+) {
+  min-height: 28px;
+  display: inline-flex;
+  align-items: center;
+  padding: .32rem .58rem;
+  border-radius: 999px;
+  font-size: .75rem;
+  font-weight: 850;
+  line-height: 1.2;
+  letter-spacing: .035em;
+}
+
+/* Tables: readable defaults and keyboard/scroll usability. */
+.portal-main .report-table-wrap,
+.portal-main :where(.commerce-admin-table-wrap, .purchase-table-wrap) {
+  overflow: auto;
+  border: 1px solid var(--ui-border);
+  border-radius: var(--ui-radius-md);
+  background: var(--ui-surface);
+  scrollbar-gutter: stable;
+}
+
+.portal-main table {
+  color: var(--ui-ink);
+  background: var(--ui-surface);
+  border-collapse: collapse;
+}
+
+.portal-main th {
+  position: sticky;
+  z-index: 2;
+  top: 0;
+  color: #39434c;
+  background: #eceff1;
+  font-size: .8125rem;
+  letter-spacing: .045em;
+}
+
+.portal-main td {
+  color: var(--ui-ink);
+  font-size: .875rem;
+}
+
+.portal-main tbody tr:nth-child(even) td {
+  background: #faf9f6;
+}
+
+.portal-main tbody tr:hover td {
+  background: #eef3f6;
+}
+
+/* Loading and empty states. */
+.page-loader {
+  min-height: 50vh;
+  display: grid;
+  place-items: center;
+  padding: 2rem;
+  color: var(--ui-on-dark);
+  background: var(--ui-canvas);
+}
+
+.page-loader__content {
+  display: inline-flex;
+  align-items: center;
+  gap: .75rem;
+  color: var(--ui-on-dark-muted);
+  font-weight: 750;
+}
+
+.page-loader__spinner {
+  width: 22px;
+  height: 22px;
+  border: 3px solid rgba(255, 255, 255, .2);
+  border-top-color: #b8cad9;
+  border-radius: 50%;
+  animation: ui-spin .8s linear infinite;
+}
+
+@keyframes ui-spin {
+  to { transform: rotate(360deg); }
+}
+
+.portal-main :where(.empty-state-card, .report-empty, .notification-empty, .purchase-empty-section) {
+  padding: clamp(1.25rem, 3vw, 2rem);
+  color: var(--ui-ink);
+  background: var(--ui-surface-muted);
+  border: 1px dashed var(--ui-border-strong);
+  border-radius: var(--ui-radius-md);
+}
+
+/* Prevent sticky controls from obscuring focused content. */
+.portal-main :where(input, select, textarea, button, a, [tabindex]) {
+  scroll-margin-block: 110px 150px;
+}
+
+@media (max-width: 900px) {
+  .portal-main .container {
+    width: min(100% - 32px, var(--ui-content-width));
+  }
+
+  .portal-main .member-page {
+    padding-top: 2.5rem;
+  }
+
+  .portal-main h1,
+  .portal-main .member-header h1 {
+    font-size: clamp(2.35rem, 10vw, 3.75rem);
+  }
+
+  .portal-main h2 {
+    font-size: clamp(1.65rem, 6vw, 2.35rem);
+  }
+}
+
+@media (max-width: 640px) {
+  .portal-main .container {
+    width: min(100% - 24px, var(--ui-content-width));
+  }
+
+  .portal-main .member-page {
+    padding-top: 2rem;
+    padding-bottom: 4rem;
+  }
+
+  .portal-main .button-row,
+  .portal-main .header-button-group,
+  .portal-main .booking-action-buttons,
+  .portal-main .purchase-success-actions {
+    width: 100%;
+  }
+
+  .portal-main .button-row > .button,
+  .portal-main .header-button-group > .button,
+  .portal-main .booking-action-buttons > .button,
+  .portal-main .purchase-success-actions > .button {
+    flex: 1 1 100%;
+  }
+
+  .portal-main table {
+    min-width: 680px;
+  }
+}
+
+@media (prefers-contrast: more) {
+  :root {
+    --ui-border: #8d949b;
+    --ui-border-strong: #636b73;
+    --ui-focus: #d5ecff;
+  }
+
+  .portal-main .button {
+    border-width: 2px;
+  }
+}
+
+@media (forced-colors: active) {
+  :where(a, button, input, select, textarea):focus-visible {
+    outline: 2px solid Highlight;
+  }
+
+  .page-loader__spinner {
+    border-color: CanvasText;
+    border-top-color: Highlight;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-loader__spinner {
+    animation: none;
+  }
+}

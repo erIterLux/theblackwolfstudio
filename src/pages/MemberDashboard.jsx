@@ -14,7 +14,6 @@ import PurchaseSummaryCard from '../components/purchases/PurchaseSummaryCard';
 import WolfGuidePanel from '../components/wolf-guide/WolfGuidePanel';
 import { useAuth } from '../context/AuthContext';
 import useMemberDashboardSummary from '../hooks/useMemberDashboardSummary';
-import '../styles/dashboard-refinement.css';
 
 const checkIns = ['Activated', 'Steady', 'Tired', 'Disconnected'];
 

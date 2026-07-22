@@ -6,15 +6,6 @@ import MarketingShell from './components/MarketingShell';
 import MemberShell from './components/MemberShell';
 import ProtectedRoute from './components/ProtectedRoute';
 import ScrollToTop from './components/ScrollToTop';
-import './styles/progression.css';
-import './styles/content.css';
-import './styles/private-training.css';
-import './styles/events.css';
-import './styles/commerce-admin.css';
-import './styles/purchases.css';
-import './styles/private-booking.css';
-import './styles/reports.css';
-import './styles/notifications.css';
 
 const ContactPage = lazy(() => import('./pages/ContactPage'));
 const HomePage = lazy(() => import('./pages/HomePage'));
@@ -49,7 +40,14 @@ const InstructorContentAdmin = lazy(() => import('./pages/InstructorContentAdmin
 const MemberLibraryPage = lazy(() => import('./pages/MemberLibraryPage'));
 
 function RouteLoader() {
-    return <div className="page-loader">Loading…</div>;
+    return (
+        <div className="page-loader" role="status" aria-live="polite" aria-busy="true">
+            <span className="page-loader__content">
+                <span className="page-loader__spinner" aria-hidden="true" />
+                Loading workspace…
+            </span>
+        </div>
+    );
 }
 
 export default function App() {
