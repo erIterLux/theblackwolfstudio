@@ -22,6 +22,7 @@ import PurchaseSummaryCard from '../components/purchases/PurchaseSummaryCard';
 import NotificationSummaryCard from '../components/notifications/NotificationSummaryCard';
 import WolfGuidePanel from '../components/wolf-guide/WolfGuidePanel';
 import { useAuth } from '../context/AuthContext';
+import useMemberDashboardSummary from '../hooks/useMemberDashboardSummary';
 import useStudioRole from '../hooks/useStudioRole';
 import '../styles/dashboard-refinement.css';
 
@@ -29,7 +30,10 @@ const checkIns = ['Activated', 'Steady', 'Tired', 'Disconnected'];
 
 export default function MemberDashboard() {
     const { user, signOutUser } = useAuth();
-    const { isInstructor } = useStudioRole();
+    const { isInstructor, loading: roleLoading } = useStudioRole();
+    const { data: dashboardData, loading: dashboardLoading, error: dashboardError } = useMemberDashboardSummary({
+        enabled: !roleLoading,
+    });
     const [checkIn, setCheckIn] = useState('Steady');
 
     return (
@@ -53,16 +57,46 @@ export default function MemberDashboard() {
                     </button>
                 </div>
 
+                {dashboardError && (
+                    <div className="form-status form-status--error dashboard-summary-error" role="alert">
+                        {dashboardError}
+                    </div>
+                )}
+
                 <div className="member-grid member-grid--refined">
-                    <ProgressionSummaryCard />
+                    <ProgressionSummaryCard
+                        dashboardState={{
+                            ...(dashboardData.progression || {}),
+                            loading: dashboardLoading,
+                            error: dashboardData.progression?.error || dashboardError,
+                        }}
+                    />
 
                     <MembershipStatusCard />
 
-                    <PrivateTrainingSummaryCard />
+                    <PrivateTrainingSummaryCard
+                        dashboardState={{
+                            data: dashboardData.privateTraining,
+                            loading: dashboardLoading,
+                            error: dashboardError,
+                        }}
+                    />
 
-                    <EventSummaryCard />
+                    <EventSummaryCard
+                        dashboardState={{
+                            data: dashboardData.events,
+                            loading: dashboardLoading,
+                            error: dashboardError,
+                        }}
+                    />
 
-                    <PurchaseSummaryCard />
+                    <PurchaseSummaryCard
+                        dashboardState={{
+                            data: dashboardData.purchases,
+                            loading: dashboardLoading,
+                            error: dashboardError,
+                        }}
+                    />
 
                     <NotificationSummaryCard />
 

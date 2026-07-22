@@ -1,100 +1,184 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import {
-  listMyNotifications,
-  markAllNotificationsRead,
-  markNotificationRead,
+    listMyNotifications,
+    markAllNotificationsRead,
+    markNotificationRead,
 } from '../services/notifications';
+import { startPerformanceMeasure } from '../utils/performance';
 
-export default function useNotifications({ poll = true, limit = 100 } = {}) {
-  const { user } = useAuth();
-  const [state, setState] = useState({
-    uid: null,
-    notifications: [],
-    unreadCount: 0,
-    loading: Boolean(user),
-    error: '',
-  });
+function mergeNotifications(current, incoming) {
+    const byId = new Map(current.map((item) => [item.id, item]));
+    incoming.forEach((item) => byId.set(item.id, item));
+    return [...byId.values()];
+}
 
-  const refresh = useCallback(async ({ quiet = false } = {}) => {
-    if (!user) {
-      setState({ uid: null, notifications: [], unreadCount: 0, loading: false, error: '' });
-      return [];
-    }
-    if (!quiet) {
-      setState((current) => ({ ...current, uid: user.uid, loading: true, error: '' }));
-    }
-    try {
-      const result = await listMyNotifications({ limit });
-      const notifications = result?.notifications || [];
-      setState({
-        uid: user.uid,
-        notifications,
-        unreadCount: Number(result?.unreadCount || 0),
-        loading: false,
+export default function useNotifications({ pageSize = 25, autoLoad = true } = {}) {
+    const { user } = useAuth();
+    const [state, setState] = useState({
+        uid: null,
+        notifications: [],
+        cursor: null,
+        hasMore: false,
+        loading: Boolean(user && autoLoad),
+        loadingMore: false,
         error: '',
-      });
-      return notifications;
-    } catch (error) {
-      console.error('Notifications could not be loaded:', error);
-      setState((current) => ({
-        ...current,
-        uid: user.uid,
-        loading: false,
-        error: error?.message || 'Notifications could not be loaded.',
-      }));
-      return [];
-    }
-  }, [limit, user]);
-
-  useEffect(() => {
-    queueMicrotask(() => refresh());
-    if (!poll || !user) return undefined;
-    const timer = window.setInterval(() => refresh({ quiet: true }), 60_000);
-    return () => window.clearInterval(timer);
-  }, [poll, refresh, user]);
-
-  const setRead = useCallback(async (notificationId, read = true) => {
-    await markNotificationRead(notificationId, read);
-    setState((current) => {
-      const notifications = current.notifications.map((item) => (
-        item.id === notificationId
-          ? { ...item, status: read ? 'read' : 'unread', readAt: read ? new Date().toISOString() : null }
-          : item
-      ));
-      return {
-        ...current,
-        notifications,
-        unreadCount: Math.max(0, current.unreadCount + (read ? -1 : 1)),
-      };
     });
-  }, []);
 
-  const markAllRead = useCallback(async () => {
-    await markAllNotificationsRead();
-    setState((current) => ({
-      ...current,
-      notifications: current.notifications.map((item) => ({
-        ...item,
-        status: 'read',
-        readAt: item.readAt || new Date().toISOString(),
-      })),
-      unreadCount: 0,
-    }));
-  }, []);
+    const refresh = useCallback(async () => {
+        if (!user) {
+            setState({
+                uid: null,
+                notifications: [],
+                cursor: null,
+                hasMore: false,
+                loading: false,
+                loadingMore: false,
+                error: '',
+            });
+            return [];
+        }
 
-  const notifications = useMemo(
-    () => (user && state.uid === user.uid ? state.notifications : []),
-    [state.notifications, state.uid, user],
-  );
+        setState((current) => ({
+            ...current,
+            uid: user.uid,
+            loading: true,
+            loadingMore: false,
+            error: '',
+        }));
+        const finishMeasure = startPerformanceMeasure('notification-feed-page', {
+            uid: user.uid,
+            pageSize,
+            page: 1,
+        });
 
-  return useMemo(() => ({
-    notifications,
-    unreadCount: user && state.uid === user.uid ? state.unreadCount : 0,
-    loading: Boolean(user && state.uid === user.uid && state.loading),
-    error: user && state.uid === user.uid ? state.error : '',
-    refresh,
-    setRead,
-    markAllRead,
-  }), [notifications, state.unreadCount, state.loading, state.error, state.uid, user, refresh, setRead, markAllRead]);
+        try {
+            const result = await listMyNotifications({ pageSize });
+            const notifications = result?.notifications || [];
+            setState({
+                uid: user.uid,
+                notifications,
+                cursor: result?.nextCursor || null,
+                hasMore: result?.hasMore === true,
+                loading: false,
+                loadingMore: false,
+                error: '',
+            });
+            finishMeasure({ success: true, records: notifications.length });
+            return notifications;
+        } catch (error) {
+            console.error('Notifications could not be loaded:', error);
+            setState((current) => ({
+                ...current,
+                uid: user.uid,
+                loading: false,
+                loadingMore: false,
+                error: error?.message || 'Notifications could not be loaded.',
+            }));
+            finishMeasure({ success: false, error: error?.code || error?.message });
+            return [];
+        }
+    }, [pageSize, user]);
+
+    const loadMore = useCallback(async () => {
+        if (!user || !state.hasMore || !state.cursor || state.loadingMore) return [];
+        setState((current) => ({ ...current, loadingMore: true, error: '' }));
+        const finishMeasure = startPerformanceMeasure('notification-feed-page', {
+            uid: user.uid,
+            pageSize,
+            page: 'next',
+        });
+
+        try {
+            const result = await listMyNotifications({
+                pageSize,
+                cursor: state.cursor,
+            });
+            const incoming = result?.notifications || [];
+            setState((current) => ({
+                ...current,
+                notifications: mergeNotifications(current.notifications, incoming),
+                cursor: result?.nextCursor || null,
+                hasMore: result?.hasMore === true,
+                loadingMore: false,
+                error: '',
+            }));
+            finishMeasure({ success: true, records: incoming.length });
+            return incoming;
+        } catch (error) {
+            console.error('More notifications could not be loaded:', error);
+            setState((current) => ({
+                ...current,
+                loadingMore: false,
+                error: error?.message || 'More notifications could not be loaded.',
+            }));
+            finishMeasure({ success: false, error: error?.code || error?.message });
+            return [];
+        }
+    }, [pageSize, state.cursor, state.hasMore, state.loadingMore, user]);
+
+    useEffect(() => {
+        if (!autoLoad) return undefined;
+        queueMicrotask(() => refresh());
+        return undefined;
+    }, [autoLoad, refresh]);
+
+    const setRead = useCallback(async (notificationId, read = true) => {
+        const result = await markNotificationRead(notificationId, read);
+        setState((current) => ({
+            ...current,
+            notifications: current.notifications.map((item) => (
+                item.id === notificationId
+                    ? {
+                        ...item,
+                        status: read ? 'read' : 'unread',
+                        readAt: read ? new Date().toISOString() : null,
+                    }
+                    : item
+            )),
+        }));
+        return result;
+    }, []);
+
+    const markAllRead = useCallback(async () => {
+        const result = await markAllNotificationsRead();
+        setState((current) => ({
+            ...current,
+            notifications: current.notifications.map((item) => ({
+                ...item,
+                status: 'read',
+                readAt: item.readAt || new Date().toISOString(),
+            })),
+        }));
+        return result;
+    }, []);
+
+    const notifications = useMemo(
+        () => (user && state.uid === user.uid ? state.notifications : []),
+        [state.notifications, state.uid, user],
+    );
+
+    return useMemo(() => ({
+        notifications,
+        loading: Boolean(user && state.uid === user.uid && state.loading),
+        loadingMore: Boolean(user && state.uid === user.uid && state.loadingMore),
+        hasMore: Boolean(user && state.uid === user.uid && state.hasMore),
+        error: user && state.uid === user.uid ? state.error : '',
+        refresh,
+        loadMore,
+        setRead,
+        markAllRead,
+    }), [
+        loadMore,
+        markAllRead,
+        notifications,
+        refresh,
+        setRead,
+        state.error,
+        state.hasMore,
+        state.loading,
+        state.loadingMore,
+        state.uid,
+        user,
+    ]);
 }

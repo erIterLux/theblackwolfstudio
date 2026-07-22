@@ -81,6 +81,32 @@ exports.stripeWebhook = onRequest({
 
 
 // ============================================================
+// Authenticated app bootstrap and member dashboard summary
+// ============================================================
+function loadAppSessionService() {
+    return require('./session/appSessionService');
+}
+
+function loadMemberDashboardService() {
+    return require('./dashboard/memberDashboardService');
+}
+
+exports.getAuthenticatedAppBootstrap = onCall({
+    invoker: 'public',
+    memory: '256MiB',
+    timeoutSeconds: 30,
+}, async (request) => loadAppSessionService().handleGetAuthenticatedAppBootstrap(request, {
+    instructorEmails: instructorEmails.value(),
+}));
+
+exports.getMemberDashboardSummary = onCall({
+    invoker: 'public',
+    memory: '512MiB',
+    timeoutSeconds: 60,
+}, async (request) => loadMemberDashboardService().handleGetMemberDashboardSummary(request));
+
+
+// ============================================================
 // Hybrid commerce foundation
 // ============================================================
 function loadCommerceFoundation() {
@@ -382,6 +408,12 @@ exports.repairStudioReportCounters = onCall({
 function loadNotificationService() {
     return require('./notifications/notificationService');
 }
+
+exports.getMyNotificationUnreadCount = onCall({
+    invoker: 'public',
+    memory: '256MiB',
+    timeoutSeconds: 30,
+}, async (request) => loadNotificationService().handleGetMyNotificationUnreadCount(request));
 
 exports.listMyNotifications = onCall({
     invoker: 'public',

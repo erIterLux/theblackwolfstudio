@@ -32,21 +32,22 @@ function formatBooking(value, timeZone = 'America/New_York') {
     }).format(date);
 }
 
-export default function PrivateTrainingSummaryCard() {
-    const {
-        activePurchases,
-        loading: purchaseLoading,
-        error: purchaseError,
-    } = usePrivateTrainingPurchases();
-    const {
-        nextBooking,
-        loading: bookingLoading,
-        error: bookingError,
-    } = usePrivateTrainingBookings();
+export default function PrivateTrainingSummaryCard({ dashboardState }) {
+    const hasDashboardState = dashboardState !== undefined;
+    const purchasesState = usePrivateTrainingPurchases({ enabled: !hasDashboardState });
+    const bookingsState = usePrivateTrainingBookings({ enabled: !hasDashboardState });
+
+    const summary = dashboardState?.data || null;
+    const purchaseLoading = hasDashboardState ? dashboardState?.loading === true : purchasesState.loading;
+    const bookingLoading = hasDashboardState ? dashboardState?.loading === true : bookingsState.loading;
+    const purchaseError = hasDashboardState ? dashboardState?.error || '' : purchasesState.error;
+    const bookingError = hasDashboardState ? dashboardState?.error || '' : bookingsState.error;
+    const activePurchases = hasDashboardState ? [] : purchasesState.activePurchases;
+    const nextBooking = hasDashboardState ? summary?.nextBooking || null : bookingsState.nextBooking;
 
     if (purchaseLoading || bookingLoading) {
         return (
-            <article className="dashboard-card private-training-summary-card">
+            <article className="dashboard-card private-training-summary-card" aria-live="polite">
                 <p>Loading private training…</p>
             </article>
         );
@@ -61,12 +62,21 @@ export default function PrivateTrainingSummaryCard() {
         );
     }
 
-    const available = availableSessions(activePurchases);
-    const reserved = activePurchases.reduce(
-        (total, purchase) => total + Number(purchase.reservedSessions || 0),
-        0,
-    );
-    const expiration = nearestExpiration(activePurchases);
+    const available = hasDashboardState
+        ? Number(summary?.availableSessions || 0)
+        : availableSessions(activePurchases);
+    const reserved = hasDashboardState
+        ? Number(summary?.reservedSessions || 0)
+        : activePurchases.reduce(
+            (total, purchase) => total + Number(purchase.reservedSessions || 0),
+            0,
+        );
+    const activePurchaseCount = hasDashboardState
+        ? Number(summary?.activePurchaseCount || 0)
+        : activePurchases.length;
+    const expiration = hasDashboardState
+        ? (summary?.nearestExpiration ? new Date(summary.nearestExpiration) : null)
+        : nearestExpiration(activePurchases);
 
     return (
         <article className="dashboard-card private-training-summary-card">
@@ -97,18 +107,18 @@ export default function PrivateTrainingSummaryCard() {
                         {available} available credit{available === 1 ? '' : 's'} · {reserved} reserved
                     </p>
                     <Link className="text-link" to="/member/private-training">
-                        View booking <ArrowRight size={17} />
+                        View booking <ArrowRight size={17} aria-hidden="true" />
                     </Link>
                 </>
             ) : available > 0 ? (
                 <>
                     <div className="private-training-summary-card__balance">
                         <strong>{available}</strong>
-                        <span>available session{available === 1 ? '' : 's'} across {activePurchases.length} active package{activePurchases.length === 1 ? '' : 's'}</span>
+                        <span>available session{available === 1 ? '' : 's'} across {activePurchaseCount} active package{activePurchaseCount === 1 ? '' : 's'}</span>
                     </div>
-                    {expiration && (
+                    {expiration && !Number.isNaN(expiration.valueOf()) && (
                         <p className="dashboard-hint">
-                            <Clock3 size={16} /> Nearest expiration: {expiration.toLocaleDateString('en-US', {
+                            <Clock3 size={16} aria-hidden="true" /> Nearest expiration: {expiration.toLocaleDateString('en-US', {
                                 month: 'short',
                                 day: 'numeric',
                                 year: 'numeric',
@@ -116,7 +126,7 @@ export default function PrivateTrainingSummaryCard() {
                         </p>
                     )}
                     <Link className="text-link" to="/member/private-training/book">
-                        Book a session <ArrowRight size={17} />
+                        Book a session <ArrowRight size={17} aria-hidden="true" />
                     </Link>
                 </>
             ) : (
@@ -126,7 +136,7 @@ export default function PrivateTrainingSummaryCard() {
                         to three people. Members receive eligible pricing automatically.
                     </p>
                     <Link className="text-link" to="/private-training">
-                        Explore private training <ArrowRight size={17} />
+                        Explore private training <ArrowRight size={17} aria-hidden="true" />
                     </Link>
                 </>
             )}

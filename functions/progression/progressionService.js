@@ -244,6 +244,37 @@ async function readProgression(memberUid) {
     };
 }
 
+async function readProgressionSummary(memberUid, authToken = {}) {
+    const profile = await seedProgressionProfile(memberUid, authToken);
+    const currentLevelKey = profile.currentLevel || profile.currentLevelKey || 'white';
+    const { profileRef, levelRef } = progressionRefs(memberUid, currentLevelKey);
+
+    const [profileSnapshot, levelsSnapshot, categorySnapshot] = await Promise.all([
+        profileRef.get(),
+        profileRef.collection('levels').orderBy('order').get(),
+        levelRef.collection('categories').get(),
+    ]);
+
+    const categories = Object.fromEntries(categorySnapshot.docs.map((item) => [
+        item.id,
+        serialize({ id: item.id, ...item.data() }),
+    ]));
+
+    const levels = levelsSnapshot.docs.map((item) => serialize({
+        id: item.id,
+        ...item.data(),
+        categories: item.id === currentLevelKey ? categories : {},
+    }));
+
+    return {
+        profile: serialize({
+            id: profileSnapshot.id,
+            ...(profileSnapshot.data() || profile),
+        }),
+        levels,
+    };
+}
+
 async function handleSyncMyStudioRole(request, dependencies = {}) {
     const uid = requireAuth(request);
     const email = normalizeEmail(request.auth?.token?.email || (await admin.auth().getUser(uid)).email || '');
@@ -738,6 +769,7 @@ async function handleApproveProgressionLevel(request) {
 }
 
 module.exports = {
+    readProgressionSummary,
     handleSyncMyStudioRole,
     handleGetMyProgression,
     handleSaveProgressionCategory,
