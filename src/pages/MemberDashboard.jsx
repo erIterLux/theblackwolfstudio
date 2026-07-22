@@ -9,7 +9,7 @@ import {
     Target,
 } from 'lucide-react';
 import { useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { PrefetchLink } from '../components/PrefetchLink';
 import EventSummaryCard from '../components/events/EventSummaryCard';
 import MembershipStatusCard from '../components/membership/MembershipStatusCard';
 import NotificationSummaryCard from '../components/notifications/NotificationSummaryCard';
@@ -170,9 +170,9 @@ export default function MemberDashboard() {
                         <p>{nextStep.body}</p>
                     </div>
                     {nextStep.to && (
-                        <Link className="button member-next-step__action" to={nextStep.to}>
+                        <PrefetchLink className="button member-next-step__action" to={nextStep.to}>
                             {nextStep.actionLabel} <ArrowRight size={18} aria-hidden="true" />
-                        </Link>
+                        </PrefetchLink>
                     )}
                 </article>
 
@@ -244,9 +244,9 @@ export default function MemberDashboard() {
                                 Open instructor-published text, images, audio, and video connected
                                 to your current level and skill categories.
                             </p>
-                            <Link to="/member/library" className="text-link">
+                            <PrefetchLink to="/member/library" className="text-link">
                                 Open training library <ArrowRight size={17} aria-hidden="true" />
-                            </Link>
+                            </PrefetchLink>
                         </article>
                     </div>
                 </section>

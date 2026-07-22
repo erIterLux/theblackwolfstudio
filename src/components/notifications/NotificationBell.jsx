@@ -1,5 +1,5 @@
 import { Bell } from 'lucide-react';
-import { NavLink } from 'react-router-dom';
+import { PrefetchNavLink } from '../PrefetchLink';
 import { useNotificationCenter } from '../../context/NotificationContext';
 
 export default function NotificationBell({
@@ -12,7 +12,7 @@ export default function NotificationBell({
         : 'Notifications';
 
     return (
-        <NavLink
+        <PrefetchNavLink
             className="notification-bell"
             to={to}
             onClick={onNavigate}
@@ -25,6 +25,6 @@ export default function NotificationBell({
                     {unreadCount > 99 ? '99+' : unreadCount}
                 </span>
             )}
-        </NavLink>
+        </PrefetchNavLink>
     );
 }

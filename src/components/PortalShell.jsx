@@ -4,11 +4,13 @@ import {
     Menu,
     X,
 } from 'lucide-react';
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
+import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
+import { Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import NotificationBell from './notifications/NotificationBell';
 import Logo from './Logo';
+import { PrefetchLink, PrefetchNavLink } from './PrefetchLink';
+import RouteLoadingState from './RouteLoadingState';
 
 const FOCUSABLE_SELECTOR = [
     'a[href]',
@@ -29,7 +31,7 @@ function PortalNav({ groups, onNavigate }) {
                         {group.items.map((item) => {
                             const Icon = item.icon;
                             return (
-                                <NavLink
+                                <PrefetchNavLink
                                     className={({ isActive }) => `portal-nav__link${isActive ? ' is-active' : ''}`}
                                     end={Boolean(item.end)}
                                     key={item.to}
@@ -38,7 +40,7 @@ function PortalNav({ groups, onNavigate }) {
                                 >
                                     <Icon size={18} aria-hidden="true" />
                                     <span>{item.label}</span>
-                                </NavLink>
+                                </PrefetchNavLink>
                             );
                         })}
                     </div>
@@ -56,20 +58,17 @@ export default function PortalShell({
     notificationsPath,
     switchLink,
 }) {
-    const [menuOpen, setMenuOpen] = useState(false);
     const { pathname } = useLocation();
+    const [menuPathname, setMenuPathname] = useState('');
+    const menuOpen = menuPathname === pathname;
     const { user, signOutUser } = useAuth();
     const menuButtonRef = useRef(null);
     const sidebarRef = useRef(null);
 
     useEffect(() => {
-        setMenuOpen(false);
-    }, [pathname]);
-
-    useEffect(() => {
         const desktopQuery = window.matchMedia('(min-width: 981px)');
         const handleDesktop = (event) => {
-            if (event.matches) setMenuOpen(false);
+            if (event.matches) setMenuPathname('');
         };
         desktopQuery.addEventListener('change', handleDesktop);
         return () => desktopQuery.removeEventListener('change', handleDesktop);
@@ -80,6 +79,7 @@ export default function PortalShell({
 
         const previousOverflow = document.body.style.overflow;
         const previousFocus = document.activeElement;
+        const menuButton = menuButtonRef.current;
         const focusNavigation = window.requestAnimationFrame(() => {
             sidebarRef.current?.querySelector(FOCUSABLE_SELECTOR)?.focus();
         });
@@ -87,7 +87,7 @@ export default function PortalShell({
         const handleKeyDown = (event) => {
             if (event.key === 'Escape') {
                 event.preventDefault();
-                setMenuOpen(false);
+                setMenuPathname('');
                 return;
             }
 
@@ -114,7 +114,7 @@ export default function PortalShell({
             document.body.style.overflow = previousOverflow;
             window.removeEventListener('keydown', handleKeyDown);
             if (previousFocus instanceof HTMLElement) previousFocus.focus();
-            else menuButtonRef.current?.focus();
+            else menuButton?.focus();
         };
     }, [menuOpen]);
 
@@ -122,7 +122,7 @@ export default function PortalShell({
         user?.displayName || user?.email || 'Studio account'
     ), [user]);
 
-    const closeMenu = () => setMenuOpen(false);
+    const closeMenu = () => setMenuPathname('');
 
     return (
         <div className={`portal-shell portal-shell--${mode}`}>
@@ -137,7 +137,7 @@ export default function PortalShell({
                         aria-controls={`${mode}-portal-navigation`}
                         aria-expanded={menuOpen}
                         aria-label={menuOpen ? 'Close workspace navigation' : 'Open workspace navigation'}
-                        onClick={() => setMenuOpen((current) => !current)}
+                        onClick={() => setMenuPathname((current) => (current === pathname ? '' : pathname))}
                     >
                         {menuOpen ? <X size={22} aria-hidden="true" /> : <Menu size={22} aria-hidden="true" />}
                     </button>
@@ -147,9 +147,9 @@ export default function PortalShell({
 
                 <div className="portal-topbar__actions">
                     {switchLink && (
-                        <Link className="portal-switch-link" to={switchLink.to}>
+                        <PrefetchLink className="portal-switch-link" to={switchLink.to}>
                             {switchLink.label}
-                        </Link>
+                        </PrefetchLink>
                     )}
                     <NotificationBell to={notificationsPath} />
                     <div className="portal-user" title={displayName}>
@@ -176,10 +176,10 @@ export default function PortalShell({
                     <PortalNav groups={navigation} onNavigate={closeMenu} />
 
                     <div className="portal-sidebar__footer">
-                        <Link className="portal-sidebar__utility" to="/" onClick={closeMenu}>
+                        <PrefetchLink className="portal-sidebar__utility" to="/" onClick={closeMenu}>
                             <ExternalLink size={17} aria-hidden="true" />
                             Studio website
-                        </Link>
+                        </PrefetchLink>
                         <button
                             className="portal-sidebar__utility"
                             type="button"
@@ -207,7 +207,9 @@ export default function PortalShell({
                     inert={menuOpen ? true : undefined}
                     aria-hidden={menuOpen ? 'true' : undefined}
                 >
-                    <Outlet />
+                    <Suspense fallback={<RouteLoadingState workspace />}>
+                        <Outlet />
+                    </Suspense>
                 </main>
             </div>
         </div>

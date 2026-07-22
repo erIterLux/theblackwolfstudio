@@ -1,9 +1,10 @@
 import { Menu, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import Logo from './Logo';
 import NotificationBell from './notifications/NotificationBell';
+import { PrefetchNavLink } from './PrefetchLink';
 
 const navItems = [
     ['Programs', '/programs'],
@@ -23,20 +24,17 @@ const FOCUSABLE_SELECTOR = [
 ].join(',');
 
 export default function Header() {
-    const [open, setOpen] = useState(false);
     const { pathname } = useLocation();
+    const [openPathname, setOpenPathname] = useState('');
+    const open = openPathname === pathname;
     const { user } = useAuth();
     const menuButtonRef = useRef(null);
     const navRef = useRef(null);
 
     useEffect(() => {
-        setOpen(false);
-    }, [pathname]);
-
-    useEffect(() => {
         const desktopQuery = window.matchMedia('(min-width: 981px)');
         const handleDesktop = (event) => {
-            if (event.matches) setOpen(false);
+            if (event.matches) setOpenPathname('');
         };
         desktopQuery.addEventListener('change', handleDesktop);
         return () => desktopQuery.removeEventListener('change', handleDesktop);
@@ -47,6 +45,7 @@ export default function Header() {
 
         const previousOverflow = document.body.style.overflow;
         const previousFocus = document.activeElement;
+        const menuButton = menuButtonRef.current;
         const focusNavigation = window.requestAnimationFrame(() => {
             navRef.current?.querySelector(FOCUSABLE_SELECTOR)?.focus();
         });
@@ -54,7 +53,7 @@ export default function Header() {
         const handleKeyDown = (event) => {
             if (event.key === 'Escape') {
                 event.preventDefault();
-                setOpen(false);
+                setOpenPathname('');
                 return;
             }
 
@@ -81,11 +80,11 @@ export default function Header() {
             document.body.style.overflow = previousOverflow;
             window.removeEventListener('keydown', handleKeyDown);
             if (previousFocus instanceof HTMLElement) previousFocus.focus();
-            else menuButtonRef.current?.focus();
+            else menuButton?.focus();
         };
     }, [open]);
 
-    const closeMenu = () => setOpen(false);
+    const closeMenu = () => setOpenPathname('');
 
     return (
         <header className="site-header">
@@ -98,7 +97,7 @@ export default function Header() {
                     aria-expanded={open}
                     aria-controls="primary-navigation"
                     aria-label={open ? 'Close navigation' : 'Open navigation'}
-                    onClick={() => setOpen((value) => !value)}
+                    onClick={() => setOpenPathname((current) => (current === pathname ? '' : pathname))}
                 >
                     {open ? <X aria-hidden="true" /> : <Menu aria-hidden="true" />}
                 </button>
@@ -109,21 +108,21 @@ export default function Header() {
                     aria-label="Primary navigation"
                 >
                     {navItems.map(([label, to]) => (
-                        <NavLink key={to} to={to} onClick={closeMenu}>
+                        <PrefetchNavLink key={to} to={to} onClick={closeMenu}>
                             {label}
-                        </NavLink>
+                        </PrefetchNavLink>
                     ))}
                     {user && <NotificationBell onNavigate={closeMenu} />}
-                    <NavLink
+                    <PrefetchNavLink
                         className="button button--small button--ghost"
                         to={user ? '/member' : '/login'}
                         onClick={closeMenu}
                     >
                         {user ? 'Member Space' : 'Member Login'}
-                    </NavLink>
-                    <NavLink className="button button--small" to="/contact" onClick={closeMenu}>
+                    </PrefetchNavLink>
+                    <PrefetchNavLink className="button button--small" to="/contact" onClick={closeMenu}>
                         Book an Intro
-                    </NavLink>
+                    </PrefetchNavLink>
                 </nav>
             </div>
             {open && (

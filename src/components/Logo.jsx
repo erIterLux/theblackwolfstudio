@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { PrefetchLink } from './PrefetchLink';
 
 export default function Logo({
     compact = false,
@@ -6,7 +6,7 @@ export default function Logo({
     label = 'The Black Wolf Studio home',
 }) {
     return (
-        <Link to={to} className="brand" aria-label={label}>
+        <PrefetchLink to={to} className="brand" aria-label={label}>
             <span className="brand__mark-wrap">
                 <img
                     className="brand__mark"
@@ -23,6 +23,6 @@ export default function Logo({
                     <span>Studio</span>
                 </span>
             )}
-        </Link>
+        </PrefetchLink>
     );
 }

@@ -1,5 +1,5 @@
 import { AtSign, Mail, MapPin } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { PrefetchLink } from './PrefetchLink';
 import Logo from './Logo';
 
 export default function Footer() {
@@ -15,11 +15,11 @@ export default function Footer() {
                 <div>
                     <p className="footer-heading">Explore</p>
                     <div className="footer-links">
-                        <Link to="/programs">Programs</Link>
-                        <Link to="/events">Events</Link>
-                        <Link to="/private-training">Private training</Link>
-                        <Link to="/membership">Membership</Link>
-                        <Link to="/login">Member login</Link>
+                        <PrefetchLink to="/programs">Programs</PrefetchLink>
+                        <PrefetchLink to="/events">Events</PrefetchLink>
+                        <PrefetchLink to="/private-training">Private training</PrefetchLink>
+                        <PrefetchLink to="/membership">Membership</PrefetchLink>
+                        <PrefetchLink to="/login">Member login</PrefetchLink>
                     </div>
                 </div>
                 <div>
