@@ -172,13 +172,13 @@ export default function InstructorEventsAdmin() {
     const [message, setMessage] = useState('');
     const [messageType, setMessageType] = useState('');
 
-    const load = useCallback(async () => {
+    const load = useCallback(async ({ force = false } = {}) => {
         if (!isInstructor) return;
         setLoading(true);
         setMessage('');
         setMessageType('');
         try {
-            const result = await listEventsAdmin();
+            const result = await listEventsAdmin({ force });
             setEvents(result?.events || []);
             setRegistrations(result?.registrations || []);
         } catch (error) {
@@ -333,7 +333,7 @@ export default function InstructorEventsAdmin() {
                         <h1>Events and registration</h1>
                         <p>Create paid or free events and track every participant separately. Waiver signing and check-in remain distinct states.</p>
                     </div>
-                    <button className="button button--dark-ghost" type="button" onClick={load} disabled={loading}>
+                    <button className="button button--dark-ghost" type="button" onClick={() => load({ force: true })} disabled={loading}>
                         <RefreshCw size={17} /> Refresh
                     </button>
                 </div>

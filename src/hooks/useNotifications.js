@@ -25,7 +25,7 @@ export default function useNotifications({ pageSize = 25, autoLoad = true } = {}
         error: '',
     });
 
-    const refresh = useCallback(async () => {
+    const refresh = useCallback(async ({ force = true } = {}) => {
         if (!user) {
             setState({
                 uid: null,
@@ -53,7 +53,7 @@ export default function useNotifications({ pageSize = 25, autoLoad = true } = {}
         });
 
         try {
-            const result = await listMyNotifications({ pageSize });
+            const result = await listMyNotifications({ pageSize }, { force });
             const notifications = result?.notifications || [];
             setState({
                 uid: user.uid,
@@ -119,7 +119,7 @@ export default function useNotifications({ pageSize = 25, autoLoad = true } = {}
 
     useEffect(() => {
         if (!autoLoad) return undefined;
-        queueMicrotask(() => refresh());
+        queueMicrotask(() => refresh({ force: false }));
         return undefined;
     }, [autoLoad, refresh]);
 

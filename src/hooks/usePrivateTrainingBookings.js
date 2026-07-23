@@ -13,7 +13,7 @@ export default function usePrivateTrainingBookings({ enabled = true } = {}) {
         error: '',
     });
 
-    const refresh = useCallback(async () => {
+    const refresh = useCallback(async ({ force = true } = {}) => {
         if (!enabled) return [];
         if (!user) {
             setState({ uid: null, bookings: [], loading: false, error: '' });
@@ -28,7 +28,7 @@ export default function usePrivateTrainingBookings({ enabled = true } = {}) {
         }));
 
         try {
-            const result = await listMyPrivateTrainingBookings();
+            const result = await listMyPrivateTrainingBookings({ force });
             const bookings = result?.bookings || [];
             setState({ uid: user.uid, bookings, loading: false, error: '' });
             return bookings;
@@ -46,7 +46,7 @@ export default function usePrivateTrainingBookings({ enabled = true } = {}) {
 
     useEffect(() => {
         if (!enabled) return undefined;
-        queueMicrotask(() => refresh());
+        queueMicrotask(() => refresh({ force: false }));
         return undefined;
     }, [enabled, refresh]);
 

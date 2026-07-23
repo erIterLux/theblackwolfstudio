@@ -133,3 +133,26 @@ export function scheduleRoutePrefetch(to) {
 
   window.setTimeout(run, 80);
 }
+
+export function scheduleRoutesPrefetch(paths) {
+  if (typeof window === 'undefined') return () => {};
+  const uniquePaths = [...new Set(paths.filter(Boolean))];
+  const run = () => {
+    uniquePaths.forEach((path) => {
+      void prefetchRoute(path);
+    });
+  };
+
+  let idleHandle;
+  let timer;
+  if ('requestIdleCallback' in window) {
+    idleHandle = window.requestIdleCallback(run, { timeout: 1200 });
+  } else {
+    timer = window.setTimeout(run, 180);
+  }
+
+  return () => {
+    if (idleHandle) window.cancelIdleCallback(idleHandle);
+    if (timer) window.clearTimeout(timer);
+  };
+}

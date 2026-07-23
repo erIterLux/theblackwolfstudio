@@ -43,11 +43,11 @@ export default function InstructorProgressionAdmin() {
     const [busyKey, setBusyKey] = useState('');
     const [message, setMessage] = useState('');
 
-    const loadQueue = useCallback(async () => {
+    const loadQueue = useCallback(async ({ force = false } = {}) => {
         setLoading(true);
         setMessage('');
         try {
-            const result = await listProgressionReviews();
+            const result = await listProgressionReviews({ force });
             const nextReviews = result?.reviews || [];
             setReviews(nextReviews);
             setSelectedId((current) => current || nextReviews[0]?.id || '');
@@ -198,7 +198,7 @@ export default function InstructorProgressionAdmin() {
                     <Link className="text-link" to="/instructor"><ArrowLeft size={17} /> Instructor overview</Link>
                     <div className="progression-page__links">
                         <Link className="text-link" to="/instructor/content"><BookOpen size={17} /> Manage training references</Link>
-                        <button className="text-link" type="button" onClick={loadQueue} disabled={loading}>
+                        <button className="text-link" type="button" onClick={() => loadQueue({ force: true })} disabled={loading}>
                             <RefreshCw className={loading ? 'is-spinning' : ''} size={16} /> Refresh queue
                         </button>
                     </div>

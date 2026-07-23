@@ -11,7 +11,7 @@ export default function usePrivateTrainingPurchases({ enabled = true } = {}) {
         error: '',
     });
 
-    const refresh = useCallback(async () => {
+    const refresh = useCallback(async ({ force = true } = {}) => {
         if (!enabled) return [];
         if (!user) {
             setState({ uid: null, purchases: [], loading: false, error: '' });
@@ -26,7 +26,7 @@ export default function usePrivateTrainingPurchases({ enabled = true } = {}) {
         }));
 
         try {
-            const result = await listMyPrivateTrainingPurchases();
+            const result = await listMyPrivateTrainingPurchases({ force });
             const purchases = result?.purchases || [];
             setState({ uid: user.uid, purchases, loading: false, error: '' });
             return purchases;
@@ -44,7 +44,7 @@ export default function usePrivateTrainingPurchases({ enabled = true } = {}) {
 
     useEffect(() => {
         if (!enabled) return undefined;
-        queueMicrotask(() => refresh());
+        queueMicrotask(() => refresh({ force: false }));
         return undefined;
     }, [enabled, refresh]);
 

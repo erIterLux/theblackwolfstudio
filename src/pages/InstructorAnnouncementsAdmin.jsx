@@ -45,10 +45,10 @@ export default function InstructorAnnouncementsAdmin() {
     const [form, setForm] = useState(blankForm);
     const [state, setState] = useState({ loading: true, saving: false, error: '', message: '' });
 
-    const load = async () => {
+    const load = async ({ force = false } = {}) => {
         setState((current) => ({ ...current, loading: true, error: '', message: '' }));
         try {
-            const result = await listStudioAnnouncementsAdmin();
+            const result = await listStudioAnnouncementsAdmin({ force });
             setAnnouncements(result?.announcements || []);
             setState((current) => ({ ...current, loading: false }));
         } catch (error) {
@@ -223,7 +223,7 @@ export default function InstructorAnnouncementsAdmin() {
                                 <p className="eyebrow">History</p>
                                 <h2>Announcements</h2>
                             </div>
-                            <button type="button" className="icon-button" onClick={load} aria-label="Refresh announcements">
+                            <button type="button" className="icon-button" onClick={() => load({ force: true })} aria-label="Refresh announcements">
                                 <RefreshCw size={18} aria-hidden="true" />
                             </button>
                         </div>

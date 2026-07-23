@@ -1,6 +1,6 @@
 # Black Wolf Studio quality gate
 
-Generated: 2026-07-23T13:27:29.099Z
+Generated: 2026-07-23T13:55:32.238Z
 
 Result: PASS
 
@@ -16,5 +16,5 @@ Result: PASS
 - CSS audit: 18 files, 0 very-small text rules, 36 !important rules.
 - Norwester font verified at public/fonts/norwester.otf.
 - Public asset audit checked 5 files.
-- Build audit: 63 JS chunks, 1 CSS chunks, total JS gzip 381.2 KB, total CSS gzip 31.0 KB.
+- Build audit: 64 JS chunks, 1 CSS chunks, total JS gzip 383.0 KB, total CSS gzip 31.0 KB.
 - Largest JS chunk: dist/assets/firebase-vendor-nmUL9Wvg.js (584.2 KB, 171.0 KB gzip).

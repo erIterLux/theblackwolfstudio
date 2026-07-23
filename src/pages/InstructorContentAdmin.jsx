@@ -97,11 +97,11 @@ export default function InstructorContentAdmin() {
     const [preview, setPreview] = useState(false);
     const [search, setSearch] = useState('');
 
-    const loadItems = useCallback(async () => {
+    const loadItems = useCallback(async ({ force = false } = {}) => {
         setLoading(true);
         setMessage('');
         try {
-            const result = await listProgressionContent({ includeDrafts: true });
+            const result = await listProgressionContent({ includeDrafts: true }, { force });
             setItems(result?.items || []);
         } catch (error) {
             console.error(error);
@@ -278,7 +278,7 @@ export default function InstructorContentAdmin() {
                             </button>
                         </div>
                         <input type="search" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search content" />
-                        <button className="text-link" type="button" onClick={loadItems} disabled={loading}>
+                        <button className="text-link" type="button" onClick={() => loadItems({ force: true })} disabled={loading}>
                             <RefreshCw className={loading ? 'is-spinning' : ''} size={15} /> Refresh
                         </button>
 

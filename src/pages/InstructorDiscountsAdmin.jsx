@@ -158,11 +158,11 @@ export default function InstructorDiscountsAdmin() {
     const [busy, setBusy] = useState('');
     const [message, setMessage] = useState('');
 
-    const load = useCallback(async () => {
+    const load = useCallback(async ({ force = false } = {}) => {
         setLoading(true);
         setMessage('');
         try {
-            const result = await listCommerceFoundationAdmin();
+            const result = await listCommerceFoundationAdmin({ force });
             setDiscounts(result?.discounts || []);
             setOffers(result?.offers || []);
         } catch (error) {
@@ -355,7 +355,7 @@ export default function InstructorDiscountsAdmin() {
                             the single greatest valid discount.
                         </p>
                     </div>
-                    <button className="button button--ghost" type="button" onClick={load} disabled={loading}>
+                    <button className="button button--ghost" type="button" onClick={() => load({ force: true })} disabled={loading}>
                         <RefreshCw size={17} aria-hidden="true" /> Refresh
                     </button>
                 </div>

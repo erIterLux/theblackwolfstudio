@@ -10,7 +10,7 @@ export default function useProgression({ enabled = true } = {}) {
         error: '',
     });
 
-    const refresh = useCallback(async () => {
+    const refresh = useCallback(async ({ force = true } = {}) => {
         if (!enabled) return null;
         if (!user) {
             setState({ data: null, loading: false, error: '' });
@@ -19,7 +19,7 @@ export default function useProgression({ enabled = true } = {}) {
 
         setState((current) => ({ ...current, loading: true, error: '' }));
         try {
-            const data = await getMyProgression();
+            const data = await getMyProgression({ force });
             setState({ data, loading: false, error: '' });
             return data;
         } catch (error) {
@@ -35,7 +35,7 @@ export default function useProgression({ enabled = true } = {}) {
 
     useEffect(() => {
         if (!enabled) return undefined;
-        queueMicrotask(() => refresh());
+        queueMicrotask(() => refresh({ force: false }));
         return undefined;
     }, [enabled, refresh]);
 

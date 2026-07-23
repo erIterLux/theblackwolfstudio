@@ -1,5 +1,6 @@
 import { httpsCallable } from 'firebase/functions';
 import { functions } from './firebaseFunctions';
+import { getWorkspaceData, invalidateWorkspaceData } from './workspaceData';
 
 function callable(name) {
     if (!functions) throw new Error('Firebase Functions is not configured.');
@@ -24,21 +25,21 @@ export async function getStudioOrder(orderId, accessToken = '') {
 }
 
 export async function listMyStudioOrders() {
-    const response = await callable('listMyStudioOrders')({});
-    return response.data;
+    return getWorkspaceData('memberStudioOrders');
 }
 
 export async function saveStudioOffer(payload) {
     const response = await callable('saveStudioOffer')(payload);
+    invalidateWorkspaceData('commerceFoundation', 'instructorPrivateTraining');
     return response.data;
 }
 
 export async function saveStudioDiscount(payload) {
     const response = await callable('saveStudioDiscount')(payload);
+    invalidateWorkspaceData('commerceFoundation');
     return response.data;
 }
 
-export async function listCommerceFoundationAdmin() {
-    const response = await callable('listCommerceFoundationAdmin')({});
-    return response.data;
+export async function listCommerceFoundationAdmin(options = {}) {
+    return getWorkspaceData('commerceFoundation', {}, options);
 }

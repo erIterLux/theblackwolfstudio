@@ -21,7 +21,7 @@ export default function usePurchaseHistory({ enabled = true } = {}) {
     const [loading, setLoading] = useState(Boolean(user && enabled));
     const [error, setError] = useState('');
 
-    const refresh = useCallback(async () => {
+    const refresh = useCallback(async ({ force = true } = {}) => {
         if (!enabled) return null;
         if (!user) {
             setData(EMPTY);
@@ -32,7 +32,7 @@ export default function usePurchaseHistory({ enabled = true } = {}) {
         setLoading(true);
         setError('');
         try {
-            const result = await listMyPurchaseHistory();
+            const result = await listMyPurchaseHistory({ force });
             setData({
                 membership: result?.membership || null,
                 membershipPayments: result?.membershipPayments || [],
@@ -51,7 +51,7 @@ export default function usePurchaseHistory({ enabled = true } = {}) {
 
     useEffect(() => {
         if (!enabled) return undefined;
-        queueMicrotask(refresh);
+        queueMicrotask(() => refresh({ force: false }));
         return undefined;
     }, [enabled, refresh]);
 

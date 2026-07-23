@@ -105,6 +105,26 @@ exports.getMemberDashboardSummary = onCall({
     timeoutSeconds: 60,
 }, async (request) => loadMemberDashboardService().handleGetMemberDashboardSummary(request));
 
+function loadWorkspaceDataService() {
+    return require('./workspace/workspaceDataService');
+}
+
+exports.getWorkspaceData = onCall({
+    invoker: 'public',
+    secrets: [stripeSecretKey],
+    memory: '512MiB',
+    timeoutSeconds: 90,
+}, async (request) => loadWorkspaceDataService().handleWorkspaceData(request, {
+    instructorEmails: instructorEmails.value(),
+    stripeSecretKey,
+}));
+
+exports.getWorkspaceReportData = onCall({
+    invoker: 'public',
+    memory: '1GiB',
+    timeoutSeconds: 120,
+}, async (request) => loadWorkspaceDataService().handleWorkspaceReportData(request));
+
 
 // ============================================================
 // Hybrid commerce foundation

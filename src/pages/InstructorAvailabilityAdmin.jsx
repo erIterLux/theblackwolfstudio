@@ -166,11 +166,11 @@ export default function InstructorAvailabilityAdmin() {
     const [savedSnapshot, setSavedSnapshot] = useState('');
     const [sourceDay, setSourceDay] = useState('1');
 
-    const load = useCallback(async ({ preserveMessage = false } = {}) => {
+    const load = useCallback(async ({ force = false, preserveMessage = false } = {}) => {
         setLoading(true);
         if (!preserveMessage) setMessage('');
         try {
-            const result = await getMyInstructorAvailability();
+            const result = await getMyInstructorAvailability({ force });
             const normalized = normalizeDraft(result?.availability);
             setDraft(normalized);
             setSavedSnapshot(JSON.stringify(normalized));
