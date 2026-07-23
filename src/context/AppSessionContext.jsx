@@ -7,7 +7,6 @@ import {
   useState,
 } from 'react';
 import { useAuth } from './AuthContext';
-import { getAuthenticatedAppBootstrap } from '../services/appSession';
 import { startPerformanceMeasure } from '../utils/performance';
 
 const AppSessionContext = createContext(null);
@@ -25,7 +24,8 @@ const EMPTY_SESSION = Object.freeze({
 
 function requestBootstrap(uid, force = false) {
   if (!force && bootstrapRequests.has(uid)) return bootstrapRequests.get(uid);
-  const request = getAuthenticatedAppBootstrap()
+  const request = import('../services/appSession')
+    .then(({ getAuthenticatedAppBootstrap }) => getAuthenticatedAppBootstrap())
     .finally(() => bootstrapRequests.delete(uid));
   bootstrapRequests.set(uid, request);
   return request;

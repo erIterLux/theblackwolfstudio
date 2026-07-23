@@ -158,6 +158,13 @@ function MoneyBreakdown({ title, data, noun }) {
     );
 }
 
+const DEFAULT_TABLE_CONTROLS = Object.freeze({
+    tableQuery: '',
+    eventSort: 'date',
+    attendanceType: 'all',
+    attendanceStatus: 'all',
+});
+
 export default function InstructorReportsPage() {
     const { isInstructor, loading: roleLoading } = useStudioRole();
     const navigate = useNavigate();
@@ -173,10 +180,7 @@ export default function InstructorReportsPage() {
     const [repairing, setRepairing] = useState(false);
     const [message, setMessage] = useState('');
     const [loadingMore, setLoadingMore] = useState(false);
-    const [tableQuery, setTableQuery] = useState('');
-    const [eventSort, setEventSort] = useState('date');
-    const [attendanceType, setAttendanceType] = useState('all');
-    const [attendanceStatus, setAttendanceStatus] = useState('all');
+    const [tableControls, setTableControls] = useState({});
 
     const payload = useMemo(() => (
         preset === 'custom'
@@ -186,6 +190,13 @@ export default function InstructorReportsPage() {
 
     const payloadKey = useMemo(() => JSON.stringify(payload), [payload]);
     const activeCacheKey = `${tab}:${payloadKey}`;
+    const activeTableControls = tableControls[activeCacheKey] || DEFAULT_TABLE_CONTROLS;
+    const {
+        tableQuery,
+        eventSort,
+        attendanceType,
+        attendanceStatus,
+    } = activeTableControls;
     const data = reportCache[activeCacheKey] || null;
     const loading = loadingKey === activeCacheKey;
     const customRangeReady = preset !== 'custom' || Boolean(custom.startDate && custom.endDate);
@@ -193,6 +204,17 @@ export default function InstructorReportsPage() {
     const selectTab = (value) => {
         const path = REPORT_PATHS[value];
         navigate(path ? `/instructor/reports/${path}` : '/instructor/reports');
+    };
+
+    const updateTableControl = (key, value) => {
+        setTableControls((current) => ({
+            ...current,
+            [activeCacheKey]: {
+                ...DEFAULT_TABLE_CONTROLS,
+                ...current[activeCacheKey],
+                [key]: value,
+            },
+        }));
     };
 
     const load = useCallback(async ({ force = false, targetTab = tab } = {}) => {
@@ -222,13 +244,6 @@ export default function InstructorReportsPage() {
         if (roleLoading || !isInstructor || !customRangeReady) return;
         queueMicrotask(() => load());
     }, [roleLoading, isInstructor, customRangeReady, load]);
-
-    useEffect(() => {
-        setTableQuery('');
-        setEventSort('date');
-        setAttendanceType('all');
-        setAttendanceStatus('all');
-    }, [payloadKey, tab]);
 
     const download = async (type) => {
         setExporting(type);
@@ -517,11 +532,11 @@ export default function InstructorReportsPage() {
                             <label className="report-search-field">
                                 <Search size={17} aria-hidden="true" />
                                 <span className="sr-only">Search events</span>
-                                <input value={tableQuery} onChange={(event) => setTableQuery(event.target.value)} placeholder="Search event or status" />
+                                <input value={tableQuery} onChange={(event) => updateTableControl('tableQuery', event.target.value)} placeholder="Search event or status" />
                             </label>
                             <label>
                                 <span>Sort events</span>
-                                <select value={eventSort} onChange={(event) => setEventSort(event.target.value)}>
+                                <select value={eventSort} onChange={(event) => updateTableControl('eventSort', event.target.value)}>
                                     <option value="date">Date</option>
                                     <option value="participants">Most participants</option>
                                     <option value="attendance">Highest attendance</option>
@@ -562,11 +577,11 @@ export default function InstructorReportsPage() {
                             <label className="report-search-field">
                                 <Search size={17} aria-hidden="true" />
                                 <span className="sr-only">Search loaded attendance records</span>
-                                <input value={tableQuery} onChange={(event) => setTableQuery(event.target.value)} placeholder="Search participant, event, package, or instructor" />
+                                <input value={tableQuery} onChange={(event) => updateTableControl('tableQuery', event.target.value)} placeholder="Search participant, event, package, or instructor" />
                             </label>
                             <label>
                                 <span>Attendance type</span>
-                                <select value={attendanceType} onChange={(event) => setAttendanceType(event.target.value)}>
+                                <select value={attendanceType} onChange={(event) => updateTableControl('attendanceType', event.target.value)}>
                                     <option value="all">All types</option>
                                     <option value="event">Events</option>
                                     <option value="private_training">Private training</option>
@@ -574,7 +589,7 @@ export default function InstructorReportsPage() {
                             </label>
                             <label>
                                 <span>Status</span>
-                                <select value={attendanceStatus} onChange={(event) => setAttendanceStatus(event.target.value)}>
+                                <select value={attendanceStatus} onChange={(event) => updateTableControl('attendanceStatus', event.target.value)}>
                                     <option value="all">All statuses</option>
                                     <option value="attended">Attended</option>
                                     <option value="registered">Registered</option>

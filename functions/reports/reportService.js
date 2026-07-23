@@ -88,10 +88,6 @@ function recordDate(record, candidates) {
     return null;
 }
 
-function docs(snapshot) {
-    return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-}
-
 const SECTION_CACHE_TTL_MS = 60 * 1000;
 const SECTION_CACHE_MAX_ENTRIES = 40;
 const reportCache = new Map();

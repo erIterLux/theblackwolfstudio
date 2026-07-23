@@ -1,4 +1,4 @@
-import { CheckCircle2, Mail, MapPin, Phone } from 'lucide-react';
+import { CheckCircle2, Mail, MapPin } from 'lucide-react';
 import { useState } from 'react';
 import SectionHeading from '../components/SectionHeading';
 import { submitInquiry } from '../services/inquiries';
@@ -35,19 +35,21 @@ export default function ContactPage() {
           <p className="eyebrow eyebrow--light">Get started</p>
           <h1>Tell us what you want to build.</h1>
           <p>Choose a starting point and we can help match the training to your goals, comfort level, and experience.</p>
+          <div className="page-hero__actions">
+            <a className="button button--light" href="#contact-request">Start your request</a>
+          </div>
         </div>
       </section>
-      <section className="section section--light">
+      <section className="section section--light" id="contact-request">
         <div className="container contact-grid">
           <div>
             <SectionHeading eyebrow="Book an intro" title="No pressure. No performance required." body="Use this form for individual training, group workshops, private sessions, or somatic practice questions." />
             <div className="contact-details">
-              <span><Mail /> hello@theblackwolfstudio.com</span>
-              <span><Phone /> Phone number coming soon</span>
-              <span><MapPin /> Studio location coming soon</span>
+              <a href="mailto:contact@theblackwolf.studio"><Mail /> contact@theblackwolf.studio</a>
+              <span><MapPin /> Mobile training by appointment</span>
             </div>
           </div>
-          <form className="contact-form" onSubmit={handleSubmit}>
+          <form className="contact-form" id="contact-form" onSubmit={handleSubmit}>
             <label>Full name<input required name="name" value={values.name} onChange={update} autoComplete="name" /></label>
             <div className="form-row">
               <label>Email<input required type="email" name="email" value={values.email} onChange={update} autoComplete="email" /></label>
@@ -66,7 +68,12 @@ export default function ContactPage() {
             <label>Anything we should know?<textarea name="message" rows="5" value={values.message} onChange={update} placeholder="Your goals, prior experience, accessibility needs, or questions." /></label>
             <button className="button" type="submit" disabled={status.type === 'loading'}>{status.type === 'loading' ? 'Sending…' : 'Send request'}</button>
             {status.type !== 'idle' && status.type !== 'loading' && (
-              <p className={`form-status form-status--${status.type}`}>{status.type === 'success' && <CheckCircle2 size={18} />} {status.message}</p>
+              <p
+                className={`form-status form-status--${status.type}`}
+                role={status.type === 'error' ? 'alert' : 'status'}
+              >
+                {status.type === 'success' && <CheckCircle2 size={18} />} {status.message}
+              </p>
             )}
           </form>
         </div>

@@ -4,7 +4,10 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 export default function LoginPage() {
-    const [mode, setMode] = useState('login');
+    const location = useLocation();
+    const [mode, setMode] = useState(() => (
+        location.state?.membershipPlan ? 'signup' : 'login'
+    ));
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
@@ -18,7 +21,6 @@ export default function LoginPage() {
     } = useAuth();
 
     const navigate = useNavigate();
-    const location = useLocation();
     const destination = location.state?.from?.pathname ?? '/member';
 
     useEffect(() => {

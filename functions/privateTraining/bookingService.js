@@ -346,29 +346,6 @@ function bookingContact(purchase, request) {
     };
 }
 
-async function getAvailabilityAndOverride(instructorUid, dateKey, transaction = null) {
-    const availabilityRef = db.collection('instructorAvailability').doc(instructorUid);
-    const overrideRef = availabilityRef.collection('overrides').doc(dateKey);
-    const getter = transaction ? (ref) => transaction.get(ref) : (ref) => ref.get();
-    const [availabilitySnapshot, overrideSnapshot] = await Promise.all([
-        getter(availabilityRef),
-        getter(overrideRef),
-    ]);
-    if (!availabilitySnapshot.exists) {
-        throw new HttpsError('failed-precondition', 'That instructor has not published availability.');
-    }
-    const availability = availabilitySnapshot.data() || {};
-    if (!availability.active) {
-        throw new HttpsError('failed-precondition', 'That instructor is not currently accepting bookings.');
-    }
-    return {
-        availability,
-        override: overrideSnapshot.exists ? overrideSnapshot.data() : null,
-        availabilityRef,
-        overrideRef,
-    };
-}
-
 async function handleGetMyInstructorAvailability(request) {
     const instructorUid = requireInstructor(request);
     const availabilityRef = db.collection('instructorAvailability').doc(instructorUid);
@@ -423,14 +400,6 @@ async function handleDeleteInstructorAvailabilityOverride(request) {
         .doc(dateKey)
         .delete();
     return { dateKey };
-}
-
-async function authorizeMemberPurchase(request, purchase) {
-    const uid = requireAuthenticated(request);
-    if (purchase.uid !== uid) {
-        throw new HttpsError('permission-denied', 'That package does not belong to this account.');
-    }
-    return uid;
 }
 
 function parseRange(data, timezone) {

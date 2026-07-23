@@ -26,7 +26,7 @@ export default function Footer() {
                     <p className="footer-heading">Connect</p>
                     <div className="footer-links">
                         <a href="mailto:contact@theblackwolf.studio"><Mail size={17} /> contact@theblackwolf.studio</a>
-                        <span><MapPin size={17} /> mobile</span>
+                        <span><MapPin size={17} /> Mobile training by appointment</span>
                         <span><AtSign size={17} /> theblackwolf.studio</span>
                     </div>
                 </div>

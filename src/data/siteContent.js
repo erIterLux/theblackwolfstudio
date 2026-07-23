@@ -75,14 +75,14 @@ export const memberships = [
     {
         name: 'Begin',
         price: '$49',
-        cadence: '/ annual',
+        cadence: 'per year',
         description: 'A steady once-a-week practice for building a strong foundation.',
         features: ['4 classes each month', 'Member resource library', 'Monthly progress check-in'],
     },
     {
         name: 'Train',
         price: '$199',
-        cadence: '/ annual',
+        cadence: 'per year',
         description: 'Flexible training across martial arts, self-defense, and somatic classes.',
         features: ['Unlimited group classes', 'Member resource library', 'Workshop discounts', 'Wolf Guide access'],
         featured: true,
@@ -90,7 +90,7 @@ export const memberships = [
     {
         name: 'Integrate',
         price: '$299',
-        cadence: '/ annual',
+        cadence: 'per year',
         description: 'Deeper support for people who want training plus individual guidance.',
         features: ['Unlimited group classes', 'One private session each month', 'Personal practice plan', 'Priority workshop access'],
     },

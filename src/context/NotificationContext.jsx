@@ -9,7 +9,6 @@ import {
 } from 'react';
 import { useAuth } from './AuthContext';
 import { useAppSession } from './AppSessionContext';
-import { getMyNotificationUnreadCount } from '../services/notifications';
 import { startPerformanceMeasure } from '../utils/performance';
 
 const NotificationContext = createContext(null);
@@ -43,6 +42,7 @@ export function NotificationProvider({ children }) {
         });
 
         try {
+            const { getMyNotificationUnreadCount } = await import('../services/notifications');
             const result = await getMyNotificationUnreadCount();
             const nextCount = Math.max(0, Number(result?.unreadCount || 0));
             setUnreadCount(nextCount);

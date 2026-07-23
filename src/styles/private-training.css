@@ -56,6 +56,11 @@
   gap: 1rem;
 }
 
+.private-offer-grid.is-single {
+  grid-template-columns: minmax(0, 520px);
+  justify-content: center;
+}
+
 .private-offer-card {
   display: grid;
   align-content: start;

@@ -146,7 +146,7 @@ export default function PrivateTrainingBookingPage() {
     const initialPurchaseId = searchParams.get('purchaseId') || '';
     const isReschedule = Boolean(bookingId);
     const [purchaseId, setPurchaseId] = useState(initialPurchaseId);
-    const [participantIds, setParticipantIds] = useState(null);
+    const [participantSelection, setParticipantSelection] = useState({ purchaseId: '', ids: [] });
     const [availability, setAvailability] = useState(null);
     const [selectedDateKey, setSelectedDateKey] = useState('');
     const [selectedSlot, setSelectedSlot] = useState(null);
@@ -181,21 +181,11 @@ export default function PrivateTrainingBookingPage() {
 
     const selectedParticipantIds = useMemo(() => {
         if (rescheduleBooking?.participantIds?.length) return rescheduleBooking.participantIds;
-        return Array.isArray(participantIds) ? participantIds : [];
-    }, [participantIds, rescheduleBooking]);
-
-    useEffect(() => {
-        if (!selectedPurchase || isReschedule) return;
-        setParticipantIds((current) => {
-            const validIds = new Set((selectedPurchase.participants || []).map((participant) => participant.id));
-            const retained = Array.isArray(current)
-                ? current.filter((id) => validIds.has(id))
-                : [];
-            return retained.length
-                ? retained
-                : [...validIds];
-        });
-    }, [isReschedule, selectedPurchase]);
+        if (!selectedPurchase) return [];
+        const validIds = new Set((selectedPurchase.participants || []).map((participant) => participant.id));
+        if (participantSelection.purchaseId !== selectedPurchase.id) return [...validIds];
+        return participantSelection.ids.filter((id) => validIds.has(id));
+    }, [participantSelection, rescheduleBooking, selectedPurchase]);
 
     const loadAvailability = useCallback(async ({ quiet = false } = {}) => {
         if (!effectivePurchaseId) return;
@@ -265,19 +255,13 @@ export default function PrivateTrainingBookingPage() {
         return [...dates.values()].sort((left, right) => new Date(left.startsAt) - new Date(right.startsAt));
     }, [groupedSlots]);
 
-    useEffect(() => {
-        if (!dateOptions.length) {
-            setSelectedDateKey('');
-            return;
-        }
-        if (!dateOptions.some((option) => option.dateKey === selectedDateKey)) {
-            setSelectedDateKey(dateOptions[0].dateKey);
-        }
-    }, [dateOptions, selectedDateKey]);
+    const activeDateKey = dateOptions.some((option) => option.dateKey === selectedDateKey)
+        ? selectedDateKey
+        : dateOptions[0]?.dateKey || '';
 
     const visibleGroups = useMemo(
-        () => groupedSlots.filter((group) => group.dateKey === selectedDateKey),
-        [groupedSlots, selectedDateKey],
+        () => groupedSlots.filter((group) => group.dateKey === activeDateKey),
+        [activeDateKey, groupedSlots],
     );
 
     const emptyState = useMemo(
@@ -313,18 +297,19 @@ export default function PrivateTrainingBookingPage() {
     };
 
     const toggleParticipant = (id) => {
-        setParticipantIds((current) => {
-            const selected = Array.isArray(current) ? current : [];
-            return selected.includes(id)
-                ? selected.filter((value) => value !== id)
-                : [...selected, id];
-        });
+        const nextIds = selectedParticipantIds.includes(id)
+            ? selectedParticipantIds.filter((value) => value !== id)
+            : [...selectedParticipantIds, id];
+        setParticipantSelection({ purchaseId: selectedPurchase?.id || '', ids: nextIds });
     };
 
     const choosePackage = (purchase) => {
         if (isReschedule) return;
         setPurchaseId(purchase.id);
-        setParticipantIds((purchase.participants || []).map((participant) => participant.id));
+        setParticipantSelection({
+            purchaseId: purchase.id,
+            ids: (purchase.participants || []).map((participant) => participant.id),
+        });
         setSelectedSlot(null);
         setMessage('');
         setActiveStep(2);
@@ -605,9 +590,9 @@ export default function PrivateTrainingBookingPage() {
                                                                 <button
                                                                     type="button"
                                                                     key={option.dateKey}
-                                                                    className={selectedDateKey === option.dateKey ? 'is-active' : ''}
+                                                                    className={activeDateKey === option.dateKey ? 'is-active' : ''}
                                                                     onClick={() => setSelectedDateKey(option.dateKey)}
-                                                                    aria-pressed={selectedDateKey === option.dateKey}
+                                                                    aria-pressed={activeDateKey === option.dateKey}
                                                                 >
                                                                     {option.label}
                                                                 </button>

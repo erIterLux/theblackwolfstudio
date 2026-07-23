@@ -185,7 +185,7 @@ async function handleGetMemberDashboardSummary(request) {
         accessAvailable: true,
         error: '',
       };
-    } catch (error) {
+    } catch {
       progression = {
         data: null,
         accessAvailable: true,

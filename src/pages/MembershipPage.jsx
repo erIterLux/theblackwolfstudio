@@ -17,10 +17,13 @@ export default function MembershipPage() {
                     <p className="eyebrow eyebrow--light">Membership</p>
                     <h1>Practice that fits real life.</h1>
                     <p>Choose a sustainable training rhythm. Checkout and billing are securely handled through Stripe.</p>
+                    <div className="page-hero__actions">
+                        <a className="button button--light" href="#membership-options">Compare memberships</a>
+                    </div>
                 </div>
             </section>
 
-            <section className="section section--light">
+            <section className="section section--light" id="membership-options">
                 <div className="container">
                     {user && <div className="membership-current"><MembershipStatusCard /></div>}
                     <SectionHeading eyebrow="Membership options" title="Choose your level of support." body="Begin builds consistency. Train opens the full group schedule and Wolf Guide. Integrate adds individual guidance." />
@@ -31,10 +34,15 @@ export default function MembershipPage() {
                                 <h3>{plan.name}</h3>
                                 <p>{plan.description}</p>
                                 <div className="price"><strong>{plan.price}</strong><span>{plan.cadence}</span></div>
+                                <p className="membership-card__billing">Billed annually. Renews until canceled.</p>
                                 <ul className="check-list">
                                     {plan.features.map((feature) => <li key={feature}><Check size={17} /> {feature}</li>)}
                                 </ul>
-                                <MembershipCheckoutButton planKey={PLAN_KEYS[plan.name]} featured={plan.featured} />
+                                <MembershipCheckoutButton
+                                    planKey={PLAN_KEYS[plan.name]}
+                                    planName={plan.name}
+                                    featured={plan.featured}
+                                />
                             </article>
                         ))}
                     </div>
