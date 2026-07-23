@@ -7,6 +7,7 @@ import {
 import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { scheduleRoutesPrefetch } from '../routes/routeRegistry';
 import NotificationBell from './notifications/NotificationBell';
 import Logo from './Logo';
 import { PrefetchLink, PrefetchNavLink } from './PrefetchLink';
@@ -73,6 +74,13 @@ export default function PortalShell({
         desktopQuery.addEventListener('change', handleDesktop);
         return () => desktopQuery.removeEventListener('change', handleDesktop);
     }, []);
+
+    useEffect(() => scheduleRoutesPrefetch([
+        homePath,
+        notificationsPath,
+        switchLink?.to,
+        ...navigation.flatMap((group) => group.items.map((item) => item.to)),
+    ]), [homePath, navigation, notificationsPath, switchLink?.to]);
 
     useEffect(() => {
         if (!menuOpen) return undefined;

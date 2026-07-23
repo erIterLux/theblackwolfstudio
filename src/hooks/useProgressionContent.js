@@ -7,7 +7,7 @@ export default function useProgressionContent(filters = {}) {
   const filterKey = JSON.stringify(filters);
   const [state, setState] = useState({ items: [], loading: Boolean(user), error: '' });
 
-  const refresh = useCallback(async () => {
+  const refresh = useCallback(async ({ force = true } = {}) => {
     if (!user) {
       setState({ items: [], loading: false, error: '' });
       return [];
@@ -15,7 +15,7 @@ export default function useProgressionContent(filters = {}) {
 
     setState((current) => ({ ...current, loading: true, error: '' }));
     try {
-      const result = await listProgressionContent(JSON.parse(filterKey));
+      const result = await listProgressionContent(JSON.parse(filterKey), { force });
       const items = result?.items || [];
       setState({ items, loading: false, error: '' });
       return items;
@@ -31,7 +31,7 @@ export default function useProgressionContent(filters = {}) {
   }, [user, filterKey]);
 
   useEffect(() => {
-    queueMicrotask(() => refresh());
+    queueMicrotask(() => refresh({ force: false }));
   }, [refresh]);
 
   return { ...state, refresh };

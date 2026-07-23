@@ -63,11 +63,11 @@ export default function InstructorPrivateTrainingCalendar() {
     const [busy, setBusy] = useState('');
     const [message, setMessage] = useState('');
 
-    const load = useCallback(async () => {
+    const load = useCallback(async ({ force = false } = {}) => {
         setLoading(true);
         setMessage('');
         try {
-            const result = await listPrivateTrainingBookingsAdmin();
+            const result = await listPrivateTrainingBookingsAdmin({ force });
             setBookings(result?.bookings || []);
         } catch (error) {
             console.error(error);
@@ -218,7 +218,7 @@ export default function InstructorPrivateTrainingCalendar() {
                         <option value="closed">Canceled and missed</option>
                         <option value="all">All bookings</option>
                     </select>
-                    <button type="button" className="button button--secondary" onClick={load}>
+                    <button type="button" className="button button--secondary" onClick={() => load({ force: true })}>
                         <RefreshCw size={17} /> Refresh
                     </button>
                 </div>

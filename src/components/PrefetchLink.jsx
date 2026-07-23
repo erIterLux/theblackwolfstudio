@@ -1,16 +1,17 @@
 import { Link, NavLink } from 'react-router-dom';
-import { scheduleRoutePrefetch } from '../routes/routeRegistry';
+import { prefetchRoute } from '../routes/routeRegistry';
 
 function createIntentHandler(to, suppliedHandler) {
   return (event) => {
     suppliedHandler?.(event);
-    if (!event.defaultPrevented) scheduleRoutePrefetch(to);
+    if (!event.defaultPrevented) void prefetchRoute(to);
   };
 }
 
 function prefetchProps(to, props) {
   return {
     onFocus: createIntentHandler(to, props.onFocus),
+    onPointerDown: createIntentHandler(to, props.onPointerDown),
     onPointerEnter: createIntentHandler(to, props.onPointerEnter),
     onTouchStart: createIntentHandler(to, props.onTouchStart),
   };

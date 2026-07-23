@@ -4,6 +4,7 @@ import {
     quoteStudioCheckout,
     startStudioCheckout,
 } from './studioCommerce';
+import { getWorkspaceData, invalidateWorkspaceData } from './workspaceData';
 
 function callable(name) {
     if (!functions) throw new Error('Firebase Functions is not configured.');
@@ -53,19 +54,18 @@ export async function getEventRegistration(registrationId, accessToken = '') {
     return response.data;
 }
 
-export async function listMyEventRegistrations() {
-    const response = await callable('listMyEventRegistrations')({});
-    return response.data;
+export async function listMyEventRegistrations(options = {}) {
+    return getWorkspaceData('memberEventRegistrations', {}, options);
 }
 
 export async function saveEvent(payload) {
     const response = await callable('saveEvent')(payload);
+    invalidateWorkspaceData('instructorEvents');
     return response.data;
 }
 
-export async function listEventsAdmin() {
-    const response = await callable('listEventsAdmin')({});
-    return response.data;
+export async function listEventsAdmin(options = {}) {
+    return getWorkspaceData('instructorEvents', {}, options);
 }
 
 export async function getEventWaiver(participantId, accessToken = '') {
@@ -81,9 +81,8 @@ export async function signEventWaiver(payload) {
     return response.data;
 }
 
-export async function getEventCheckIn(eventId) {
-    const response = await callable('getEventCheckIn')({ eventId });
-    return response.data;
+export async function getEventCheckIn(eventId, options = {}) {
+    return getWorkspaceData('eventCheckIn', { eventId }, options);
 }
 
 export async function setEventParticipantCheckIn(participantId, action = 'check_in') {
@@ -91,5 +90,6 @@ export async function setEventParticipantCheckIn(participantId, action = 'check_
         participantId,
         action,
     });
+    invalidateWorkspaceData('instructorEvents', 'memberEventRegistrations');
     return response.data;
 }

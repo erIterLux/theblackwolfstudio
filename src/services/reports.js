@@ -1,5 +1,6 @@
 import { httpsCallable } from 'firebase/functions';
 import { functions } from './firebaseFunctions';
+import { getWorkspaceReportData } from './workspaceData';
 
 function callable(name) {
     if (!functions) throw new Error('Firebase Functions is not configured.');
@@ -12,35 +13,35 @@ async function invoke(name, payload = {}) {
 }
 
 export function getStudioReportSummary(payload = {}) {
-    return invoke('getStudioReportSummary', payload);
+    return getWorkspaceReportData('overview', payload);
 }
 
 export function getRevenueReport(payload = {}) {
-    return invoke('getRevenueReport', payload);
+    return getWorkspaceReportData('revenue', payload);
 }
 
 export function getMembershipReport(payload = {}) {
-    return invoke('getMembershipReport', payload);
+    return getWorkspaceReportData('memberships', payload);
 }
 
 export function getEventReport(payload = {}) {
-    return invoke('getEventReport', payload);
+    return getWorkspaceReportData('events', payload);
 }
 
 export function getPrivateTrainingReport(payload = {}) {
-    return invoke('getPrivateTrainingReport', payload);
+    return getWorkspaceReportData('privateTraining', payload);
 }
 
 export function getAttendanceReport(payload = {}) {
-    return invoke('getAttendanceReport', payload);
+    return getWorkspaceReportData('attendance', payload);
 }
 
 export function getMemberEngagementReport(payload = {}) {
-    return invoke('getMemberEngagementReport', payload);
+    return getWorkspaceReportData('engagement', payload);
 }
 
 export function getSystemHealthReport(payload = {}) {
-    return invoke('getSystemHealthReport', payload);
+    return getWorkspaceReportData('systemHealth', payload);
 }
 
 export function exportStudioReport(payload) {

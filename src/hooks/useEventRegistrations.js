@@ -12,7 +12,7 @@ export default function useEventRegistrations({ enabled = true } = {}) {
         error: '',
     });
 
-    const refresh = useCallback(async () => {
+    const refresh = useCallback(async ({ force = true } = {}) => {
         if (!enabled) return [];
         if (!user) {
             setState({ uid: null, registrations: [], loading: false, error: '' });
@@ -27,7 +27,7 @@ export default function useEventRegistrations({ enabled = true } = {}) {
         }));
 
         try {
-            const result = await listMyEventRegistrations();
+            const result = await listMyEventRegistrations({ force });
             const registrations = result?.registrations || [];
             setState({ uid: user.uid, registrations, loading: false, error: '' });
             return registrations;
@@ -45,7 +45,7 @@ export default function useEventRegistrations({ enabled = true } = {}) {
 
     useEffect(() => {
         if (!enabled) return undefined;
-        queueMicrotask(() => refresh());
+        queueMicrotask(() => refresh({ force: false }));
         return undefined;
     }, [enabled, refresh]);
 

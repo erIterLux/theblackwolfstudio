@@ -106,11 +106,11 @@ export default function InstructorPrivateTrainingAdmin() {
     const [busy, setBusy] = useState('');
     const [message, setMessage] = useState('');
 
-    const load = useCallback(async () => {
+    const load = useCallback(async ({ force = false } = {}) => {
         setLoading(true);
         setMessage('');
         try {
-            const result = await listPrivateTrainingAdmin();
+            const result = await listPrivateTrainingAdmin({ force });
             setOffers(result?.offers || []);
             setPurchases(result?.purchases || []);
         } catch (error) {
@@ -275,7 +275,7 @@ export default function InstructorPrivateTrainingAdmin() {
                         <Link className="button button--dark-ghost" to="/instructor/availability">
                             <CalendarCheck size={17} /> Availability
                         </Link>
-                        <button className="button button--dark-ghost" type="button" onClick={load} disabled={loading}>
+                        <button className="button button--dark-ghost" type="button" onClick={() => load({ force: true })} disabled={loading}>
                             <RefreshCw size={17} /> Refresh
                         </button>
                     </div>
