@@ -21,6 +21,8 @@ function blankParticipant(index) {
         fullName: '',
         email: '',
         phone: '',
+        emergencyContactName: '',
+        emergencyContactPhone: '',
         isMinor: false,
         guardianName: '',
         guardianEmail: '',
@@ -46,6 +48,10 @@ function formatDateTime(value) {
         hour: 'numeric',
         minute: '2-digit',
     });
+}
+
+function validEmergencyPhone(value) {
+    return String(value || '').replace(/\D/g, '').length >= 7;
 }
 
 export default function EventCheckoutForm({ event, onCancel }) {
@@ -161,6 +167,8 @@ export default function EventCheckoutForm({ event, onCancel }) {
         const invalidParticipant = visibleParticipants.find((participant) => (
             !participant.fullName.trim()
             || !participant.email.trim()
+            || !participant.emergencyContactName.trim()
+            || !validEmergencyPhone(participant.emergencyContactPhone)
             || (
                 participant.isMinor
                 && (!participant.guardianName.trim() || !participant.guardianEmail.trim())
@@ -182,6 +190,8 @@ export default function EventCheckoutForm({ event, onCancel }) {
                     fullName: participant.fullName,
                     email: participant.email,
                     phone: participant.phone,
+                    emergencyContactName: participant.emergencyContactName,
+                    emergencyContactPhone: participant.emergencyContactPhone,
                     isMinor: participant.isMinor,
                     guardianName: participant.guardianName,
                     guardianEmail: participant.guardianEmail,
@@ -257,7 +267,10 @@ export default function EventCheckoutForm({ event, onCancel }) {
                     <Users aria-hidden="true" />
                     <div>
                         <h3>Who is attending?</h3>
-                        <p>Each participant is tracked separately, even when one person pays.</p>
+                        <p>
+                            Each participant is tracked separately. Emergency contact name and
+                            phone are required for every participant.
+                        </p>
                     </div>
                 </div>
 
@@ -336,6 +349,29 @@ export default function EventCheckoutForm({ event, onCancel }) {
                                         })}
                                     />
                                     Participant is under 18
+                                </label>
+                            </div>
+                            <div className="form-row">
+                                <label>
+                                    Emergency contact full name
+                                    <input
+                                        required
+                                        value={participant.emergencyContactName}
+                                        onChange={(changeEvent) => updateParticipant(index, {
+                                            emergencyContactName: changeEvent.target.value,
+                                        })}
+                                    />
+                                </label>
+                                <label>
+                                    Emergency contact phone
+                                    <input
+                                        required
+                                        type="tel"
+                                        value={participant.emergencyContactPhone}
+                                        onChange={(changeEvent) => updateParticipant(index, {
+                                            emergencyContactPhone: changeEvent.target.value,
+                                        })}
+                                    />
                                 </label>
                             </div>
                             {participant.isMinor && (

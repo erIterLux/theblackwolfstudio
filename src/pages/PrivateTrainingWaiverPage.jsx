@@ -49,6 +49,8 @@ export default function PrivateTrainingWaiverPage() {
   const [form, setForm] = useState({
     signerName: '',
     signerRelationship: '',
+    emergencyContactName: '',
+    emergencyContactPhone: '',
     accepted: false,
     electronicSignatureConsent: false,
     signatureDataUrl: '',
@@ -74,6 +76,8 @@ export default function PrivateTrainingWaiverPage() {
           signerName: nextWaiver?.participant?.isMinor
             ? nextWaiver?.participant?.guardianName || ''
             : nextWaiver?.participant?.fullName || '',
+          emergencyContactName: nextWaiver?.participant?.emergencyContactName || '',
+          emergencyContactPhone: nextWaiver?.participant?.emergencyContactPhone || '',
         }));
       })
       .catch((nextError) => {
@@ -96,6 +100,13 @@ export default function PrivateTrainingWaiverPage() {
   const submit = async (event) => {
     event.preventDefault();
     setError('');
+    if (
+      !form.emergencyContactName.trim()
+      || String(form.emergencyContactPhone || '').replace(/\D/g, '').length < 7
+    ) {
+      setError('Enter an emergency contact name and valid phone number.');
+      return;
+    }
     if (!form.signatureDataUrl) {
       setError('Draw the electronic signature before submitting.');
       return;
@@ -111,6 +122,11 @@ export default function PrivateTrainingWaiverPage() {
         ...current,
         status: result?.status || 'signed',
         signedAt: result?.signedAt || new Date().toISOString(),
+        participant: {
+          ...current.participant,
+          emergencyContactName: form.emergencyContactName,
+          emergencyContactPhone: form.emergencyContactPhone,
+        },
         signer: {
           name: form.signerName,
           email: current?.participant?.isMinor
@@ -144,7 +160,13 @@ export default function PrivateTrainingWaiverPage() {
     );
   }
 
-  const complete = waiver?.status === 'signed' || waiver?.status === 'covered';
+  const emergencyContactComplete = Boolean(
+    waiver?.participant?.emergencyContactName
+    && String(waiver?.participant?.emergencyContactPhone || '').replace(/\D/g, '').length >= 7,
+  );
+  const complete = (
+    waiver?.status === 'signed' || waiver?.status === 'covered'
+  ) && emergencyContactComplete;
   const signerEmail = waiver?.participant?.isMinor
     ? waiver?.participant?.guardianEmail || waiver?.participant?.email
     : waiver?.participant?.email;
@@ -189,6 +211,10 @@ export default function PrivateTrainingWaiverPage() {
                 {waiver?.status === 'covered'
                   ? 'The participant’s current membership waiver covers this eligible private training.'
                   : `Signed by ${waiver?.signer?.name || 'the participant'} on ${formatDateTime(waiver?.signedAt)}. A complete copy is being emailed to ${waiver?.signer?.email || signerEmail}.`}
+              </p>
+              <p>
+                Emergency contact: {waiver?.participant?.emergencyContactName} ·{' '}
+                {waiver?.participant?.emergencyContactPhone}
               </p>
             </div>
           </article>
@@ -239,6 +265,30 @@ export default function PrivateTrainingWaiverPage() {
                 Participant: <strong>{waiver?.participant?.fullName}</strong>
                 {waiver?.participant?.isMinor ? ' (minor)' : ''}
               </p>
+
+              <div className="form-row">
+                <label>
+                  Emergency contact full name
+                  <input
+                    required
+                    value={form.emergencyContactName}
+                    onChange={(event) => update({
+                      emergencyContactName: event.target.value,
+                    })}
+                  />
+                </label>
+                <label>
+                  Emergency contact phone
+                  <input
+                    required
+                    type="tel"
+                    value={form.emergencyContactPhone}
+                    onChange={(event) => update({
+                      emergencyContactPhone: event.target.value,
+                    })}
+                  />
+                </label>
+              </div>
 
               <div className="form-row">
                 <label>

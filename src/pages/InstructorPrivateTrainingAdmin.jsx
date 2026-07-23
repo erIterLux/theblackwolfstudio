@@ -61,6 +61,12 @@ function fromLines(value) {
         .filter(Boolean);
 }
 
+function participantReady(participant) {
+    return ['signed', 'covered', 'not_required'].includes(participant.waiverStatus)
+        && Boolean(participant.emergencyContactName)
+        && String(participant.emergencyContactPhone || '').replace(/\D/g, '').length >= 7;
+}
+
 function toDraft(offer = {}) {
     const config = offer.privateTraining || {};
     const tiers = offer.participantAmountsCents || {};
@@ -176,7 +182,7 @@ export default function InstructorPrivateTrainingAdmin() {
 
     const formFor = (purchase) => sessionForms[purchase.id] || {
         participantIds: (purchase.participants || [])
-            .filter((item) => ['signed', 'covered', 'not_required'].includes(item.waiverStatus))
+            .filter(participantReady)
             .map((item) => item.id),
         sessionAt: todayInput(),
         notes: '',
@@ -453,17 +459,24 @@ export default function InstructorPrivateTrainingAdmin() {
                                                     type="checkbox"
                                                     checked={form.participantIds.includes(participant.id)}
                                                     onChange={() => toggleParticipant(purchase, participant.id)}
-                                                    disabled={!['signed', 'covered', 'not_required'].includes(participant.waiverStatus)}
+                                                    disabled={!participantReady(participant)}
                                                 />
-                                                {participant.fullName}
-                                                <small>
-                                                    <ShieldCheck size={14} />
-                                                    {participant.waiverStatus === 'covered'
-                                                        ? 'Membership waiver'
-                                                        : participant.waiverStatus === 'signed'
-                                                            ? 'Waiver signed'
-                                                            : 'Waiver required'}
-                                                </small>
+                                                <span className="private-session-participant-copy">
+                                                    <strong>{participant.fullName}</strong>
+                                                    <small>
+                                                        Emergency: {participant.emergencyContactName || 'Not listed'}
+                                                        {' · '}
+                                                        {participant.emergencyContactPhone || 'Phone missing'}
+                                                    </small>
+                                                    <small>
+                                                        <ShieldCheck size={14} />
+                                                        {participant.waiverStatus === 'covered'
+                                                            ? 'Membership waiver'
+                                                            : participant.waiverStatus === 'signed'
+                                                                ? 'Waiver signed'
+                                                                : 'Waiver required'}
+                                                    </small>
+                                                </span>
                                             </label>
                                         ))}
                                     </fieldset>

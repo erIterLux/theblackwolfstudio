@@ -33,6 +33,8 @@ export default function MemberWaiverPage() {
   const [error, setError] = useState('');
   const [form, setForm] = useState({
     participantFullName: user?.displayName || '',
+    emergencyContactName: '',
+    emergencyContactPhone: '',
     isMinor: false,
     guardianName: '',
     signerName: user?.displayName || '',
@@ -53,6 +55,8 @@ export default function MemberWaiverPage() {
         setForm((current) => ({
           ...current,
           participantFullName: participant.fullName || user?.displayName || '',
+          emergencyContactName: participant.emergencyContactName || '',
+          emergencyContactPhone: participant.emergencyContactPhone || '',
           isMinor: participant.isMinor === true,
           guardianName: participant.guardianName || '',
           signerName: waiver?.signer?.name
@@ -81,6 +85,13 @@ export default function MemberWaiverPage() {
   const submit = async (event) => {
     event.preventDefault();
     setError('');
+    if (
+      !form.emergencyContactName.trim()
+      || String(form.emergencyContactPhone || '').replace(/\D/g, '').length < 7
+    ) {
+      setError('Enter an emergency contact name and valid phone number.');
+      return;
+    }
     if (!form.signatureDataUrl) {
       setError('Draw the electronic signature before submitting.');
       return;
@@ -97,6 +108,8 @@ export default function MemberWaiverPage() {
           participant: {
             ...current.waiver.participant,
             fullName: form.participantFullName,
+            emergencyContactName: form.emergencyContactName,
+            emergencyContactPhone: form.emergencyContactPhone,
             isMinor: form.isMinor,
             guardianName: form.isMinor ? form.guardianName : null,
           },
@@ -166,6 +179,10 @@ export default function MemberWaiverPage() {
                 {formatDateTime(waiver?.signedAt)}. A complete copy is being emailed to{' '}
                 {waiver?.signer?.email || user?.email}.
               </p>
+              <p>
+                Emergency contact: {waiver?.participant?.emergencyContactName} ·{' '}
+                {waiver?.participant?.emergencyContactPhone}
+              </p>
             </div>
           </article>
         )}
@@ -199,6 +216,30 @@ export default function MemberWaiverPage() {
                   autoComplete="name"
                 />
               </label>
+
+              <div className="form-row">
+                <label>
+                  Emergency contact full name
+                  <input
+                    required
+                    value={form.emergencyContactName}
+                    onChange={(event) => update({
+                      emergencyContactName: event.target.value,
+                    })}
+                  />
+                </label>
+                <label>
+                  Emergency contact phone
+                  <input
+                    required
+                    type="tel"
+                    value={form.emergencyContactPhone}
+                    onChange={(event) => update({
+                      emergencyContactPhone: event.target.value,
+                    })}
+                  />
+                </label>
+              </div>
 
               <label className="checkbox-row">
                 <input

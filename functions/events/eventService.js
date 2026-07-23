@@ -143,6 +143,14 @@ function sanitizeEventParticipants(rawParticipants, quantity, purchaser, orderId
         const fullName = clean(raw?.fullName || raw?.name, 160);
         const email = normalizeEmail(raw?.email);
         const phone = clean(raw?.phone, 40);
+        const emergencyContactName = clean(
+            raw?.emergencyContactName || raw?.emergencyContact?.name,
+            160,
+        );
+        const emergencyContactPhone = clean(
+            raw?.emergencyContactPhone || raw?.emergencyContact?.phone,
+            40,
+        );
         const isMinor = raw?.isMinor === true;
         const guardianName = isMinor ? clean(raw?.guardianName, 160) : '';
         const guardianEmail = isMinor ? normalizeEmail(raw?.guardianEmail) : '';
@@ -154,6 +162,15 @@ function sanitizeEventParticipants(rawParticipants, quantity, purchaser, orderId
             throw new HttpsError(
                 'invalid-argument',
                 `Participant ${index + 1} needs a valid email for event and waiver communication.`,
+            );
+        }
+        if (
+            !emergencyContactName
+            || emergencyContactPhone.replace(/\D/g, '').length < 7
+        ) {
+            throw new HttpsError(
+                'invalid-argument',
+                `Participant ${index + 1} needs an emergency contact name and valid phone number.`,
             );
         }
         if (isMinor && (!guardianName || !guardianEmail || !guardianEmail.includes('@'))) {
@@ -176,6 +193,8 @@ function sanitizeEventParticipants(rawParticipants, quantity, purchaser, orderId
             fullName,
             email,
             phone: phone || null,
+            emergencyContactName,
+            emergencyContactPhone,
             isMinor,
             guardianName: guardianName || null,
             guardianEmail: guardianEmail || null,
@@ -625,6 +644,8 @@ async function ensureEventRegistrationFromOrder(orderId) {
                 fullName: participant.fullName,
                 email: participant.email,
                 phone: participant.phone || null,
+                emergencyContactName: participant.emergencyContactName,
+                emergencyContactPhone: participant.emergencyContactPhone,
                 isMinor: participant.isMinor === true,
                 guardianName: participant.guardianName || null,
                 guardianEmail: participant.guardianEmail || null,
@@ -808,6 +829,10 @@ async function handleGetEventCheckIn(request) {
             || participant.waiverStatus === 'not_required'
         ),
     ).length;
+    const emergencyContactMissingCount = participants.filter((participant) => (
+        !participant.emergencyContactName
+        || clean(participant.emergencyContactPhone, 40).replace(/\D/g, '').length < 7
+    )).length;
 
     return {
         event: serialize({
@@ -820,13 +845,17 @@ async function handleGetEventCheckIn(request) {
             waiverCompleteCount,
             checkedInCount,
             waitingCount: Math.max(0, participants.length - checkedInCount),
-            blockedCount: waiverRequired
-                ? participants.filter((participant) => (
-                    participant.waiverStatus !== 'signed'
+            blockedCount: participants.filter((participant) => (
+                !participant.emergencyContactName
+                || clean(participant.emergencyContactPhone, 40).replace(/\D/g, '').length < 7
+                || (
+                    waiverRequired
+                    && participant.waiverStatus !== 'signed'
                     && participant.waiverStatus !== 'covered'
                     && participant.waiverStatus !== 'not_required'
-                )).length
-                : 0,
+                )
+            )).length,
+            emergencyContactMissingCount,
         },
     };
 }
@@ -916,6 +945,15 @@ async function handleSetEventParticipantCheckIn(request) {
             }
 
             const waiverRequired = event.waiverRequired !== false;
+            if (
+                !participant.emergencyContactName
+                || clean(participant.emergencyContactPhone, 40).replace(/\D/g, '').length < 7
+            ) {
+                throw new HttpsError(
+                    'failed-precondition',
+                    `${participant.fullName || 'This participant'} needs an emergency contact name and valid phone number before check-in.`,
+                );
+            }
             const waiverComplete = (
                 participant.waiverStatus === 'signed'
                 || participant.waiverStatus === 'covered'

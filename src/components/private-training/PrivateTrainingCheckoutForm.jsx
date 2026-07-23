@@ -26,11 +26,17 @@ function blankParticipant(index) {
     fullName: '',
     email: '',
     phone: '',
+    emergencyContactName: '',
+    emergencyContactPhone: '',
     isPurchaser: false,
     isMinor: false,
     guardianName: '',
     guardianEmail: '',
   };
+}
+
+function validEmergencyPhone(value) {
+  return String(value || '').replace(/\D/g, '').length >= 7;
 }
 
 function participantPriceLabel(offer, count) {
@@ -160,6 +166,8 @@ export default function PrivateTrainingCheckoutForm({ offer, onCancel }) {
     if (visibleParticipants.some((item) => (
       !item.fullName.trim()
       || !item.email.trim()
+      || !item.emergencyContactName.trim()
+      || !validEmergencyPhone(item.emergencyContactPhone)
       || (item.isMinor && (!item.guardianName.trim() || !item.guardianEmail.trim()))
     ))) {
       setError('Complete the required participant and guardian information.');
@@ -203,7 +211,10 @@ export default function PrivateTrainingCheckoutForm({ offer, onCancel }) {
           <Users aria-hidden="true" />
           <div>
             <h3>Who will train?</h3>
-            <p>Private sessions can include up to {maxParticipants} people.</p>
+            <p>
+              Private sessions can include up to {maxParticipants} people. Emergency contact
+              name and phone are required for each participant.
+            </p>
           </div>
         </div>
 
@@ -268,6 +279,29 @@ export default function PrivateTrainingCheckoutForm({ offer, onCancel }) {
                     readOnly={purchaserAttending && index === 0}
                     onChange={(event) => updateParticipant(index, {
                       phone: event.target.value,
+                    })}
+                  />
+                </label>
+              </div>
+              <div className="form-row">
+                <label>
+                  Emergency contact full name
+                  <input
+                    required
+                    value={participant.emergencyContactName}
+                    onChange={(event) => updateParticipant(index, {
+                      emergencyContactName: event.target.value,
+                    })}
+                  />
+                </label>
+                <label>
+                  Emergency contact phone
+                  <input
+                    required
+                    type="tel"
+                    value={participant.emergencyContactPhone}
+                    onChange={(event) => updateParticipant(index, {
+                      emergencyContactPhone: event.target.value,
                     })}
                   />
                 </label>

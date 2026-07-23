@@ -96,6 +96,14 @@ function sanitizePrivateTrainingParticipants(rawParticipants, quantity, purchase
     const fullName = clean(raw?.fullName || raw?.name, 160);
     const email = normalizeEmail(raw?.email);
     const phone = clean(raw?.phone, 40);
+    const emergencyContactName = clean(
+      raw?.emergencyContactName || raw?.emergencyContact?.name,
+      160,
+    );
+    const emergencyContactPhone = clean(
+      raw?.emergencyContactPhone || raw?.emergencyContact?.phone,
+      40,
+    );
     const isMinor = raw?.isMinor === true;
     const guardianName = isMinor ? clean(raw?.guardianName, 160) : '';
     const guardianEmail = isMinor ? normalizeEmail(raw?.guardianEmail) : '';
@@ -110,6 +118,15 @@ function sanitizePrivateTrainingParticipants(rawParticipants, quantity, purchase
       throw new HttpsError(
         'invalid-argument',
         `Participant ${index + 1} needs a valid email for waiver communication.`,
+      );
+    }
+    if (
+      !emergencyContactName
+      || emergencyContactPhone.replace(/\D/g, '').length < 7
+    ) {
+      throw new HttpsError(
+        'invalid-argument',
+        `Participant ${index + 1} needs an emergency contact name and valid phone number.`,
       );
     }
     if (isMinor && (!guardianName || !guardianEmail || !guardianEmail.includes('@'))) {
@@ -131,6 +148,8 @@ function sanitizePrivateTrainingParticipants(rawParticipants, quantity, purchase
       fullName,
       email: email || null,
       phone: phone || null,
+      emergencyContactName,
+      emergencyContactPhone,
       isPurchaser,
       isMinor,
       guardianName: guardianName || null,

@@ -59,6 +59,11 @@ function completedStatus(status) {
     return status === 'signed' || status === 'covered' || status === 'not_required';
 }
 
+function emergencyContactReady(participant = {}) {
+    return clean(participant.emergencyContactName, 180).length >= 2
+        && clean(participant.emergencyContactPhone, 40).replace(/\D/g, '').length >= 7;
+}
+
 function waiverReady(waiver) {
     return Boolean(
         clean(waiver?.version, 80)
@@ -161,6 +166,12 @@ async function ensureWaiversForRegistration(registrationId) {
         const ready = !waiverRequired || waiverReady(terms);
         const existingSigned = existing.status === 'signed';
         const covered = waiverRequired && !existingSigned && Boolean(entry.memberWaiver);
+        const emergencyContactName = entry.participant.emergencyContactName
+            || (covered ? entry.memberWaiver?.participantSnapshot?.emergencyContactName : null)
+            || null;
+        const emergencyContactPhone = entry.participant.emergencyContactPhone
+            || (covered ? entry.memberWaiver?.participantSnapshot?.emergencyContactPhone : null)
+            || null;
         const status = existingSigned
             ? 'signed'
             : !waiverRequired
@@ -203,6 +214,8 @@ async function ensureWaiversForRegistration(registrationId) {
             participantSnapshot: {
                 fullName: entry.participant.fullName,
                 email: entry.participant.email,
+                emergencyContactName,
+                emergencyContactPhone,
                 isMinor: entry.participant.isMinor === true,
                 guardianName: entry.participant.guardianName || null,
                 guardianEmail: entry.participant.guardianEmail || null,
@@ -245,6 +258,8 @@ async function ensureWaiversForRegistration(registrationId) {
                 || existing.memberUid !== (entry.participant.memberUid || null)
                 || existing.coveredByWaiverId
                     !== (covered ? entry.memberWaiver.id : existing.coveredByWaiverId || null)
+                || existing.participantSnapshot?.emergencyContactName !== emergencyContactName
+                || existing.participantSnapshot?.emergencyContactPhone !== emergencyContactPhone
             )
         ) {
             batch.set(entry.waiverRef, baseDocument, { merge: true });
@@ -261,12 +276,16 @@ async function ensureWaiversForRegistration(registrationId) {
             || entry.participant.waiverId !== entry.participant.id
             || entry.participant.coverageSource !== participantCoverageSource
             || entry.participant.coveredByWaiverId !== coveredByWaiverId
+            || entry.participant.emergencyContactName !== emergencyContactName
+            || entry.participant.emergencyContactPhone !== emergencyContactPhone
         ) {
             batch.set(db.collection('eventParticipants').doc(entry.participant.id), {
                 waiverId: entry.participant.id,
                 waiverStatus: status,
                 coverageSource: participantCoverageSource,
                 coveredByWaiverId,
+                emergencyContactName,
+                emergencyContactPhone,
                 updatedAt: admin.firestore.FieldValue.serverTimestamp(),
             }, { merge: true });
         }
@@ -450,7 +469,10 @@ async function handleSignEventWaiver(request) {
     const documents = await getWaiverDocuments(request.data?.participantId, request);
     await authorizeWaiver(request, documents.participant, documents.access, true);
 
-    if (documents.waiver.status === 'signed' || documents.waiver.status === 'covered') {
+    if (
+        (documents.waiver.status === 'signed' || documents.waiver.status === 'covered')
+        && emergencyContactReady(documents.waiver.participantSnapshot)
+    ) {
         return {
             status: documents.waiver.status,
             signedAt: serialize(documents.waiver.signedAt),
@@ -476,11 +498,22 @@ async function handleSignEventWaiver(request) {
     }
 
     const signerName = clean(request.data?.signerName, 180);
+    const emergencyContactName = clean(request.data?.emergencyContactName, 180);
+    const emergencyContactPhone = clean(request.data?.emergencyContactPhone, 40);
     const signerEmail = expectedSignerEmail(documents.participant);
     const signerRelationship = clean(request.data?.signerRelationship, 120);
     const signatureDataUrl = validateSignatureDataUrl(request.data?.signatureDataUrl);
     if (signerName.length < 2) {
-        throw new HttpsError('invalid-argument', 'Enter the signer’s full legal name.');
+        throw new HttpsError('invalid-argument', "Enter the signer's full legal name.");
+    }
+    if (
+        emergencyContactName.length < 2
+        || emergencyContactPhone.replace(/\D/g, '').length < 7
+    ) {
+        throw new HttpsError(
+            'invalid-argument',
+            'Enter an emergency contact name and valid phone number.',
+        );
     }
     if (!signerEmail) {
         throw new HttpsError('failed-precondition', 'The registered signer email is missing.');
@@ -509,7 +542,11 @@ async function handleSignEventWaiver(request) {
         }
 
         const currentWaiver = waiverSnapshot.data() || {};
-        if (completedStatus(currentWaiver.status)) return;
+        if (
+            completedStatus(currentWaiver.status)
+            && emergencyContactReady(currentWaiver.participantSnapshot)
+        ) return;
+        const previouslyCompleted = completedStatus(currentWaiver.status);
         const registration = registrationSnapshot.data() || {};
         const requiredCount = Math.max(
             1,
@@ -517,12 +554,17 @@ async function handleSignEventWaiver(request) {
         );
         const nextCompletedCount = Math.min(
             requiredCount,
-            Number(registration.waiversSignedCount || 0) + 1,
+            Number(registration.waiversSignedCount || 0) + (previouslyCompleted ? 0 : 1),
         );
 
         transaction.set(documents.waiverRef, {
             status: 'signed',
             coverageSource: 'event',
+            participantSnapshot: {
+                ...(currentWaiver.participantSnapshot || {}),
+                emergencyContactName,
+                emergencyContactPhone,
+            },
             signer: {
                 name: signerName,
                 email: signerEmail,
@@ -551,6 +593,8 @@ async function handleSignEventWaiver(request) {
             waiverStatus: 'signed',
             coverageSource: 'event',
             waiverSignedAt: signedAt,
+            emergencyContactName,
+            emergencyContactPhone,
             mediaConsent: request.data?.mediaConsent === true,
             updatedAt: admin.firestore.FieldValue.serverTimestamp(),
         }, { merge: true });

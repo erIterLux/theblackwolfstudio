@@ -57,6 +57,8 @@ export default function EventWaiverPage() {
     signerName: '',
     signerEmail: '',
     signerRelationship: '',
+    emergencyContactName: '',
+    emergencyContactPhone: '',
     accepted: false,
     electronicSignatureConsent: false,
     mediaConsent: false,
@@ -85,6 +87,8 @@ export default function EventWaiverPage() {
             ? nextWaiver?.participant?.guardianName || ''
             : nextWaiver?.participant?.fullName || '',
           signerEmail: nextWaiver?.participant?.email || '',
+          emergencyContactName: nextWaiver?.participant?.emergencyContactName || '',
+          emergencyContactPhone: nextWaiver?.participant?.emergencyContactPhone || '',
           ...(nextWaiver?.participant?.isMinor && {
             signerEmail: nextWaiver?.participant?.guardianEmail
               || nextWaiver?.participant?.email
@@ -116,6 +120,13 @@ export default function EventWaiverPage() {
     event.preventDefault();
     setError('');
 
+    if (
+      !form.emergencyContactName.trim()
+      || String(form.emergencyContactPhone || '').replace(/\D/g, '').length < 7
+    ) {
+      setError('Enter an emergency contact name and valid phone number.');
+      return;
+    }
     if (!form.signatureDataUrl) {
       setError('Draw the electronic signature before submitting.');
       return;
@@ -132,6 +143,11 @@ export default function EventWaiverPage() {
         ...current,
         status: result?.status || 'signed',
         signedAt: result?.signedAt || new Date().toISOString(),
+        participant: {
+          ...current.participant,
+          emergencyContactName: form.emergencyContactName,
+          emergencyContactPhone: form.emergencyContactPhone,
+        },
         signer: {
           name: form.signerName,
           email: form.signerEmail,
@@ -161,7 +177,13 @@ export default function EventWaiverPage() {
     );
   }
 
-  const complete = waiver?.status === 'signed' || waiver?.status === 'covered';
+  const emergencyContactComplete = Boolean(
+    waiver?.participant?.emergencyContactName
+    && String(waiver?.participant?.emergencyContactPhone || '').replace(/\D/g, '').length >= 7,
+  );
+  const complete = (
+    waiver?.status === 'signed' || waiver?.status === 'covered'
+  ) && emergencyContactComplete;
   const unavailable = waiver?.status === 'setup_required' || waiver?.status === 'not_required';
 
   return (
@@ -196,6 +218,10 @@ export default function EventWaiverPage() {
                   ? 'The participant’s current membership waiver covers this eligible event.'
                   : `Signed by ${waiver?.signer?.name || 'the participant'} on ${formatDateTime(waiver?.signedAt)}. A complete copy is being emailed to ${waiver?.signer?.email || (waiver?.participant?.isMinor ? waiver?.participant?.guardianEmail : waiver?.participant?.email)}.`}
                 {' '}Event check-in is still completed separately when the participant arrives.
+              </p>
+              <p>
+                Emergency contact: {waiver?.participant?.emergencyContactName} ·{' '}
+                {waiver?.participant?.emergencyContactPhone}
               </p>
             </div>
           </article>
@@ -252,6 +278,30 @@ export default function EventWaiverPage() {
                 Participant: <strong>{waiver?.participant?.fullName}</strong>
                 {waiver?.participant?.isMinor ? ' (minor)' : ''}
               </p>
+
+              <div className="form-row">
+                <label>
+                  Emergency contact full name
+                  <input
+                    required
+                    value={form.emergencyContactName}
+                    onChange={(event) => update({
+                      emergencyContactName: event.target.value,
+                    })}
+                  />
+                </label>
+                <label>
+                  Emergency contact phone
+                  <input
+                    required
+                    type="tel"
+                    value={form.emergencyContactPhone}
+                    onChange={(event) => update({
+                      emergencyContactPhone: event.target.value,
+                    })}
+                  />
+                </label>
+              </div>
 
               <div className="form-row">
                 <label>

@@ -54,12 +54,21 @@ function waiverComplete(participant, waiverRequired) {
   );
 }
 
+function emergencyContactComplete(participant) {
+  return Boolean(
+    participant.emergencyContactName
+    && String(participant.emergencyContactPhone || '').replace(/\D/g, '').length >= 7,
+  );
+}
+
 function participantMatches(participant, query) {
   if (!query) return true;
   const haystack = [
     participant.fullName,
     participant.email,
     participant.phone,
+    participant.emergencyContactName,
+    participant.emergencyContactPhone,
     participant.guardianName,
     participant.purchaser?.name,
     participant.purchaser?.email,
@@ -125,7 +134,10 @@ export default function InstructorEventCheckIn() {
       blockedCount: participants.filter(
         (participant) => (
           participant.checkInStatus !== 'checked_in'
-          && !waiverComplete(participant, waiverRequired)
+          && (
+            !waiverComplete(participant, waiverRequired)
+            || !emergencyContactComplete(participant)
+          )
         ),
       ).length,
     };
@@ -136,9 +148,14 @@ export default function InstructorEventCheckIn() {
       if (!participantMatches(participant, query.trim())) return false;
       const isCheckedIn = participant.checkInStatus === 'checked_in';
       const isWaiverComplete = waiverComplete(participant, waiverRequired);
+      const isEmergencyContactComplete = emergencyContactComplete(participant);
 
-      if (filter === 'ready') return !isCheckedIn && isWaiverComplete;
-      if (filter === 'blocked') return !isCheckedIn && !isWaiverComplete;
+      if (filter === 'ready') {
+        return !isCheckedIn && isWaiverComplete && isEmergencyContactComplete;
+      }
+      if (filter === 'blocked') {
+        return !isCheckedIn && (!isWaiverComplete || !isEmergencyContactComplete);
+      }
       if (filter === 'checked_in') return isCheckedIn;
       return true;
     })
@@ -357,13 +374,15 @@ export default function InstructorEventCheckIn() {
               participant,
               waiverRequired,
             );
+            const isEmergencyContactComplete = emergencyContactComplete(participant);
+            const isReady = isWaiverComplete && isEmergencyContactComplete;
             const isBusy = busyParticipantId === participant.id;
 
             return (
               <article
                 className={`event-check-in-person${
                   isCheckedIn ? ' is-checked-in' : ''
-                }${!isWaiverComplete ? ' is-blocked' : ''}`}
+                }${!isReady ? ' is-blocked' : ''}`}
                 key={participant.id}
               >
                 <div className="event-check-in-person__identity">
@@ -384,6 +403,11 @@ export default function InstructorEventCheckIn() {
                         Minor · Guardian: {participant.guardianName || 'Not listed'}
                       </p>
                     )}
+                    <p className={isEmergencyContactComplete ? '' : 'is-missing-contact'}>
+                      Emergency: {participant.emergencyContactName || 'Not listed'}
+                      {' · '}
+                      {participant.emergencyContactPhone || 'Phone missing'}
+                    </p>
                   </div>
                 </div>
 
@@ -407,6 +431,14 @@ export default function InstructorEventCheckIn() {
                             : ''
                         }`
                       : 'Not checked in'}
+                  </span>
+                  <span className={`event-check-in-status${
+                    isEmergencyContactComplete ? ' is-complete' : ' is-warning'
+                  }`}>
+                    <ShieldAlert size={16} />
+                    {isEmergencyContactComplete
+                      ? 'Emergency contact ready'
+                      : 'Emergency contact required'}
                   </span>
                 </div>
 
@@ -436,17 +468,19 @@ export default function InstructorEventCheckIn() {
                     <button
                       className="button button--small"
                       type="button"
-                      disabled={isBusy || !isWaiverComplete}
+                      disabled={isBusy || !isReady}
                       onClick={() => changeCheckIn(participant, 'check_in')}
                     >
-                      {isWaiverComplete
+                      {isReady
                         ? <CheckCircle2 size={16} />
                         : <ShieldAlert size={16} />}
                       {isBusy
                         ? 'Checking in…'
-                        : isWaiverComplete
+                        : isReady
                           ? 'Check in'
-                          : 'Waiver required'}
+                          : !isEmergencyContactComplete
+                            ? 'Emergency contact required'
+                            : 'Waiver required'}
                     </button>
                   )}
                 </div>

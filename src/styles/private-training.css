@@ -750,6 +750,20 @@
   border: 1px solid var(--gray-200);
 }
 
+.private-session-participants .checkbox-row {
+  align-items: flex-start;
+}
+
+.private-session-participant-copy {
+  display: grid;
+  gap: .22rem;
+  min-width: 0;
+}
+
+.private-session-participant-copy small {
+  overflow-wrap: anywhere;
+}
+
 .credit-adjustment-row {
   display: grid;
   grid-template-columns: 1fr auto auto;

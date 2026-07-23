@@ -176,6 +176,14 @@ export default function PrivateTrainingSuccessPage() {
                                     <div>
                                         <strong>{participant.fullName}</strong>
                                         <span>{participant.email}</span>
+                                        {(participant.emergencyContactName
+                                            || participant.emergencyContactPhone) && (
+                                            <span>
+                                                Emergency: {participant.emergencyContactName || 'Not listed'}
+                                                {' · '}
+                                                {participant.emergencyContactPhone || 'Phone missing'}
+                                            </span>
+                                        )}
                                     </div>
                                     <div>
                                         <span className={`event-person-status ${complete ? 'is-confirmed' : 'is-pending'}`}>

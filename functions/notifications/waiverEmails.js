@@ -6,6 +6,10 @@ const {
   escapeHtml,
   sendEmail,
 } = require('./emailService');
+const {
+  createSignedWaiverPdf,
+  scopeStatementForWaiver,
+} = require('./waiverPdf');
 
 function clean(value, max = 500) {
   return String(value ?? '').trim().slice(0, max);
@@ -27,14 +31,6 @@ function recipientsFor(waiver) {
     participant.isMinor ? participant.guardianEmail : null,
     signer.email,
   ]);
-}
-
-function paragraphHtml(value) {
-  return clean(value, 50000)
-    .split(/\n{2,}/)
-    .filter(Boolean)
-    .map((paragraph) => `<p>${escapeHtml(paragraph).replace(/\n/g, '<br>')}</p>`)
-    .join('');
 }
 
 function formatSignedAt(value) {
@@ -81,40 +77,6 @@ function signatureAttachment(waiver, referenceId) {
   };
 }
 
-function signedDocumentHtml(waiver, referenceId) {
-  const terms = waiver.waiverSnapshot || {};
-  const participant = waiver.participantSnapshot || {};
-  const signer = waiver.signer || {};
-  const signatureDataUrl = clean(waiver.signatureDataUrl, 350000);
-  const mediaConsent = waiver.mediaConsentSnapshot?.enabled
-    ? `<p><strong>Separate optional photo/video consent:</strong> ${waiver.mediaConsentAccepted === true ? 'Accepted' : 'Not accepted'}</p>`
-    : '';
-  const signatureHtml = signatureDataUrl.startsWith('data:image/png;base64,')
-    ? `<h2>Electronic signature</h2><img src="${signatureDataUrl}" alt="Electronic signature" style="display:block;max-width:100%;height:auto;border:1px solid #d8d2c8">`
-    : '';
-  return `<!doctype html>
-<html lang="en">
-<head><meta charset="utf-8"><title>${escapeHtml(terms.title || 'Signed waiver')}</title></head>
-<body style="font-family:Arial,sans-serif;line-height:1.55;color:#14171b;max-width:820px;margin:32px auto;padding:0 20px">
-  <h1>${escapeHtml(terms.title || 'Signed waiver')}</h1>
-  <p><strong>Scope:</strong> ${escapeHtml(terms.scopeStatement || terms.scope || '')}</p>
-  <p><strong>Participant:</strong> ${escapeHtml(participant.fullName || '')}</p>
-  <p><strong>Waiver version:</strong> ${escapeHtml(terms.version || '')}</p>
-  <p><strong>Signed by:</strong> ${escapeHtml(signer.name || '')} (${escapeHtml(signer.relationship || signer.capacity || '')})</p>
-  <p><strong>Signed:</strong> ${escapeHtml(formatSignedAt(waiver.signedAt))}</p>
-  <p><strong>Record reference:</strong> ${escapeHtml(referenceId)}</p>
-  ${mediaConsent}
-  ${signatureHtml}
-  <hr>
-  ${paragraphHtml(terms.body)}
-  <hr>
-  <p><strong>Acknowledgement:</strong> ${escapeHtml(
-    participant.isMinor ? terms.minorAcknowledgement : terms.acknowledgement,
-  )}</p>
-</body>
-</html>`;
-}
-
 async function claimEmail(ref, field) {
   return ref.firestore.runTransaction(async (transaction) => {
     const snapshot = await transaction.get(ref);
@@ -150,14 +112,15 @@ async function sendSignedCopy({ waiver, referenceId, ref }) {
   const participant = waiver.participantSnapshot || {};
   const signer = waiver.signer || {};
   const signature = signatureAttachment(waiver, referenceId);
-  const attachmentHtml = signedDocumentHtml(waiver, referenceId);
+  const scopeStatement = scopeStatementForWaiver(waiver);
   try {
+    const attachmentPdf = await createSignedWaiverPdf(waiver, referenceId);
     await sendEmail({
       to: recipients,
-      subject: `Signed waiver copy — ${participant.fullName || 'Black Wolf Studio participant'}`,
+      subject: `Signed waiver copy - ${participant.fullName || 'Black Wolf Studio participant'}`,
       text: [
         `Attached is the completed ${terms.title || 'Black Wolf Studio waiver'}.`,
-        terms.scopeStatement || '',
+        scopeStatement,
         `Participant: ${participant.fullName || ''}`,
         `Signed by: ${signer.name || ''}`,
         `Signed: ${formatSignedAt(waiver.signedAt)}`,
@@ -168,20 +131,20 @@ async function sendSignedCopy({ waiver, referenceId, ref }) {
         title: `Waiver completed for ${participant.fullName || 'participant'}`,
         bodyHtml: `
           <p>This email is the participant or guardian copy of the completed electronic waiver.</p>
-          <p><strong>Scope</strong><br>${escapeHtml(terms.scopeStatement || '')}</p>
+          <p><strong>Scope</strong><br>${escapeHtml(scopeStatement)}</p>
           <p><strong>Participant</strong><br>${escapeHtml(participant.fullName || '')}</p>
-          <p><strong>Signed by</strong><br>${escapeHtml(signer.name || '')} · ${escapeHtml(signer.relationship || signer.capacity || '')}</p>
+          <p><strong>Signed by</strong><br>${escapeHtml(signer.name || '')} &middot; ${escapeHtml(signer.relationship || signer.capacity || '')}</p>
           <p><strong>Signed</strong><br>${escapeHtml(formatSignedAt(waiver.signedAt))}</p>
           <p><strong>Record reference</strong><br>${escapeHtml(referenceId)}</p>
           ${signature.html}
-          <p>The complete waiver terms and signature record are included in the attached printable HTML copy.</p>`,
+          <p>The complete waiver terms, scope, emergency contact, and signature record are included in the attached PDF.</p>`,
       }),
       attachments: [
         ...signature.attachments,
         {
-          filename: `signed-waiver-${referenceId}.html`,
-          content: Buffer.from(attachmentHtml, 'utf8'),
-          contentType: 'text/html; charset=utf-8',
+          filename: `signed-waiver-${referenceId}.pdf`,
+          content: attachmentPdf,
+          contentType: 'application/pdf',
         },
       ],
     });

@@ -122,6 +122,10 @@ function buildAttentionItems({ membership, membershipWaiver, privateTraining, ev
     && (
       membershipWaiver?.status !== 'signed'
       || membershipWaiver?.waiverSnapshot?.version !== STUDIO_WAIVER_VERSION
+      || !membershipWaiver?.participantSnapshot?.emergencyContactName
+      || String(
+        membershipWaiver?.participantSnapshot?.emergencyContactPhone || '',
+      ).replace(/\D/g, '').length < 7
     )
   ) {
     items.push({

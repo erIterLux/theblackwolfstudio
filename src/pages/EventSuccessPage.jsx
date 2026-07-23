@@ -195,6 +195,14 @@ export default function EventSuccessPage() {
                                         <div>
                                             <strong>{participant.fullName}</strong>
                                             <span>{participant.email}</span>
+                                            {(participant.emergencyContactName
+                                                || participant.emergencyContactPhone) && (
+                                                <span>
+                                                    Emergency: {participant.emergencyContactName || 'Not listed'}
+                                                    {' · '}
+                                                    {participant.emergencyContactPhone || 'Phone missing'}
+                                                </span>
+                                            )}
                                         </div>
                                         <div className="event-participant-actions">
                                             <span className="event-person-status is-confirmed">Registered</span>

@@ -99,6 +99,11 @@ function completedWaiverStatus(status) {
   return status === 'signed' || status === 'covered' || status === 'not_required';
 }
 
+function emergencyContactReady(participant = {}) {
+  return clean(participant.emergencyContactName, 180).length >= 2
+    && clean(participant.emergencyContactPhone, 40).replace(/\D/g, '').length >= 7;
+}
+
 async function refreshLinkedMembershipCoverage(uid) {
   const [eventParticipants, privateWaivers] = await Promise.all([
     db.collection('eventParticipants').where('memberUid', '==', uid).limit(200).get(),
@@ -130,6 +135,7 @@ async function currentMembershipWaiver(uid, participantName = '') {
     waiver.status !== 'signed'
     || waiver.scope !== 'membership'
     || waiver.waiverSnapshot?.version !== STUDIO_WAIVER_VERSION
+    || !emergencyContactReady(waiver.participantSnapshot)
   ) return null;
   if (
     participantName
@@ -149,10 +155,25 @@ async function handleGetMyMembershipWaiver(request) {
   const waiver = waiverSnapshot.data() || {};
   const eligible = LIVE_MEMBERSHIP_STATUSES.has(membership.status);
   const current = waiver.status === 'signed'
-    && waiver.waiverSnapshot?.version === STUDIO_WAIVER_VERSION;
+    && waiver.waiverSnapshot?.version === STUDIO_WAIVER_VERSION
+    && emergencyContactReady(waiver.participantSnapshot);
   const participantName = waiver.participantSnapshot?.fullName
     || clean(request.auth?.token?.name || membership.displayName, 180);
   const email = normalizeEmail(request.auth?.token?.email || membership.email);
+  const participant = {
+    fullName: participantName,
+    email,
+    isMinor: false,
+    guardianName: null,
+    guardianEmail: null,
+    ...(waiver.participantSnapshot || {}),
+    emergencyContactName: waiver.participantSnapshot?.emergencyContactName
+      || membership.emergencyContact?.name
+      || null,
+    emergencyContactPhone: waiver.participantSnapshot?.emergencyContactPhone
+      || membership.emergencyContact?.phone
+      || null,
+  };
 
   return {
     eligible,
@@ -164,13 +185,7 @@ async function handleGetMyMembershipWaiver(request) {
       id: uid,
       scope: 'membership',
       status: current ? 'signed' : 'pending',
-      participant: waiver.participantSnapshot || {
-        fullName: participantName,
-        email,
-        isMinor: false,
-        guardianName: null,
-        guardianEmail: null,
-      },
+      participant,
       terms: approvedWaiverTerms({
         scope: 'membership',
         context: { participantName },
@@ -199,6 +214,8 @@ async function handleSignMembershipWaiver(request) {
   }
 
   const participantName = clean(request.data?.participantFullName, 180);
+  const emergencyContactName = clean(request.data?.emergencyContactName, 180);
+  const emergencyContactPhone = clean(request.data?.emergencyContactPhone, 40);
   const isMinor = request.data?.isMinor === true;
   const guardianName = isMinor ? clean(request.data?.guardianName, 180) : '';
   const signerName = clean(request.data?.signerName, 180);
@@ -207,10 +224,19 @@ async function handleSignMembershipWaiver(request) {
   const signatureDataUrl = validateSignatureDataUrl(request.data?.signatureDataUrl);
 
   if (participantName.length < 2) {
-    throw new HttpsError('invalid-argument', 'Enter the participant’s full legal name.');
+    throw new HttpsError('invalid-argument', "Enter the participant's full legal name.");
+  }
+  if (
+    emergencyContactName.length < 2
+    || emergencyContactPhone.replace(/\D/g, '').length < 7
+  ) {
+    throw new HttpsError(
+      'invalid-argument',
+      'Enter an emergency contact name and valid phone number.',
+    );
   }
   if (signerName.length < 2) {
-    throw new HttpsError('invalid-argument', 'Enter the signer’s full legal name.');
+    throw new HttpsError('invalid-argument', "Enter the signer's full legal name.");
   }
   if (!signerEmail) {
     throw new HttpsError('failed-precondition', 'The signed-in account needs an email address.');
@@ -227,7 +253,12 @@ async function handleSignMembershipWaiver(request) {
     scope: 'membership',
     context: { participantName },
   });
-  await db.collection('studioWaivers').doc(uid).set({
+  const emergencyContact = {
+    name: emergencyContactName,
+    phone: emergencyContactPhone,
+  };
+  const batch = db.batch();
+  batch.set(db.collection('studioWaivers').doc(uid), {
     id: uid,
     uid,
     scope: 'membership',
@@ -235,6 +266,8 @@ async function handleSignMembershipWaiver(request) {
     participantSnapshot: {
       fullName: participantName,
       email: signerEmail,
+      emergencyContactName,
+      emergencyContactPhone,
       isMinor,
       guardianName: guardianName || null,
       guardianEmail: isMinor ? signerEmail : null,
@@ -261,6 +294,15 @@ async function handleSignMembershipWaiver(request) {
     updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     createdAt: admin.firestore.FieldValue.serverTimestamp(),
   }, { merge: true });
+  batch.set(membershipSnapshot.ref, {
+    emergencyContact,
+    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+  }, { merge: true });
+  batch.set(db.collection('users').doc(uid), {
+    emergencyContact,
+    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+  }, { merge: true });
+  await batch.commit();
 
   try {
     await refreshLinkedMembershipCoverage(uid);
@@ -321,6 +363,12 @@ async function ensurePrivateTrainingWaiversForPurchase(purchaseIdValue) {
     const existing = entry.waiverSnapshot.data() || {};
     const existingSigned = existing.status === 'signed';
     const covered = !existingSigned && Boolean(entry.memberWaiver);
+    const emergencyContactName = entry.participant.emergencyContactName
+      || (covered ? entry.memberWaiver?.participantSnapshot?.emergencyContactName : null)
+      || null;
+    const emergencyContactPhone = entry.participant.emergencyContactPhone
+      || (covered ? entry.memberWaiver?.participantSnapshot?.emergencyContactPhone : null)
+      || null;
     const status = existingSigned ? 'signed' : covered ? 'covered' : 'pending';
     if (completedWaiverStatus(status)) completedCount += 1;
 
@@ -358,6 +406,8 @@ async function ensurePrivateTrainingWaiversForPurchase(purchaseIdValue) {
       participantSnapshot: {
         fullName: entry.participant.fullName,
         email: entry.participant.email,
+        emergencyContactName,
+        emergencyContactPhone,
         isMinor: entry.participant.isMinor === true,
         guardianName: entry.participant.guardianName || null,
         guardianEmail: entry.participant.guardianEmail || null,
@@ -387,6 +437,8 @@ async function ensurePrivateTrainingWaiversForPurchase(purchaseIdValue) {
         || existing.memberUid !== (entry.memberUid || null)
         || existing.coveredByWaiverId
           !== (covered ? entry.memberWaiver.id : existing.coveredByWaiverId || null)
+        || existing.participantSnapshot?.emergencyContactName !== emergencyContactName
+        || existing.participantSnapshot?.emergencyContactPhone !== emergencyContactPhone
       )
     ) {
       batch.set(entry.waiverRef, baseDocument, { merge: true });
@@ -398,6 +450,8 @@ async function ensurePrivateTrainingWaiversForPurchase(purchaseIdValue) {
       waiverId: entry.waiverId,
       waiverStatus: status,
       coverageSource: covered ? 'membership' : existing.coverageSource || null,
+      emergencyContactName,
+      emergencyContactPhone,
     });
   });
 
@@ -412,7 +466,9 @@ async function ensurePrivateTrainingWaiversForPurchase(purchaseIdValue) {
       return current.memberUid !== participant.memberUid
         || current.waiverId !== participant.waiverId
         || current.waiverStatus !== participant.waiverStatus
-        || current.coverageSource !== participant.coverageSource;
+        || current.coverageSource !== participant.coverageSource
+        || current.emergencyContactName !== participant.emergencyContactName
+        || current.emergencyContactPhone !== participant.emergencyContactPhone;
     });
   if (
     participantsChanged
@@ -551,7 +607,10 @@ async function handleSignPrivateTrainingWaiver(request) {
   const documents = await getPrivateWaiverDocuments(request.data?.waiverId, request);
   await authorizePrivateWaiver(request, documents.waiver, documents.access, true);
   const waiver = documents.waiver;
-  if (completedWaiverStatus(waiver.status)) {
+  if (
+    completedWaiverStatus(waiver.status)
+    && emergencyContactReady(waiver.participantSnapshot)
+  ) {
     return { status: waiver.status, signedAt: serialize(waiver.signedAt) };
   }
   if (request.data?.accepted !== true || request.data?.electronicSignatureConsent !== true) {
@@ -563,6 +622,8 @@ async function handleSignPrivateTrainingWaiver(request) {
 
   const isMinor = waiver.participantSnapshot?.isMinor === true;
   const signerName = clean(request.data?.signerName, 180);
+  const emergencyContactName = clean(request.data?.emergencyContactName, 180);
+  const emergencyContactPhone = clean(request.data?.emergencyContactPhone, 40);
   const signerRelationship = isMinor ? clean(request.data?.signerRelationship, 120) : 'self';
   const signerEmail = normalizeEmail(
     isMinor
@@ -572,6 +633,15 @@ async function handleSignPrivateTrainingWaiver(request) {
   const signatureDataUrl = validateSignatureDataUrl(request.data?.signatureDataUrl);
   if (signerName.length < 2 || !signerEmail) {
     throw new HttpsError('invalid-argument', 'Enter valid signer information.');
+  }
+  if (
+    emergencyContactName.length < 2
+    || emergencyContactPhone.replace(/\D/g, '').length < 7
+  ) {
+    throw new HttpsError(
+      'invalid-argument',
+      'Enter an emergency contact name and valid phone number.',
+    );
   }
   if (isMinor && !signerRelationship) {
     throw new HttpsError('invalid-argument', 'Enter the parent or guardian relationship.');
@@ -588,7 +658,10 @@ async function handleSignPrivateTrainingWaiver(request) {
       throw new HttpsError('not-found', 'The private-training waiver could not be completed.');
     }
     const currentWaiver = currentWaiverSnapshot.data() || {};
-    if (completedWaiverStatus(currentWaiver.status)) return;
+    if (
+      completedWaiverStatus(currentWaiver.status)
+      && emergencyContactReady(currentWaiver.participantSnapshot)
+    ) return;
     const purchase = purchaseSnapshot.data() || {};
     const participants = (purchase.participants || []).map((participant) => (
       participant.id === waiver.participantId
@@ -597,6 +670,8 @@ async function handleSignPrivateTrainingWaiver(request) {
           waiverStatus: 'signed',
           waiverSignedAt: signedAt,
           coverageSource: 'private_training',
+          emergencyContactName,
+          emergencyContactPhone,
         }
         : participant
     ));
@@ -607,6 +682,11 @@ async function handleSignPrivateTrainingWaiver(request) {
     transaction.set(documents.waiverSnapshot.ref, {
       status: 'signed',
       coverageSource: 'private_training',
+      participantSnapshot: {
+        ...(currentWaiver.participantSnapshot || {}),
+        emergencyContactName,
+        emergencyContactPhone,
+      },
       signer: {
         name: signerName,
         email: signerEmail,
@@ -645,12 +725,15 @@ async function assertPrivateTrainingParticipantsCovered(purchaseId, participantI
     ? participants.filter((participant) => selected.has(participant.id))
     : participants;
   const incomplete = attending.filter(
-    (participant) => !completedWaiverStatus(participant.waiverStatus),
+    (participant) => (
+      !completedWaiverStatus(participant.waiverStatus)
+      || !emergencyContactReady(participant)
+    ),
   );
   if (incomplete.length) {
     throw new HttpsError(
       'failed-precondition',
-      `${incomplete.map((participant) => participant.fullName).join(', ')} must complete a waiver before private training can be booked or recorded.`,
+      `${incomplete.map((participant) => participant.fullName).join(', ')} must have a completed waiver and emergency contact before private training can be booked or recorded.`,
     );
   }
   return true;
