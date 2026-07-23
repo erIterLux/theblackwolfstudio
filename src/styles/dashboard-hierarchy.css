@@ -142,13 +142,12 @@
 
 .member-reflection-grid {
   display: grid;
-  grid-template-columns: minmax(280px, .72fr) minmax(0, 1.28fr);
+  grid-template-columns: minmax(0, 760px);
   gap: 1rem;
   align-items: stretch;
 }
 
-.member-reflection-grid .dashboard-card--checkin,
-.member-reflection-grid .wolf-guide-panel {
+.member-reflection-grid .dashboard-card--checkin {
   min-width: 0;
   height: 100%;
 }

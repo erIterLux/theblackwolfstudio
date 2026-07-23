@@ -8,7 +8,7 @@ import {
     ShieldAlert,
     Target,
 } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { PrefetchLink } from '../components/PrefetchLink';
 import EventSummaryCard from '../components/events/EventSummaryCard';
 import MembershipStatusCard from '../components/membership/MembershipStatusCard';
@@ -16,8 +16,8 @@ import NotificationSummaryCard from '../components/notifications/NotificationSum
 import PrivateTrainingSummaryCard from '../components/private-training/PrivateTrainingSummaryCard';
 import ProgressionSummaryCard from '../components/progression/ProgressionSummaryCard';
 import PurchaseSummaryCard from '../components/purchases/PurchaseSummaryCard';
-import WolfGuidePanel from '../components/wolf-guide/WolfGuidePanel';
 import { useAuth } from '../context/AuthContext';
+import { useWolfGuideState } from '../context/WolfGuideContext';
 import useMemberDashboardSummary from '../hooks/useMemberDashboardSummary';
 
 const checkIns = ['Activated', 'Steady', 'Tired', 'Disconnected'];
@@ -133,7 +133,7 @@ export default function MemberDashboard() {
         loading: dashboardLoading,
         error: dashboardError,
     } = useMemberDashboardSummary();
-    const [checkIn, setCheckIn] = useState('Steady');
+    const { memberState: checkIn, setMemberState: setCheckIn } = useWolfGuideState();
     const nextStep = useMemo(
         () => buildNextStep(dashboardData, dashboardLoading),
         [dashboardData, dashboardLoading],
@@ -282,12 +282,10 @@ export default function MemberDashboard() {
                                 ))}
                             </div>
                             <p className="dashboard-hint">
-                                This gives Wolf Guide optional context during this visit. It is
-                                separate from attendance check-in for an event.
+                                This gives the Wolf Guide widget optional context during this
+                                visit. It is separate from event attendance check-in.
                             </p>
                         </article>
-
-                        <WolfGuidePanel memberState={checkIn} />
                     </div>
                 </section>
             </div>

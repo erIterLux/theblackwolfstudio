@@ -139,7 +139,7 @@ export default function EventWaiverPage() {
     return (
       <section className="section section--light waiver-page">
         <div className="container waiver-shell waiver-shell--message">
-          <ShieldAlert size={44} />
+          <ShieldAlert size={34} />
           <h1>Waiver unavailable</h1>
           <p>{error}</p>
           <Link className="button" to="/events">View events</Link>
@@ -171,7 +171,7 @@ export default function EventWaiverPage() {
 
         {complete && (
           <article className="waiver-complete-card">
-            <CheckCircle2 size={44} />
+            <CheckCircle2 size={34} />
             <div>
               <h2>Waiver signed</h2>
               <p>
@@ -184,7 +184,7 @@ export default function EventWaiverPage() {
 
         {unavailable && (
           <article className="waiver-complete-card is-warning">
-            <Clock3 size={40} />
+            <Clock3 size={32} />
             <div>
               <h2>Waiver not ready</h2>
               <p>{statusMessage(waiver?.status)}</p>

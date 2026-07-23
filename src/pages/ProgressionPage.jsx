@@ -122,7 +122,7 @@ export default function ProgressionPage() {
         return (
             <section className="progression-page">
                 <div className="container progression-access-denied">
-                    <LockKeyhole size={38} />
+                    <LockKeyhole size={32} />
                     <h1>Progression is a membership feature</h1>
                     <p>{error || 'An active studio membership is required before progression tracking can be initialized.'}</p>
                     <Link className="button" to="/membership">View membership options</Link>

@@ -76,7 +76,7 @@ export default function MemberEventsPage() {
 
                 {!loading && !error && !registrations.length && (
                     <article className="empty-state-card">
-                        <CalendarCheck2 size={38} />
+                        <CalendarCheck2 size={32} />
                         <h2>No event registrations yet.</h2>
                         <p>Membership is not required to register for an event.</p>
                         <Link className="button" to="/events">View upcoming events</Link>

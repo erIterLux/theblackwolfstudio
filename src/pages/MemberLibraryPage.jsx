@@ -82,7 +82,7 @@ export default function MemberLibraryPage() {
             <h1>Train with a clear reference.</h1>
             <p>Instructor-published text, images, audio, and video connected directly to progression requirements.</p>
           </div>
-          <BookOpen size={46} />
+          <BookOpen size={34} />
         </header>
 
         <div className="content-library-filters">

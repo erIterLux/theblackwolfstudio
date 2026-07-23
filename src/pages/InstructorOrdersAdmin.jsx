@@ -111,8 +111,16 @@ export default function InstructorOrdersAdmin() {
                 {error && <p className="form-status form-status--error">{error}</p>}
 
                 {!loading && !error && (
-                    <div className="commerce-order-table-wrap">
+                    <>
+                    <p className="table-scroll-hint">Scroll horizontally to see every column.</p>
+                    <div
+                        className="commerce-order-table-wrap"
+                        role="region"
+                        aria-label="Orders and payment records"
+                        tabIndex={0}
+                    >
                         <table className="commerce-order-table">
+                            <caption className="sr-only">Orders and payment records</caption>
                             <thead><tr><th>Date</th><th>Type</th><th>Purchaser / member</th><th>Offering</th><th>Status</th><th>Amount</th><th>Discount</th><th>Receipt</th></tr></thead>
                             <tbody>
                                 {records.map((record) => {
@@ -135,6 +143,7 @@ export default function InstructorOrdersAdmin() {
                         </table>
                         {!records.length && <p className="empty-table-message">No commerce records match these filters.</p>}
                     </div>
+                    </>
                 )}
             </div>
         </section>

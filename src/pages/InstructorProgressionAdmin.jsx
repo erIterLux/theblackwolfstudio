@@ -181,7 +181,7 @@ export default function InstructorProgressionAdmin() {
         return (
             <section className="progression-page">
                 <div className="container progression-access-denied">
-                    <ShieldAlert size={38} />
+                    <ShieldAlert size={32} />
                     <h1>Instructor access required</h1>
                     <p>{roleError || 'This page is available only to configured instructors and administrators.'}</p>
                     <button className="button" type="button" onClick={refreshRole}>Check access again</button>
@@ -206,7 +206,7 @@ export default function InstructorProgressionAdmin() {
 
                 <header className="progression-admin-header">
                     <div><p className="eyebrow">Instructor workspace</p><h1>Progression review</h1><p>Review each evidence submission, leave media or written feedback, and validate one category at a time.</p></div>
-                    <ClipboardCheck size={46} />
+                    <ClipboardCheck size={34} />
                 </header>
 
                 {message && <p className="progression-page-message" role="status">{message}</p>}

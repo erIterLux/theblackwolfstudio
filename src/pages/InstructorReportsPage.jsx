@@ -545,7 +545,13 @@ export default function InstructorReportsPage() {
                             </label>
                             <small>{filteredEvents.length} of {events.events?.length || 0} events shown</small>
                         </div>
-                        <div className="report-table-wrap">
+                        <p className="table-scroll-hint">Scroll horizontally to see every column.</p>
+                        <div
+                            className="report-table-wrap"
+                            role="region"
+                            aria-label="Event performance table"
+                            tabIndex={0}
+                        >
                             <table className="report-table">
                                 <caption>Event registration, waiver, attendance, and revenue summary</caption>
                                 <thead><tr><th>Event</th><th>Capacity</th><th>Participants</th><th>Waivers</th><th>Checked in</th><th>No-shows</th><th>Attendance</th><th>Net revenue</th></tr></thead>
@@ -566,7 +572,23 @@ export default function InstructorReportsPage() {
                             <Metric icon={AlertTriangle} label="No-shows" value={privateTraining.sessions?.noShows || 0} />
                             <Metric icon={RefreshCw} label="Late cancellations" value={privateTraining.sessions?.lateCanceled || 0} />
                         </div>
-                        <article className="report-panel"><h2>Instructor workload</h2><div className="report-table-wrap report-table-wrap--flat"><table className="report-table"><thead><tr><th>Instructor</th><th>Scheduled</th><th>Completed</th><th>Teaching hours</th><th>Availability used</th><th>Cancellations</th><th>No-shows</th></tr></thead><tbody>{privateTraining.instructors?.map((instructor) => <tr key={instructor.instructorUid}><td><strong>{instructor.instructorName}</strong></td><td>{instructor.sessionsScheduled}</td><td>{instructor.sessionsCompleted}</td><td>{instructor.teachingHours}</td><td>{instructor.availabilityUsed == null ? 'Not configured' : `${instructor.availabilityUsed}%`}</td><td>{instructor.cancellations}</td><td>{instructor.noShows}</td></tr>)}</tbody></table>{!privateTraining.instructors?.length && <Empty />}</div></article>
+                        <article className="report-panel">
+                            <h2>Instructor workload</h2>
+                            <p className="table-scroll-hint">Scroll horizontally to see every column.</p>
+                            <div
+                                className="report-table-wrap report-table-wrap--flat"
+                                role="region"
+                                aria-label="Instructor workload table"
+                                tabIndex={0}
+                            >
+                                <table className="report-table">
+                                    <caption>Scheduled and completed private-training workload</caption>
+                                    <thead><tr><th>Instructor</th><th>Scheduled</th><th>Completed</th><th>Teaching hours</th><th>Availability used</th><th>Cancellations</th><th>No-shows</th></tr></thead>
+                                    <tbody>{privateTraining.instructors?.map((instructor) => <tr key={instructor.instructorUid}><td><strong>{instructor.instructorName}</strong></td><td>{instructor.sessionsScheduled}</td><td>{instructor.sessionsCompleted}</td><td>{instructor.teachingHours}</td><td>{instructor.availabilityUsed == null ? 'Not configured' : `${instructor.availabilityUsed}%`}</td><td>{instructor.cancellations}</td><td>{instructor.noShows}</td></tr>)}</tbody>
+                                </table>
+                                {!privateTraining.instructors?.length && <Empty />}
+                            </div>
+                        </article>
                     </div>
                 )}
 
@@ -603,7 +625,13 @@ export default function InstructorReportsPage() {
                             </label>
                             <small>{filteredAttendance.length} of {attendance.rows?.length || 0} loaded records shown</small>
                         </div>
-                        <div className="report-table-wrap">
+                        <p className="table-scroll-hint">Scroll horizontally to see every column.</p>
+                        <div
+                            className="report-table-wrap"
+                            role="region"
+                            aria-label="Attendance records table"
+                            tabIndex={0}
+                        >
                             <table className="report-table">
                                 <caption>Combined event and private-training attendance records</caption>
                                 <thead><tr><th>Date</th><th>Type</th><th>Participant</th><th>Event or package</th><th>Instructor</th><th>Status</th></tr></thead>
