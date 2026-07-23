@@ -314,7 +314,7 @@ export default function InstructorEventsAdmin() {
         return (
             <section className="section section--light">
                 <div className="container role-gate">
-                    <ShieldAlert size={42} />
+                    <ShieldAlert size={32} />
                     <h1>Instructor access required</h1>
                     <p>{roleError || 'This area is available to instructors and administrators.'}</p>
                     <button className="button" type="button" onClick={refreshRole}>Check access again</button>

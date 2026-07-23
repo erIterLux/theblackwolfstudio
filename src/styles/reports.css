@@ -423,6 +423,13 @@
 
 .report-table-wrap {
     overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    scrollbar-gutter: stable;
+}
+
+.report-table-wrap:focus-visible {
+    outline: 3px solid var(--gold, #b6903f);
+    outline-offset: 3px;
 }
 
 .report-table-wrap--flat {
@@ -432,37 +439,56 @@
 
 .report-table {
     width: 100%;
-    min-width: 850px;
+    min-width: 960px;
     border-collapse: collapse;
     background: #fff;
+    table-layout: auto;
 }
 
     .report-table th,
     .report-table td {
         padding: .85rem .8rem;
         border-bottom: 1px solid var(--gray-200);
+        line-height: 1.4;
         text-align: left;
         vertical-align: top;
+        white-space: nowrap;
     }
 
     .report-table th {
         background: #f4f1eb;
         color: #263b50;
-        font-size: .7rem;
+        font-size: .78rem;
         letter-spacing: .06em;
         text-transform: uppercase;
     }
 
     .report-table td {
-        font-size: .84rem;
+        font-size: .875rem;
     }
+
+        .report-table th:first-child,
+        .report-table td:first-child {
+            position: sticky;
+            left: 0;
+            z-index: 2;
+            min-width: 12rem;
+            background: #fff;
+            white-space: normal;
+        }
+
+        .report-table th:first-child {
+            z-index: 3;
+            background: #eef1f3;
+        }
 
         .report-table td > span,
         .report-table td > strong + span {
             display: block;
             margin-top: .18rem;
             color: var(--gray-600);
-            font-size: .72rem;
+            font-size: .78rem;
+            line-height: 1.4;
         }
 
 .report-status {
@@ -470,9 +496,24 @@
     padding: .25rem .48rem;
     background: #edf1f4;
     color: #263b50 !important;
-    font-size: .7rem !important;
+    font-size: .78rem !important;
     font-weight: 900;
+    white-space: nowrap;
     text-transform: capitalize;
+}
+
+.table-scroll-hint {
+    display: none;
+    margin: -.2rem 0 .55rem;
+    color: var(--gray-600, #59636d);
+    font-size: .82rem;
+    line-height: 1.4;
+}
+
+@media (max-width: 1100px) {
+    .table-scroll-hint {
+        display: block;
+    }
 }
 
     .report-status.is-attended,

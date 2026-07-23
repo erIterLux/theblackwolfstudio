@@ -233,7 +233,7 @@ export default function InstructorContentAdmin() {
         return (
             <section className="content-admin-page">
                 <div className="container progression-access-denied">
-                    <ShieldAlert size={38} />
+                    <ShieldAlert size={32} />
                     <h1>Instructor access required</h1>
                     <p>{roleError || 'Only instructors and administrators can manage the training library.'}</p>
                     <button className="button" type="button" onClick={refreshRole}>Check access again</button>
@@ -264,7 +264,7 @@ export default function InstructorContentAdmin() {
                         <h1>Training reference library</h1>
                         <p>Create structured content that appears in progression and becomes current Wolf Guide context when published.</p>
                     </div>
-                    <BookOpen size={46} />
+                    <BookOpen size={34} />
                 </header>
 
                 {message && <p className="progression-page-message" role="status">{message}</p>}

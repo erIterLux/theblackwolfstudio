@@ -1,0 +1,461 @@
+.wolf-guide-widget {
+  position: fixed;
+  right: clamp(1rem, 2.4vw, 2rem);
+  bottom: calc(1rem + env(safe-area-inset-bottom));
+  z-index: 320;
+  font-size: 1rem;
+}
+
+.wolf-guide-launcher {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  min-width: 16rem;
+  min-height: 3.5rem;
+  padding: .62rem .9rem .62rem .68rem;
+  color: #fff;
+  text-align: left;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, .08), transparent 55%),
+    #17191d;
+  border: 1px solid rgba(255, 255, 255, .18);
+  border-radius: 1rem;
+  box-shadow: 0 18px 48px rgba(6, 8, 12, .28);
+  cursor: pointer;
+  transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.wolf-guide-launcher:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255, 255, 255, .34);
+  box-shadow: 0 22px 56px rgba(6, 8, 12, .34);
+}
+
+.wolf-guide-launcher:focus-visible,
+.wolf-guide-dialog button:focus-visible,
+.wolf-guide-dialog a:focus-visible,
+.wolf-guide-dialog textarea:focus-visible {
+  outline: 3px solid #d8b66a;
+  outline-offset: 3px;
+}
+
+.wolf-guide-launcher__icon {
+  display: grid;
+  flex: 0 0 auto;
+  width: 2.45rem;
+  height: 2.45rem;
+  place-items: center;
+  color: #16181c;
+  background: #e2c578;
+  border-radius: .78rem;
+}
+
+.wolf-guide-launcher.is-locked .wolf-guide-launcher__icon {
+  color: #fff;
+  background: rgba(255, 255, 255, .13);
+}
+
+.wolf-guide-launcher > span:last-child {
+  display: grid;
+  min-width: 0;
+  gap: .12rem;
+}
+
+.wolf-guide-launcher strong,
+.wolf-guide-launcher small {
+  overflow-wrap: normal;
+  word-break: normal;
+}
+
+.wolf-guide-launcher strong {
+  font-size: .94rem;
+  line-height: 1.2;
+}
+
+.wolf-guide-launcher small {
+  color: rgba(255, 255, 255, .7);
+  font-size: .76rem;
+  line-height: 1.3;
+}
+
+.wolf-guide-dialog {
+  position: fixed;
+  right: clamp(1rem, 2.4vw, 2rem);
+  bottom: calc(5.35rem + env(safe-area-inset-bottom));
+  display: flex;
+  width: min(27rem, calc(100vw - 2rem));
+  max-height: min(42rem, calc(100dvh - 7rem));
+  flex-direction: column;
+  overflow: hidden;
+  color: #fff;
+  background: #17191d;
+  border: 1px solid rgba(255, 255, 255, .15);
+  border-radius: 1.1rem;
+  box-shadow: 0 28px 80px rgba(6, 8, 12, .42);
+}
+
+.wolf-guide-dialog[hidden] {
+  display: none;
+}
+
+.wolf-guide-dialog__header {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: .85rem .9rem;
+  background: rgba(255, 255, 255, .035);
+  border-bottom: 1px solid rgba(255, 255, 255, .1);
+}
+
+.wolf-guide-dialog__header > div:first-child,
+.wolf-guide-dialog__actions {
+  display: flex;
+  align-items: center;
+}
+
+.wolf-guide-dialog__header > div:first-child {
+  min-width: 0;
+  gap: .65rem;
+}
+
+.wolf-guide-dialog__mark {
+  display: grid;
+  flex: 0 0 auto;
+  width: 2.2rem;
+  height: 2.2rem;
+  place-items: center;
+  color: #15171b;
+  background: #e2c578;
+  border-radius: .68rem;
+}
+
+.wolf-guide-dialog__header p,
+.wolf-guide-dialog__header h2 {
+  margin: 0;
+}
+
+.wolf-guide-dialog__header p {
+  color: rgba(255, 255, 255, .62);
+  font-size: .74rem;
+  font-weight: 750;
+  letter-spacing: .06em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.wolf-guide-dialog__header h2 {
+  color: #fff;
+  font-size: 1.12rem;
+  line-height: 1.25;
+}
+
+.wolf-guide-dialog__actions {
+  flex: 0 0 auto;
+  gap: .35rem;
+}
+
+.wolf-guide-dialog__actions button {
+  display: grid;
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0;
+  place-items: center;
+  color: rgba(255, 255, 255, .86);
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, .12);
+  border-radius: .65rem;
+  cursor: pointer;
+}
+
+.wolf-guide-dialog__actions button:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, .09);
+}
+
+.wolf-guide-dialog__body {
+  display: flex;
+  min-height: 0;
+  flex: 1 1 auto;
+  overflow: hidden;
+}
+
+.wolf-guide-loading {
+  display: flex;
+  min-height: 13rem;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  gap: .7rem;
+  padding: 1.5rem;
+  color: rgba(255, 255, 255, .78);
+  font-size: .9rem;
+}
+
+.wolf-guide-conversation {
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: .75rem;
+  padding: .9rem;
+}
+
+.wolf-guide-heading-row {
+  display: grid;
+  gap: .55rem;
+}
+
+.wolf-guide-dialog .wolf-guide-boundary {
+  padding: .65rem .75rem;
+  color: rgba(255, 255, 255, .76);
+  font-size: .78rem;
+  line-height: 1.45;
+}
+
+.wolf-guide-reset,
+.wolf-guide-retry {
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  gap: .38rem;
+  padding: .35rem 0;
+  color: rgba(255, 255, 255, .76);
+  background: transparent;
+  border: 0;
+  font: inherit;
+  font-size: .78rem;
+  cursor: pointer;
+}
+
+.wolf-guide-reset:disabled,
+.wolf-guide-retry:disabled {
+  opacity: .5;
+  cursor: not-allowed;
+}
+
+.wolf-guide-dialog .wolf-guide-prompts {
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  padding: 0 0 .15rem;
+  scrollbar-width: thin;
+}
+
+.wolf-guide-dialog .wolf-guide-prompts button {
+  flex: 0 0 auto;
+  min-height: 2.5rem;
+  font-size: .78rem;
+  line-height: 1.25;
+  white-space: nowrap;
+}
+
+.wolf-guide-dialog .wolf-guide-messages {
+  min-height: 9rem;
+  max-height: none;
+  flex: 1 1 14rem;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+}
+
+.wolf-guide-dialog .wolf-guide-message {
+  font-size: .88rem;
+}
+
+.wolf-guide-message.is-failed {
+  border: 1px solid rgba(255, 169, 169, .56);
+}
+
+.wolf-guide-sources {
+  display: block;
+  margin-top: .45rem;
+  color: inherit;
+  opacity: .7;
+  font-size: .75rem;
+}
+
+.wolf-guide-retry {
+  margin-top: .35rem;
+  color: inherit;
+  text-decoration: underline;
+}
+
+.wolf-guide-composer {
+  display: grid;
+  min-width: 0;
+  gap: .25rem;
+}
+
+.wolf-guide-composer small,
+.wolf-guide-persistence-note {
+  margin: 0;
+  color: rgba(255, 255, 255, .58);
+  font-size: .72rem;
+  line-height: 1.35;
+}
+
+.wolf-guide-dialog .wolf-guide-form textarea {
+  min-height: 4.5rem;
+  max-height: 10rem;
+}
+
+.wolf-guide-dialog .wolf-guide-form .button {
+  min-height: 2.75rem;
+}
+
+.wolf-guide-dialog .wolf-guide-error {
+  margin: 0;
+  color: #ffc2c2;
+}
+
+.wolf-guide-upgrade {
+  display: grid;
+  align-content: start;
+  gap: .9rem;
+  width: 100%;
+  padding: clamp(1.2rem, 4vw, 1.7rem);
+}
+
+.wolf-guide-upgrade__icon {
+  display: grid;
+  width: 2.8rem;
+  height: 2.8rem;
+  place-items: center;
+  color: #17191d;
+  background: #e2c578;
+  border-radius: .8rem;
+}
+
+.wolf-guide-upgrade h3,
+.wolf-guide-upgrade p,
+.wolf-guide-upgrade ul,
+.wolf-guide-upgrade small {
+  margin: 0;
+}
+
+.wolf-guide-upgrade h3 {
+  color: #fff;
+  font-size: 1.35rem;
+}
+
+.wolf-guide-upgrade p,
+.wolf-guide-upgrade li {
+  color: rgba(255, 255, 255, .78);
+  font-size: .9rem;
+  line-height: 1.55;
+}
+
+.wolf-guide-upgrade ul {
+  display: grid;
+  gap: .4rem;
+  padding-left: 1.2rem;
+}
+
+.wolf-guide-upgrade .button {
+  width: 100%;
+  justify-content: center;
+}
+
+.wolf-guide-upgrade small {
+  color: rgba(255, 255, 255, .58);
+  font-size: .75rem;
+  line-height: 1.4;
+}
+
+.wolf-guide-widget__backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 850;
+  padding: 0;
+  background: rgba(5, 7, 10, .74);
+  border: 0;
+  backdrop-filter: blur(5px);
+}
+
+.wolf-guide-widget.is-expanded .wolf-guide-dialog {
+  inset: 50% auto auto 50%;
+  z-index: 860;
+  width: min(58rem, calc(100vw - 2.5rem));
+  height: min(48rem, calc(100dvh - 2.5rem));
+  max-height: none;
+  transform: translate(-50%, -50%);
+}
+
+.wolf-guide-widget.is-expanded .wolf-guide-heading-row {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+}
+
+.wolf-guide-widget.is-expanded .wolf-guide-messages {
+  flex-basis: 22rem;
+}
+
+@media (max-width: 980px) {
+  .wolf-guide-dialog {
+    width: min(31rem, calc(100vw - 2rem));
+  }
+
+  .wolf-guide-widget.is-expanded .wolf-guide-dialog {
+    width: calc(100vw - 2rem);
+    height: calc(100dvh - 2rem);
+  }
+}
+
+@media (max-width: 640px) {
+  .wolf-guide-widget {
+    right: .75rem;
+    bottom: calc(.75rem + env(safe-area-inset-bottom));
+    left: .75rem;
+  }
+
+  .wolf-guide-launcher {
+    width: 100%;
+    min-width: 0;
+    min-height: 3.35rem;
+  }
+
+  .wolf-guide-dialog,
+  .wolf-guide-widget.is-expanded .wolf-guide-dialog {
+    inset: .65rem .65rem calc(4.85rem + env(safe-area-inset-bottom));
+    width: auto;
+    height: auto;
+    max-height: none;
+    transform: none;
+  }
+
+  .wolf-guide-widget.is-expanded .wolf-guide-dialog {
+    bottom: calc(.65rem + env(safe-area-inset-bottom));
+  }
+
+  .wolf-guide-dialog__header {
+    padding: .72rem .75rem;
+  }
+
+  .wolf-guide-conversation {
+    gap: .62rem;
+    padding: .72rem;
+  }
+
+  .wolf-guide-dialog .wolf-guide-prompts button {
+    min-height: 2.75rem;
+  }
+
+  .wolf-guide-dialog .wolf-guide-form {
+    grid-template-columns: 1fr;
+  }
+
+  .wolf-guide-dialog .wolf-guide-form .button {
+    width: 100%;
+  }
+
+  .wolf-guide-widget.is-expanded .wolf-guide-heading-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wolf-guide-launcher {
+    transition: none;
+  }
+}

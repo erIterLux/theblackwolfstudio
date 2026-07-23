@@ -12,6 +12,7 @@ import NotificationBell from './notifications/NotificationBell';
 import Logo from './Logo';
 import { PrefetchLink, PrefetchNavLink } from './PrefetchLink';
 import RouteLoadingState from './RouteLoadingState';
+import WolfGuideWidget from './wolf-guide/WolfGuideWidget';
 
 const FOCUSABLE_SELECTOR = [
     'a[href]',
@@ -57,6 +58,7 @@ export default function PortalShell({
     homePath,
     navigation,
     notificationsPath,
+    showWolfGuide = false,
     switchLink,
 }) {
     const { pathname } = useLocation();
@@ -220,6 +222,7 @@ export default function PortalShell({
                     </Suspense>
                 </main>
             </div>
+            {showWolfGuide && <WolfGuideWidget />}
         </div>
     );
 }

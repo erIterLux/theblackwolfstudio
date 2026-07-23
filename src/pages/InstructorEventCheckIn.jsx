@@ -190,7 +190,7 @@ export default function InstructorEventCheckIn() {
     return (
       <section className="section section--light">
         <div className="container role-gate">
-          <ShieldAlert size={42} />
+          <ShieldAlert size={32} />
           <h1>Instructor access required</h1>
           <p>
             {roleError
@@ -326,7 +326,7 @@ export default function InstructorEventCheckIn() {
 
         {!loading && !participants.length && (
           <article className="empty-state-card">
-            <Users size={38} />
+            <Users size={30} />
             <h2>No confirmed participants yet.</h2>
             <p>Participants will appear here after registration is complete.</p>
           </article>
@@ -334,7 +334,7 @@ export default function InstructorEventCheckIn() {
 
         {!loading && participants.length > 0 && !visibleParticipants.length && (
           <article className="empty-state-card">
-            <Search size={34} />
+            <Search size={28} />
             <h2>No participants match this view.</h2>
             <button
               className="text-link"

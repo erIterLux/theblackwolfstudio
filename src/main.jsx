@@ -19,6 +19,7 @@ import './styles/workflow-refinement.css';
 import './styles/verification-hardening.css';
 import './styles/dashboard-hierarchy.css';
 import './styles/route-performance.css';
+import './styles/wolf-guide-widget.css';
 import App from './App';
 import AppErrorBoundary from './components/system/AppErrorBoundary';
 import { AuthProvider } from './context/AuthContext';
