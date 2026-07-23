@@ -60,12 +60,23 @@ function emailShell({ eyebrow = 'The Black Wolf Studio', title, bodyHtml, button
     </div>`;
 }
 
-async function sendEmail({ to, subject, text, html, replyTo, attachments = [] }) {
-  if (!to) throw new Error('Email recipient is required.');
+async function sendEmail({
+  to,
+  bcc,
+  subject,
+  text,
+  html,
+  replyTo,
+  attachments = [],
+}) {
+  if (!to && (!Array.isArray(bcc) || !bcc.length)) {
+    throw new Error('Email recipient is required.');
+  }
   const { user, transporter } = getTransport();
   return transporter.sendMail({
     from: `The Black Wolf Studio <${user}>`,
-    to,
+    to: to || undefined,
+    bcc: bcc?.length ? bcc : undefined,
     replyTo: replyTo || undefined,
     subject,
     text,

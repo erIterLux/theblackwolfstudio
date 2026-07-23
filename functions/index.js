@@ -507,6 +507,15 @@ exports.notifyInAppOnEventRegistrationWritten = onDocumentWritten({
     retry: true,
 }, async (event) => loadNotificationService().handleEventRegistrationWritten(event));
 
+exports.emailOnEventRegistrationCreated = onDocumentCreated({
+    document: 'eventRegistrations/{registrationId}',
+    secrets: [gmailEmail, gmailAppPassword],
+    retry: true,
+}, async (event) => {
+    const { handleEventRegistrationCreated } = require('./notifications/eventRegistrationEmails');
+    return handleEventRegistrationCreated(event, waiverEmailDependencies());
+});
+
 exports.createScheduledStudioNotifications = onSchedule({
     schedule: 'every 60 minutes',
     timeZone: 'America/New_York',
