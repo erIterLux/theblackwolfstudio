@@ -16,6 +16,7 @@ const EXACT_TITLES = new Map([
   ['/member/progression', 'Progression'],
   ['/member/library', 'Training library'],
   ['/member/events', 'My events'],
+  ['/member/waiver', 'Membership waiver'],
   ['/member/private-training', 'My private training'],
   ['/member/private-training/book', 'Book private training'],
   ['/member/purchases', 'Purchases'],
@@ -37,6 +38,7 @@ const EXACT_TITLES = new Map([
 function resolveTitle(pathname) {
   if (EXACT_TITLES.has(pathname)) return EXACT_TITLES.get(pathname);
   if (pathname.startsWith('/events/waiver/')) return 'Event waiver';
+  if (pathname.startsWith('/private-training/waiver/')) return 'Private-training waiver';
   if (pathname.startsWith('/order/')) return 'Purchase details';
   if (pathname.startsWith('/instructor/events/') && pathname.endsWith('/check-in')) {
     return 'Event check-in';

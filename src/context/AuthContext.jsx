@@ -18,6 +18,8 @@ function loadAuthClient() {
 function authIsRouteCritical(pathname) {
   return pathname === '/login'
     || pathname === '/membership'
+    || pathname.startsWith('/events/waiver/')
+    || pathname.startsWith('/private-training/waiver/')
     || pathname.startsWith('/member')
     || pathname.startsWith('/instructor')
     || pathname.startsWith('/order/');

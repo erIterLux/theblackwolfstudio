@@ -23,6 +23,7 @@ import useMemberDashboardSummary from '../hooks/useMemberDashboardSummary';
 const checkIns = ['Activated', 'Steady', 'Tired', 'Disconnected'];
 
 const attentionCopy = {
+    'membership-waiver-pending': 'Sign the current studio waiver before eligible training activities.',
     'membership-past-due': 'Update billing so membership access and benefits stay active.',
     'membership-ending': 'Review your membership before the current period ends.',
     'booking-requested': 'Your instructor still needs to confirm the requested time.',

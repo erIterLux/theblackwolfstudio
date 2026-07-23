@@ -145,6 +145,7 @@ function sanitizeEventParticipants(rawParticipants, quantity, purchaser, orderId
         const phone = clean(raw?.phone, 40);
         const isMinor = raw?.isMinor === true;
         const guardianName = isMinor ? clean(raw?.guardianName, 160) : '';
+        const guardianEmail = isMinor ? normalizeEmail(raw?.guardianEmail) : '';
 
         if (!fullName) {
             throw new HttpsError('invalid-argument', `Participant ${index + 1} needs a full name.`);
@@ -155,10 +156,10 @@ function sanitizeEventParticipants(rawParticipants, quantity, purchaser, orderId
                 `Participant ${index + 1} needs a valid email for event and waiver communication.`,
             );
         }
-        if (isMinor && !guardianName) {
+        if (isMinor && (!guardianName || !guardianEmail || !guardianEmail.includes('@'))) {
             throw new HttpsError(
                 'invalid-argument',
-                `Enter a parent or guardian name for participant ${index + 1}.`,
+                `Enter a parent or guardian name and valid email for participant ${index + 1}.`,
             );
         }
 
@@ -177,6 +178,8 @@ function sanitizeEventParticipants(rawParticipants, quantity, purchaser, orderId
             phone: phone || null,
             isMinor,
             guardianName: guardianName || null,
+            guardianEmail: guardianEmail || null,
+            mediaConsent: raw?.mediaConsent === true,
             isPurchaser,
         };
     });
@@ -227,7 +230,14 @@ function publicEvent(snapshot) {
         currency: event.currency || 'usd',
         pricePerParticipantCents: Number(event.pricePerParticipantCents || 0),
         memberDiscountEligible: event.memberDiscountEligible !== false,
+        ageRequirement: event.ageRequirement || '',
+        prerequisites: event.prerequisites || '',
+        cancellationPolicy: event.cancellationPolicy || '',
+        accessibilityContact: event.accessibilityContact || '',
+        participantNotice: event.participantNotice || '',
+        mediaConsent: event.mediaConsent || { enabled: false, text: '' },
         waiverRequired: event.waiverRequired !== false,
+        alwaysRequireEventWaiver: event.alwaysRequireEventWaiver === true,
         waiverReady: waiverReady(event.waiver || {}),
     });
 }
@@ -310,7 +320,21 @@ function sanitizeEvent(data, instructorUid) {
         currency: clean(data?.currency || 'usd', 8).toLowerCase(),
         pricePerParticipantCents,
         memberDiscountEligible: data?.memberDiscountEligible !== false,
+        ageRequirement: clean(data?.ageRequirement, 300),
+        prerequisites: clean(data?.prerequisites, 1200),
+        cancellationPolicy: clean(data?.cancellationPolicy, 2000),
+        accessibilityContact: clean(data?.accessibilityContact, 500),
+        participantNotice: clean(data?.participantNotice, 1200),
+        mediaConsent: {
+            enabled: data?.mediaConsent?.enabled === true,
+            text: clean(
+                data?.mediaConsent?.text
+                || 'I agree that the Studio may use photographs or video of this participant for Studio communications and promotion.',
+                1200,
+            ),
+        },
         waiverRequired,
+        alwaysRequireEventWaiver: data?.alwaysRequireEventWaiver === true,
         waiver,
         updatedBy: instructorUid,
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
@@ -457,6 +481,13 @@ async function prepareEventReservation({
                 timezone: event.timezone || 'America/New_York',
                 location: event.location || {},
                 waiverRequired: event.waiverRequired !== false,
+                alwaysRequireEventWaiver: event.alwaysRequireEventWaiver === true,
+                ageRequirement: event.ageRequirement || '',
+                prerequisites: event.prerequisites || '',
+                cancellationPolicy: event.cancellationPolicy || '',
+                accessibilityContact: event.accessibilityContact || '',
+                participantNotice: event.participantNotice || '',
+                mediaConsent: event.mediaConsent || { enabled: false, text: '' },
             },
             waiverSnapshot: event.waiver || null,
             createdAt: reservationSnapshot.data()?.createdAt || admin.firestore.FieldValue.serverTimestamp(),
@@ -557,6 +588,13 @@ async function ensureEventRegistrationFromOrder(orderId) {
                 timezone: event.timezone,
                 location: event.location,
                 waiverRequired: event.waiverRequired !== false,
+                alwaysRequireEventWaiver: event.alwaysRequireEventWaiver === true,
+                ageRequirement: event.ageRequirement || '',
+                prerequisites: event.prerequisites || '',
+                cancellationPolicy: event.cancellationPolicy || '',
+                accessibilityContact: event.accessibilityContact || '',
+                participantNotice: event.participantNotice || '',
+                mediaConsent: event.mediaConsent || { enabled: false, text: '' },
             },
             participantCount: count,
             pricing: order.pricing || null,
@@ -589,6 +627,8 @@ async function ensureEventRegistrationFromOrder(orderId) {
                 phone: participant.phone || null,
                 isMinor: participant.isMinor === true,
                 guardianName: participant.guardianName || null,
+                guardianEmail: participant.guardianEmail || null,
+                mediaConsent: participant.mediaConsent === true,
                 isPurchaser: participant.isPurchaser === true,
                 registrationStatus: 'confirmed',
                 waiverStatus: event.waiverRequired === false ? 'not_required' : 'pending',
@@ -640,7 +680,11 @@ async function handleGetEventRegistration(request) {
     const registration = { id: snapshot.id, ...snapshot.data() };
     await authorizeRegistration(request, registration);
     const participants = await participantsForRegistration(snapshot.id);
-    return { registration: serialize(registration), participants };
+    const refreshed = await snapshot.ref.get();
+    return {
+        registration: serialize({ id: refreshed.id, ...refreshed.data() }),
+        participants,
+    };
 }
 
 async function handleListMyEventRegistrations(request) {
@@ -650,10 +694,14 @@ async function handleListMyEventRegistrations(request) {
         .limit(100)
         .get();
 
-    const registrations = await Promise.all(snapshot.docs.map(async (item) => ({
-        ...serialize({ id: item.id, ...item.data() }),
-        participants: await participantsForRegistration(item.id),
-    })));
+    const registrations = await Promise.all(snapshot.docs.map(async (item) => {
+        const participants = await participantsForRegistration(item.id);
+        const refreshed = await item.ref.get();
+        return {
+            ...serialize({ id: refreshed.id, ...refreshed.data() }),
+            participants,
+        };
+    }));
 
     registrations.sort((left, right) => (
         new Date(left.eventSnapshot?.startsAt || 0) - new Date(right.eventSnapshot?.startsAt || 0)
@@ -705,15 +753,23 @@ async function handleGetEventCheckIn(request) {
         throw new HttpsError('invalid-argument', 'Event ID is required.');
     }
 
-    const [eventSnapshot, registrationsSnapshot, participantsSnapshot] = await Promise.all([
+    const [eventSnapshot, registrationsSnapshot] = await Promise.all([
         db.collection('events').doc(eventId).get(),
         db.collection('eventRegistrations').where('eventId', '==', eventId).limit(500).get(),
-        db.collection('eventParticipants').where('eventId', '==', eventId).limit(2000).get(),
     ]);
 
     if (!eventSnapshot.exists) {
         throw new HttpsError('not-found', 'That event was not found.');
     }
+
+    const { ensureWaiversForRegistration } = require('./waiverService');
+    await Promise.all(
+        registrationsSnapshot.docs.map((item) => ensureWaiversForRegistration(item.id)),
+    );
+    const participantsSnapshot = await db.collection('eventParticipants')
+        .where('eventId', '==', eventId)
+        .limit(2000)
+        .get();
 
     const registrations = registrationsSnapshot.docs.map((item) => ({
         id: item.id,
@@ -748,6 +804,7 @@ async function handleGetEventCheckIn(request) {
         (participant) => (
             !waiverRequired
             || participant.waiverStatus === 'signed'
+            || participant.waiverStatus === 'covered'
             || participant.waiverStatus === 'not_required'
         ),
     ).length;
@@ -764,7 +821,11 @@ async function handleGetEventCheckIn(request) {
             checkedInCount,
             waitingCount: Math.max(0, participants.length - checkedInCount),
             blockedCount: waiverRequired
-                ? participants.filter((participant) => participant.waiverStatus !== 'signed').length
+                ? participants.filter((participant) => (
+                    participant.waiverStatus !== 'signed'
+                    && participant.waiverStatus !== 'covered'
+                    && participant.waiverStatus !== 'not_required'
+                )).length
                 : 0,
         },
     };
@@ -781,6 +842,12 @@ async function handleSetEventParticipantCheckIn(request) {
     }
 
     const participantRef = db.collection('eventParticipants').doc(participantIdValue);
+    const currentParticipantSnapshot = await participantRef.get();
+    if (!currentParticipantSnapshot.exists) {
+        throw new HttpsError('not-found', 'That event participant was not found.');
+    }
+    const { ensureWaiversForRegistration } = require('./waiverService');
+    await ensureWaiversForRegistration(currentParticipantSnapshot.data()?.registrationId);
     const historyRef = db.collection('eventCheckInHistory').doc();
     let response = null;
 
@@ -851,6 +918,7 @@ async function handleSetEventParticipantCheckIn(request) {
             const waiverRequired = event.waiverRequired !== false;
             const waiverComplete = (
                 participant.waiverStatus === 'signed'
+                || participant.waiverStatus === 'covered'
                 || participant.waiverStatus === 'not_required'
             );
             if (waiverRequired && !waiverComplete) {

@@ -49,6 +49,7 @@ function waiverComplete(participant, waiverRequired) {
   return (
     !waiverRequired
     || participant.waiverStatus === 'signed'
+    || participant.waiverStatus === 'covered'
     || participant.waiverStatus === 'not_required'
   );
 }

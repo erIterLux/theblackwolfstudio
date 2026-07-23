@@ -133,6 +133,13 @@ export default function MembershipStatusCard() {
                 </div>
             )}
 
+            {isActive && (
+                <Link className="text-link" to="/member/waiver">
+                    <ShieldCheck size={17} aria-hidden="true" />
+                    Review membership waiver
+                </Link>
+            )}
+
             {membership.stripeCustomerId && (
                 <button
                     type="button"

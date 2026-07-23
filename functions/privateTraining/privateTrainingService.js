@@ -96,6 +96,9 @@ function sanitizePrivateTrainingParticipants(rawParticipants, quantity, purchase
     const fullName = clean(raw?.fullName || raw?.name, 160);
     const email = normalizeEmail(raw?.email);
     const phone = clean(raw?.phone, 40);
+    const isMinor = raw?.isMinor === true;
+    const guardianName = isMinor ? clean(raw?.guardianName, 160) : '';
+    const guardianEmail = isMinor ? normalizeEmail(raw?.guardianEmail) : '';
 
     if (!fullName) {
       throw new HttpsError(
@@ -103,10 +106,16 @@ function sanitizePrivateTrainingParticipants(rawParticipants, quantity, purchase
         `Participant ${index + 1} needs a full name.`,
       );
     }
-    if (email && !email.includes('@')) {
+    if (!email || !email.includes('@')) {
       throw new HttpsError(
         'invalid-argument',
-        `Participant ${index + 1} has an invalid email address.`,
+        `Participant ${index + 1} needs a valid email for waiver communication.`,
+      );
+    }
+    if (isMinor && (!guardianName || !guardianEmail || !guardianEmail.includes('@'))) {
+      throw new HttpsError(
+        'invalid-argument',
+        `Enter a parent or guardian name and valid email for participant ${index + 1}.`,
       );
     }
 
@@ -123,6 +132,9 @@ function sanitizePrivateTrainingParticipants(rawParticipants, quantity, purchase
       email: email || null,
       phone: phone || null,
       isPurchaser,
+      isMinor,
+      guardianName: guardianName || null,
+      guardianEmail: guardianEmail || null,
     };
   });
 }
@@ -282,6 +294,23 @@ function purchaseStatus(remainingSessions, expiresAt) {
   return 'active';
 }
 
+function applyWaiverSummary(purchase) {
+  const participants = purchase.participants || [];
+  const completed = participants.filter((participant) => (
+    participant.waiverStatus === 'signed'
+    || participant.waiverStatus === 'covered'
+    || participant.waiverStatus === 'not_required'
+  )).length;
+  purchase.waiversRequiredCount = participants.length;
+  purchase.waiversCompletedCount = completed;
+  purchase.waiverStatus = participants.length === 0
+    ? 'not_required'
+    : completed >= participants.length
+      ? 'complete'
+      : completed > 0 ? 'partial' : 'pending';
+  return purchase;
+}
+
 function purchaseExpiration(baseTimestamp, expirationDays) {
   if (!expirationDays) return null;
   const base = baseTimestamp?.toDate?.() || new Date();
@@ -344,6 +373,8 @@ async function ensurePrivateTrainingPurchaseFromOrder(orderId) {
     });
   });
 
+  const { ensurePrivateTrainingWaiversForPurchase } = require('../waivers/studioWaiverService');
+  await ensurePrivateTrainingWaiversForPurchase(id);
   return id;
 }
 
@@ -380,6 +411,9 @@ async function handleGetPrivateTrainingPurchase(request) {
 
   const purchase = { id: snapshot.id, ...snapshot.data() };
   await authorizePurchase(request, purchase);
+  const { decoratedPrivateTrainingParticipants } = require('../waivers/studioWaiverService');
+  purchase.participants = await decoratedPrivateTrainingParticipants(purchase);
+  applyWaiverSummary(purchase);
   const history = await getHistory(snapshot.id);
   return { purchase: serialize(purchase), history };
 }
@@ -391,9 +425,16 @@ async function handleListMyPrivateTrainingPurchases(request) {
     .limit(100)
     .get();
 
-  const purchases = snapshot.docs
-    .map((item) => serialize({ id: item.id, ...item.data() }))
-    .sort((left, right) => new Date(right.paidAt || right.createdAt || 0) - new Date(left.paidAt || left.createdAt || 0));
+  const purchases = await Promise.all(snapshot.docs.map(async (item) => {
+    const purchase = { id: item.id, ...item.data() };
+    const { decoratedPrivateTrainingParticipants } = require('../waivers/studioWaiverService');
+    purchase.participants = await decoratedPrivateTrainingParticipants(purchase);
+    return serialize(applyWaiverSummary(purchase));
+  }));
+  purchases.sort((left, right) => (
+    new Date(right.paidAt || right.createdAt || 0)
+    - new Date(left.paidAt || left.createdAt || 0)
+  ));
 
   return { purchases };
 }
@@ -412,9 +453,13 @@ async function handleListPrivateTrainingAdmin(request) {
   const offers = offersSnapshot.docs
     .map((item) => serialize({ id: item.id, ...item.data() }))
     .sort((left, right) => Number(left.sortOrder || 0) - Number(right.sortOrder || 0));
-  const purchases = purchasesSnapshot.docs
-    .map((item) => serialize({ id: item.id, ...item.data() }))
-    .sort((left, right) => new Date(right.paidAt || right.createdAt || 0) - new Date(left.paidAt || left.createdAt || 0));
+  const purchases = purchasesSnapshot.docs.map((item) => (
+    serialize(applyWaiverSummary({ id: item.id, ...item.data() }))
+  ));
+  purchases.sort((left, right) => (
+    new Date(right.paidAt || right.createdAt || 0)
+    - new Date(left.paidAt || left.createdAt || 0)
+  ));
 
   return { offers, purchases };
 }
@@ -438,6 +483,9 @@ async function handleRecordPrivateTrainingSession(request) {
     : [];
 
   if (!purchaseId) throw new HttpsError('invalid-argument', 'Choose a package.');
+
+  const { assertPrivateTrainingParticipantsCovered } = require('../waivers/studioWaiverService');
+  await assertPrivateTrainingParticipantsCovered(purchaseId, requestedParticipantIds);
 
   const purchaseRef = db.collection('privateTrainingPurchases').doc(purchaseId);
   const historyRef = purchaseRef.collection('sessionHistory').doc();

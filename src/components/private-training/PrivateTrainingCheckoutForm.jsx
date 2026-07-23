@@ -3,6 +3,7 @@ import {
   Check,
   CreditCard,
   LoaderCircle,
+  ShieldCheck,
   Users,
 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
@@ -26,6 +27,9 @@ function blankParticipant(index) {
     email: '',
     phone: '',
     isPurchaser: false,
+    isMinor: false,
+    guardianName: '',
+    guardianEmail: '',
   };
 }
 
@@ -153,8 +157,12 @@ export default function PrivateTrainingCheckoutForm({ offer, onCancel }) {
     event.preventDefault();
     setError('');
 
-    if (visibleParticipants.some((item) => !item.fullName.trim())) {
-      setError('Enter a full name for every participant.');
+    if (visibleParticipants.some((item) => (
+      !item.fullName.trim()
+      || !item.email.trim()
+      || (item.isMinor && (!item.guardianName.trim() || !item.guardianEmail.trim()))
+    ))) {
+      setError('Complete the required participant and guardian information.');
       return;
     }
 
@@ -241,8 +249,9 @@ export default function PrivateTrainingCheckoutForm({ offer, onCancel }) {
               </label>
               <div className="form-row">
                 <label>
-                  Email <span className="optional-label">optional</span>
+                  Email for waiver and training communication
                   <input
+                    required
                     type="email"
                     value={participant.email || ''}
                     readOnly={purchaserAttending && index === 0}
@@ -263,9 +272,67 @@ export default function PrivateTrainingCheckoutForm({ offer, onCancel }) {
                   />
                 </label>
               </div>
+
+              <label className="checkbox-row">
+                <input
+                  type="checkbox"
+                  checked={participant.isMinor}
+                  onChange={(event) => updateParticipant(index, {
+                    isMinor: event.target.checked,
+                    guardianName: event.target.checked ? participant.guardianName : '',
+                    guardianEmail: event.target.checked ? participant.guardianEmail : '',
+                  })}
+                />
+                This participant is under 18
+              </label>
+
+              {participant.isMinor && (
+                <div className="form-row">
+                  <label>
+                    Parent or guardian full name
+                    <input
+                      required
+                      value={participant.guardianName}
+                      onChange={(event) => updateParticipant(index, {
+                        guardianName: event.target.value,
+                      })}
+                    />
+                  </label>
+                  <label>
+                    Parent or guardian email
+                    <input
+                      required
+                      type="email"
+                      value={participant.guardianEmail}
+                      onChange={(event) => updateParticipant(index, {
+                        guardianEmail: event.target.value,
+                      })}
+                    />
+                  </label>
+                </div>
+              )}
             </fieldset>
           ))}
         </div>
+      </section>
+
+      <section className="private-checkout__section private-waiver-disclosure">
+        <div className="private-checkout__section-heading">
+          <ShieldCheck aria-hidden="true" />
+          <div>
+            <h3>Participant waivers</h3>
+            <p>Payment and waiver completion are separate steps.</p>
+          </div>
+        </div>
+        <p>
+          A current member’s signed membership waiver can cover eligible private training.
+          Every other participant will receive a secure waiver for this package by email.
+          A parent or legal guardian signs for a minor.
+        </p>
+        <p>
+          All attending participants must be covered before a session can be booked or
+          recorded. Each signer receives an emailed copy after completion.
+        </p>
       </section>
 
       <section className="private-checkout__section">

@@ -187,6 +187,20 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
+    match /studioWaivers/{userId} {
+      allow read: if isOwner(userId) || isInstructor();
+      allow write: if false;
+    }
+
+    match /privateTrainingWaivers/{waiverId} {
+      allow read: if isInstructor();
+      allow write: if false;
+    }
+
+    match /privateTrainingWaiverAccess/{accessId} {
+      allow read, write: if false;
+    }
+
     match /stripeEvents/{eventId} {
       allow read, write: if false;
     }

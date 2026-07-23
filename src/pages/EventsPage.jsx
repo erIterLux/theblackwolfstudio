@@ -112,7 +112,7 @@ export default function EventsPage() {
                             <SectionHeading
                                 eyebrow="Upcoming events"
                                 title="Choose an event and register each participant."
-                                body="One person may pay for a group, but every attendee is tracked separately and will complete an event-specific waiver before check-in."
+                                body="One person may pay for a group, but every attendee is tracked separately and must have verified waiver coverage before check-in."
                             />
 
                             {loading && <p className="page-loader">Loading upcoming events…</p>}
@@ -154,7 +154,7 @@ export default function EventsPage() {
                                                 <span><Clock3 size={17} /> {formatEventTime(event.startsAt)}–{formatEventTime(event.endsAt)}</span>
                                                 <span><MapPin size={17} /> {event.location?.name || event.location?.address || 'Location announced soon'}</span>
                                                 <span><Users size={17} /> Up to {event.maxParticipantsPerOrder} people per registration</span>
-                                                <span><ShieldCheck size={17} /> Separate waiver required for each participant</span>
+                                                <span><ShieldCheck size={17} /> Member coverage or participant event waiver</span>
                                             </div>
 
                                             <div className="event-card__footer">

@@ -115,7 +115,11 @@ export default function EventSuccessPage() {
 
     const paid = order?.paymentStatus === 'paid';
     const freeRegistration = paid && Number(order?.pricing?.totalCents || 0) === 0;
-    const signedCount = participants.filter((participant) => participant.waiverStatus === 'signed').length;
+    const coveredCount = participants.filter((participant) => (
+        participant.waiverStatus === 'signed'
+        || participant.waiverStatus === 'covered'
+        || participant.waiverStatus === 'not_required'
+    )).length;
 
     const copyWaiverLink = async (participant) => {
         const url = new URL(waiverPath(participant), window.location.origin).toString();
@@ -135,8 +139,8 @@ export default function EventSuccessPage() {
                 <p>
                     {paid
                         ? freeRegistration
-                            ? 'Each participant now has an individual event record. The free registration is complete, but waiver completion and event check-in are separate steps.'
-                            : 'Each participant now has an individual event record. Registration is complete, but waiver completion and event check-in are separate steps.'
+                            ? 'Each participant now has an individual event record. The free registration is complete, but waiver coverage and event check-in are separate steps.'
+                            : 'Each participant now has an individual event record. Registration is complete, but waiver coverage and event check-in are separate steps.'
                         : 'Stripe is still confirming the payment. This page will update automatically.'}
                 </p>
 
@@ -172,7 +176,7 @@ export default function EventSuccessPage() {
                             </div>
                             <div>
                                 <span>2</span>
-                                <div><strong>Event waiver</strong><p>{signedCount} of {participants.length} signed</p></div>
+                                <div><strong>Waiver coverage</strong><p>{coveredCount} of {participants.length} complete</p></div>
                                 <ShieldCheck aria-hidden="true" />
                             </div>
                             <div>
@@ -194,8 +198,10 @@ export default function EventSuccessPage() {
                                         </div>
                                         <div className="event-participant-actions">
                                             <span className="event-person-status is-confirmed">Registered</span>
-                                            <span className={`event-person-status${participant.waiverStatus === 'signed' ? ' is-confirmed' : ' is-pending'}`}>
-                                                Waiver {readableStatus(participant.waiverStatus)}
+                                            <span className={`event-person-status${['signed', 'covered', 'not_required'].includes(participant.waiverStatus) ? ' is-confirmed' : ' is-pending'}`}>
+                                                {participant.waiverStatus === 'covered'
+                                                    ? 'Covered by membership'
+                                                    : `Waiver ${readableStatus(participant.waiverStatus)}`}
                                             </span>
                                             <span className="event-person-status is-neutral">Not checked in</span>
                                             {canOpen && (

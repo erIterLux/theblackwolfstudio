@@ -1,22 +1,23 @@
 import {
-  CalendarDays,
   CheckCircle2,
   Clock3,
-  MapPin,
   ShieldAlert,
   ShieldCheck,
+  Users,
 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import SignaturePad from '../components/events/SignaturePad';
 import { useAuth } from '../context/AuthContext';
-import { getEventWaiver, signEventWaiver } from '../services/events';
+import {
+  getPrivateTrainingWaiver,
+  signPrivateTrainingWaiver,
+} from '../services/waivers';
 
 function formatDateTime(value) {
   const date = value ? new Date(value) : null;
   if (!date || Number.isNaN(date.valueOf())) return '';
   return date.toLocaleString('en-US', {
-    weekday: 'long',
     month: 'long',
     day: 'numeric',
     year: 'numeric',
@@ -25,20 +26,12 @@ function formatDateTime(value) {
   });
 }
 
-function statusMessage(status) {
-  if (status === 'signed') return 'This waiver has been signed.';
-  if (status === 'covered') return 'This participant is covered by a current membership waiver.';
-  if (status === 'not_required') return 'A waiver is not required for this participant.';
-  if (status === 'setup_required') return 'The instructor is still preparing this event waiver.';
-  return '';
-}
-
-export default function EventWaiverPage() {
+export default function PrivateTrainingWaiverPage() {
   const { user } = useAuth();
-  const { participantId = '' } = useParams();
+  const { waiverId = '' } = useParams();
   const [searchParams] = useSearchParams();
   const tokenFromUrl = searchParams.get('token') || '';
-  const storageKey = participantId ? `black-wolf-waiver:${participantId}` : '';
+  const storageKey = waiverId ? `black-wolf-private-waiver:${waiverId}` : '';
   const accessToken = useMemo(() => {
     if (tokenFromUrl && storageKey) {
       sessionStorage.setItem(storageKey, tokenFromUrl);
@@ -48,18 +41,16 @@ export default function EventWaiverPage() {
   }, [storageKey, tokenFromUrl]);
 
   const [waiver, setWaiver] = useState(null);
-  const [loading, setLoading] = useState(Boolean(participantId));
+  const [loading, setLoading] = useState(Boolean(waiverId));
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(
-    participantId ? '' : 'This waiver link is missing its participant ID.',
+    waiverId ? '' : 'This waiver link is missing its reference.',
   );
   const [form, setForm] = useState({
     signerName: '',
-    signerEmail: '',
     signerRelationship: '',
     accepted: false,
     electronicSignatureConsent: false,
-    mediaConsent: false,
     signatureDataUrl: '',
   });
 
@@ -71,12 +62,11 @@ export default function EventWaiverPage() {
   }, [tokenFromUrl]);
 
   useEffect(() => {
-    let cancelled = false;
-    if (!participantId) return undefined;
-
-    getEventWaiver(participantId, accessToken)
+    let active = true;
+    if (!waiverId) return undefined;
+    getPrivateTrainingWaiver(waiverId, accessToken)
       .then((result) => {
-        if (cancelled) return;
+        if (!active) return;
         const nextWaiver = result?.waiver || null;
         setWaiver(nextWaiver);
         setForm((current) => ({
@@ -84,16 +74,10 @@ export default function EventWaiverPage() {
           signerName: nextWaiver?.participant?.isMinor
             ? nextWaiver?.participant?.guardianName || ''
             : nextWaiver?.participant?.fullName || '',
-          signerEmail: nextWaiver?.participant?.email || '',
-          ...(nextWaiver?.participant?.isMinor && {
-            signerEmail: nextWaiver?.participant?.guardianEmail
-              || nextWaiver?.participant?.email
-              || '',
-          }),
         }));
       })
       .catch((nextError) => {
-        if (cancelled) return;
+        if (!active) return;
         console.error(nextError);
         setError(
           nextError?.message === 'internal'
@@ -102,29 +86,24 @@ export default function EventWaiverPage() {
         );
       })
       .finally(() => {
-        if (!cancelled) setLoading(false);
+        if (active) setLoading(false);
       });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [participantId, accessToken, user?.uid]);
+    return () => { active = false; };
+  }, [waiverId, accessToken, user?.uid]);
 
   const update = (patch) => setForm((current) => ({ ...current, ...patch }));
 
   const submit = async (event) => {
     event.preventDefault();
     setError('');
-
     if (!form.signatureDataUrl) {
       setError('Draw the electronic signature before submitting.');
       return;
     }
-
     setBusy(true);
     try {
-      const result = await signEventWaiver({
-        participantId,
+      const result = await signPrivateTrainingWaiver({
+        waiverId,
         accessToken,
         ...form,
       });
@@ -134,8 +113,12 @@ export default function EventWaiverPage() {
         signedAt: result?.signedAt || new Date().toISOString(),
         signer: {
           name: form.signerName,
-          email: form.signerEmail,
-          relationship: waiver?.participant?.isMinor ? form.signerRelationship : 'self',
+          email: current?.participant?.isMinor
+            ? current?.participant?.guardianEmail
+            : current?.participant?.email,
+          relationship: current?.participant?.isMinor
+            ? form.signerRelationship
+            : 'self',
         },
       }));
     } catch (nextError) {
@@ -146,7 +129,7 @@ export default function EventWaiverPage() {
     }
   };
 
-  if (loading) return <div className="page-loader">Loading event waiver…</div>;
+  if (loading) return <div className="page-loader">Loading private-training waiver…</div>;
 
   if (error && !waiver) {
     return (
@@ -155,31 +138,42 @@ export default function EventWaiverPage() {
           <ShieldAlert size={34} />
           <h1>Waiver unavailable</h1>
           <p>{error}</p>
-          <Link className="button" to="/events">View events</Link>
+          <Link className="button" to="/private-training">View private training</Link>
         </div>
       </section>
     );
   }
 
   const complete = waiver?.status === 'signed' || waiver?.status === 'covered';
-  const unavailable = waiver?.status === 'setup_required' || waiver?.status === 'not_required';
+  const signerEmail = waiver?.participant?.isMinor
+    ? waiver?.participant?.guardianEmail || waiver?.participant?.email
+    : waiver?.participant?.email;
 
   return (
     <section className="section section--light waiver-page">
       <div className="container waiver-shell">
         <header className="waiver-page__header">
           <div className="waiver-page__icon"><ShieldCheck /></div>
-          <p className="eyebrow">Event waiver</p>
-          <h1>{waiver?.terms?.title || 'Event participation waiver'}</h1>
+          <p className="eyebrow">Private-training waiver</p>
+          <h1>{waiver?.terms?.title || 'Private-training participation waiver'}</h1>
           <p>
-            This waiver applies only to <strong>{waiver?.participant?.fullName}</strong> for this event.
+            This record is for <strong>{waiver?.participant?.fullName}</strong> and
+            the private-training package shown below.
           </p>
         </header>
 
         <article className="waiver-event-summary">
-          <div><CalendarDays size={18} /><span><strong>{waiver?.event?.title}</strong>{formatDateTime(waiver?.event?.startsAt)}</span></div>
-          <div><MapPin size={18} /><span>{waiver?.event?.location?.name || waiver?.event?.location?.address || 'Location announced separately'}</span></div>
-          <div><ShieldCheck size={18} /><span>Waiver version {waiver?.terms?.version || 'not set'}</span></div>
+          <div>
+            <Users size={18} />
+            <span>
+              <strong>{waiver?.privateTraining?.title}</strong>
+              {waiver?.privateTraining?.sessionCount || 0} session credits
+            </span>
+          </div>
+          <div>
+            <ShieldCheck size={18} />
+            <span>Waiver version {waiver?.terms?.version || 'not set'}</span>
+          </div>
         </article>
 
         {complete && (
@@ -193,25 +187,14 @@ export default function EventWaiverPage() {
               </h2>
               <p>
                 {waiver?.status === 'covered'
-                  ? 'The participant’s current membership waiver covers this eligible event.'
-                  : `Signed by ${waiver?.signer?.name || 'the participant'} on ${formatDateTime(waiver?.signedAt)}. A complete copy is being emailed to ${waiver?.signer?.email || (waiver?.participant?.isMinor ? waiver?.participant?.guardianEmail : waiver?.participant?.email)}.`}
-                {' '}Event check-in is still completed separately when the participant arrives.
+                  ? 'The participant’s current membership waiver covers this eligible private training.'
+                  : `Signed by ${waiver?.signer?.name || 'the participant'} on ${formatDateTime(waiver?.signedAt)}. A complete copy is being emailed to ${waiver?.signer?.email || signerEmail}.`}
               </p>
             </div>
           </article>
         )}
 
-        {unavailable && (
-          <article className="waiver-complete-card is-warning">
-            <Clock3 size={32} />
-            <div>
-              <h2>Waiver not ready</h2>
-              <p>{statusMessage(waiver?.status)}</p>
-            </div>
-          </article>
-        )}
-
-        {!complete && !unavailable && (
+        {!complete && (
           <form className="waiver-form" onSubmit={submit}>
             {!user && (
               <article className="waiver-member-coverage-card">
@@ -222,7 +205,7 @@ export default function EventWaiverPage() {
                   <Link
                     className="button button--small"
                     to="/login"
-                    state={{ from: { pathname: `/events/waiver/${participantId}` } }}
+                    state={{ from: { pathname: `/private-training/waiver/${waiverId}` } }}
                   >
                     Sign in
                   </Link>
@@ -247,7 +230,11 @@ export default function EventWaiverPage() {
             </article>
 
             <div className="waiver-signer-card">
-              <h2>{waiver?.participant?.isMinor ? 'Parent or guardian signature' : 'Participant signature'}</h2>
+              <h2>
+                {waiver?.participant?.isMinor
+                  ? 'Parent or guardian signature'
+                  : 'Participant signature'}
+              </h2>
               <p>
                 Participant: <strong>{waiver?.participant?.fullName}</strong>
                 {waiver?.participant?.isMinor ? ' (minor)' : ''}
@@ -265,12 +252,7 @@ export default function EventWaiverPage() {
                 </label>
                 <label>
                   Verified signer email
-                  <input
-                    readOnly
-                    type="email"
-                    value={form.signerEmail}
-                    autoComplete="email"
-                  />
+                  <input readOnly type="email" value={signerEmail || ''} />
                 </label>
               </div>
 
@@ -303,24 +285,15 @@ export default function EventWaiverPage() {
                 <input
                   type="checkbox"
                   checked={form.electronicSignatureConsent}
-                  onChange={(event) => update({ electronicSignatureConsent: event.target.checked })}
+                  onChange={(event) => update({
+                    electronicSignatureConsent: event.target.checked,
+                  })}
                 />
-                <span>I agree that the electronic signature below has the same intent as my handwritten signature.</span>
+                <span>
+                  I agree that the electronic signature below has the same intent as my
+                  handwritten signature.
+                </span>
               </label>
-
-              {waiver?.mediaConsent?.enabled && (
-                <label className="waiver-checkbox-row">
-                  <input
-                    type="checkbox"
-                    checked={form.mediaConsent}
-                    onChange={(event) => update({ mediaConsent: event.target.checked })}
-                  />
-                  <span>
-                    <strong>Optional photo/video consent.</strong>{' '}
-                    {waiver.mediaConsent.text}
-                  </span>
-                </label>
-              )}
 
               <SignaturePad
                 value={form.signatureDataUrl}
@@ -329,7 +302,6 @@ export default function EventWaiverPage() {
               />
 
               {error && <p className="form-status form-status--error">{error}</p>}
-
               <button
                 className="button button--full"
                 type="submit"
@@ -342,7 +314,7 @@ export default function EventWaiverPage() {
         )}
 
         <p className="waiver-page__legal-note">
-          The approved release text is preserved. The event scope above is stored with
+          The approved release text is preserved. The package scope above is stored with
           the signed record and emailed copy.
         </p>
       </div>

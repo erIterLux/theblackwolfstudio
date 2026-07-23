@@ -110,7 +110,15 @@ function emptyEvent() {
         price: '0.00',
         currency: 'usd',
         memberDiscountEligible: true,
+        ageRequirement: '',
+        prerequisites: '',
+        cancellationPolicy: '',
+        accessibilityContact: '',
+        participantNotice: '',
+        mediaConsentEnabled: false,
+        mediaConsentText: 'I agree that the Studio may use photographs or video of this participant for Studio communications and promotion.',
         waiverRequired: true,
+        alwaysRequireEventWaiver: false,
         ...standardBlackWolfWaiverFields(),
     };
 }
@@ -136,7 +144,15 @@ function toDraft(event) {
         price: dollars(event.pricePerParticipantCents),
         currency: event.currency || 'usd',
         memberDiscountEligible: event.memberDiscountEligible !== false,
+        ageRequirement: event.ageRequirement || '',
+        prerequisites: event.prerequisites || '',
+        cancellationPolicy: event.cancellationPolicy || '',
+        accessibilityContact: event.accessibilityContact || '',
+        participantNotice: event.participantNotice || '',
+        mediaConsentEnabled: event.mediaConsent?.enabled === true,
+        mediaConsentText: event.mediaConsent?.text || 'I agree that the Studio may use photographs or video of this participant for Studio communications and promotion.',
         waiverRequired: event.waiverRequired !== false,
+        alwaysRequireEventWaiver: event.alwaysRequireEventWaiver === true,
         waiverVersion: event.waiver?.version || BLACK_WOLF_EVENT_WAIVER.version,
         waiverTitle: event.waiver?.title || BLACK_WOLF_EVENT_WAIVER.title,
         waiverBody: event.waiver?.body || BLACK_WOLF_EVENT_WAIVER.body,
@@ -284,7 +300,17 @@ export default function InstructorEventsAdmin() {
                 pricePerParticipantCents: cents(draft.price),
                 currency: draft.currency,
                 memberDiscountEligible: draft.memberDiscountEligible,
+                ageRequirement: draft.ageRequirement,
+                prerequisites: draft.prerequisites,
+                cancellationPolicy: draft.cancellationPolicy,
+                accessibilityContact: draft.accessibilityContact,
+                participantNotice: draft.participantNotice,
+                mediaConsent: {
+                    enabled: draft.mediaConsentEnabled,
+                    text: draft.mediaConsentText,
+                },
                 waiverRequired: true,
+                alwaysRequireEventWaiver: draft.alwaysRequireEventWaiver,
                 waiver: {
                     version: draft.waiverVersion,
                     title: draft.waiverTitle,
@@ -489,6 +515,73 @@ export default function InstructorEventsAdmin() {
                             </label>
                         )}
 
+                        <div className="events-admin-subheading"><Users /><h3>Participant information</h3></div>
+                        <div className="form-row">
+                            <label>
+                                Age requirement <span className="optional-label">optional</span>
+                                <input
+                                    value={draft.ageRequirement}
+                                    onChange={(event) => updateDraft({ ageRequirement: event.target.value })}
+                                    placeholder="Example: Ages 16+"
+                                />
+                            </label>
+                            <label>
+                                Accessibility contact <span className="optional-label">optional</span>
+                                <input
+                                    value={draft.accessibilityContact}
+                                    onChange={(event) => updateDraft({ accessibilityContact: event.target.value })}
+                                    placeholder="Email or phone for accommodations"
+                                />
+                            </label>
+                        </div>
+                        <label>
+                            Prerequisites or preparation <span className="optional-label">optional</span>
+                            <textarea
+                                rows="3"
+                                value={draft.prerequisites}
+                                onChange={(event) => updateDraft({ prerequisites: event.target.value })}
+                            />
+                        </label>
+                        <label>
+                            Cancellation and refund policy <span className="optional-label">recommended</span>
+                            <textarea
+                                rows="3"
+                                value={draft.cancellationPolicy}
+                                onChange={(event) => updateDraft({ cancellationPolicy: event.target.value })}
+                            />
+                        </label>
+                        <label>
+                            Participant notice <span className="optional-label">optional</span>
+                            <textarea
+                                rows="3"
+                                value={draft.participantNotice}
+                                onChange={(event) => updateDraft({ participantNotice: event.target.value })}
+                                placeholder="What to bring, physical intensity, or other important details"
+                            />
+                        </label>
+                        <label className="checkbox-row">
+                            <input
+                                type="checkbox"
+                                checked={draft.mediaConsentEnabled}
+                                onChange={(event) => updateDraft({
+                                    mediaConsentEnabled: event.target.checked,
+                                })}
+                            />
+                            Offer a separate optional photo/video consent
+                        </label>
+                        {draft.mediaConsentEnabled && (
+                            <label>
+                                Photo/video consent text
+                                <textarea
+                                    rows="3"
+                                    value={draft.mediaConsentText}
+                                    onChange={(event) => updateDraft({
+                                        mediaConsentText: event.target.value,
+                                    })}
+                                />
+                            </label>
+                        )}
+
                         <div className="form-row">
                             <label>
                                 Status
@@ -513,8 +606,8 @@ export default function InstructorEventsAdmin() {
                         </label>
                         <div className="events-admin-subheading"><ShieldCheck /><h3>Event waiver</h3></div>
                         <div className="event-waiver-admin-note">
-                            <strong>A separate waiver is required for every participant.</strong>
-                            <span>The standard waiver is based on the New Jersey language supplied for The Black Wolf Studio. Each signature is stored against this event and waiver version.</span>
+                            <strong>Each participant must have verified waiver coverage.</strong>
+                            <span>The approved New Jersey release is stored with an event-specific scope. Current membership waivers cover eligible events unless the override below is selected.</span>
                             <button
                                 className="button button--dark-ghost"
                                 type="button"
@@ -523,6 +616,16 @@ export default function InstructorEventsAdmin() {
                                 <ShieldCheck size={17} /> Use Black Wolf standard waiver
                             </button>
                         </div>
+                        <label className="checkbox-row">
+                            <input
+                                type="checkbox"
+                                checked={draft.alwaysRequireEventWaiver}
+                                onChange={(event) => updateDraft({
+                                    alwaysRequireEventWaiver: event.target.checked,
+                                })}
+                            />
+                            Always require this event-specific waiver, even for members
+                        </label>
                         <div className="form-row">
                             <label>
                                 Waiver version

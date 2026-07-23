@@ -9,6 +9,7 @@ import {
     RefreshCw,
     Save,
     ShieldAlert,
+    ShieldCheck,
     Users,
 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -174,7 +175,9 @@ export default function InstructorPrivateTrainingAdmin() {
     };
 
     const formFor = (purchase) => sessionForms[purchase.id] || {
-        participantIds: (purchase.participants || []).map((item) => item.id),
+        participantIds: (purchase.participants || [])
+            .filter((item) => ['signed', 'covered', 'not_required'].includes(item.waiverStatus))
+            .map((item) => item.id),
         sessionAt: todayInput(),
         notes: '',
         adjustmentNote: '',
@@ -450,8 +453,17 @@ export default function InstructorPrivateTrainingAdmin() {
                                                     type="checkbox"
                                                     checked={form.participantIds.includes(participant.id)}
                                                     onChange={() => toggleParticipant(purchase, participant.id)}
+                                                    disabled={!['signed', 'covered', 'not_required'].includes(participant.waiverStatus)}
                                                 />
                                                 {participant.fullName}
+                                                <small>
+                                                    <ShieldCheck size={14} />
+                                                    {participant.waiverStatus === 'covered'
+                                                        ? 'Membership waiver'
+                                                        : participant.waiverStatus === 'signed'
+                                                            ? 'Waiver signed'
+                                                            : 'Waiver required'}
+                                                </small>
                                             </label>
                                         ))}
                                     </fieldset>
