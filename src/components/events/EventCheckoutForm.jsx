@@ -73,7 +73,7 @@ export default function EventCheckoutForm({ event, onCancel }) {
     const { user } = useAuth();
     const maxParticipants = Math.max(1, Math.min(12, Number(event.maxParticipantsPerOrder || 6)));
     const [participantCount, setParticipantCount] = useState(1);
-    const [purchaserSource, setPurchaserSource] = useState('participant-0');
+    const [purchaserSource, setPurchaserSource] = useState('other');
     const [alternatePurchaser, setAlternatePurchaser] = useState({
         name: user?.displayName || '',
         email: user?.email || '',
@@ -157,7 +157,7 @@ export default function EventCheckoutForm({ event, onCancel }) {
 
     useEffect(() => {
         if (selectedPurchaserIndex < participantCount) return;
-        queueMicrotask(() => setPurchaserSource('participant-0'));
+        queueMicrotask(() => setPurchaserSource('other'));
     }, [participantCount, selectedPurchaserIndex]);
 
     const updateParticipant = (index, patch) => {
@@ -167,18 +167,14 @@ export default function EventCheckoutForm({ event, onCancel }) {
     };
 
     const choosePurchaserSource = (nextSource) => {
-        if (nextSource === 'other' && purchaserSource !== 'other') {
-            setAlternatePurchaser(purchaser);
-        }
         setPurchaserSource(nextSource);
     };
 
     const updatePurchaser = (field, value) => {
         setAlternatePurchaser((current) => ({
-            ...(purchaserSource === 'other' ? current : purchaser),
+            ...current,
             [field]: value,
         }));
-        if (purchaserSource !== 'other') setPurchaserSource('other');
     };
 
     const beginCheckout = async (submitEvent) => {
@@ -202,7 +198,7 @@ export default function EventCheckoutForm({ event, onCancel }) {
             return;
         }
         if (!purchaser.name.trim() || !purchaser.email.trim()) {
-            setError('Choose a confirmation contact or enter different purchaser information.');
+            setError('Enter the purchaser name and email.');
             return;
         }
 
@@ -433,33 +429,46 @@ export default function EventCheckoutForm({ event, onCancel }) {
                     <div>
                         <h3>Purchaser</h3>
                         <p>
-                            Choose a participant to copy their information automatically, or
-                            choose someone else. Confirmation will be sent to this email.
+                            Enter the person responsible for this registration. Confirmation
+                            will be sent to this email.
                         </p>
                     </div>
                 </div>
-                <label className="purchaser-source">
-                    Confirmation and receipt contact
-                    <select
-                        value={purchaserSource}
-                        onChange={(changeEvent) => choosePurchaserSource(changeEvent.target.value)}
-                    >
-                        {visibleParticipants.map((participant, index) => (
-                            <option key={participant.key} value={`participant-${index}`}>
-                                {participantOptionLabel(participant, index)}
-                            </option>
-                        ))}
-                        <option value="other">Someone else</option>
-                    </select>
-                    <span>
-                        {purchaserSource === 'other'
-                            ? 'Enter the purchaser information below.'
-                            : `Copied from ${participantOptionLabel(
-                                visibleParticipants[selectedPurchaserIndex],
-                                selectedPurchaserIndex,
-                            )}. Editing a field switches the contact to someone else.`}
-                    </span>
+                <label className="checkbox-row purchaser-match">
+                    <input
+                        type="checkbox"
+                        checked={purchaserSource !== 'other'}
+                        onChange={(changeEvent) => choosePurchaserSource(
+                            changeEvent.target.checked ? 'participant-0' : 'other'
+                        )}
+                    />
+                    The purchaser is also a participant
                 </label>
+                {purchaserSource !== 'other' && visibleParticipants.length > 1 && (
+                    <label className="purchaser-source">
+                        Which participant is the purchaser?
+                        <select
+                            value={purchaserSource}
+                            onChange={(changeEvent) => choosePurchaserSource(changeEvent.target.value)}
+                        >
+                            {visibleParticipants.map((participant, index) => (
+                                <option key={participant.key} value={`participant-${index}`}>
+                                    {participantOptionLabel(participant, index)}
+                                </option>
+                            ))}
+                        </select>
+                    </label>
+                )}
+                <p className="purchaser-copy-note">
+                    {purchaserSource === 'other'
+                        ? 'Enter purchaser information below. Participant information will not be copied.'
+                        : `Copied from ${participantOptionLabel(
+                            visibleParticipants[selectedPurchaserIndex],
+                            selectedPurchaserIndex,
+                        )}${visibleParticipants[selectedPurchaserIndex]?.isMinor
+                            ? "'s guardian"
+                            : ''}. Uncheck the box to enter a different purchaser.`}
+                </p>
                 <div className="form-row">
                     <label>
                         Full name
@@ -467,6 +476,7 @@ export default function EventCheckoutForm({ event, onCancel }) {
                             required
                             value={purchaser.name}
                             autoComplete="section-purchaser name"
+                            readOnly={purchaserSource !== 'other'}
                             onChange={(changeEvent) => updatePurchaser('name', changeEvent.target.value)}
                         />
                     </label>
@@ -477,6 +487,7 @@ export default function EventCheckoutForm({ event, onCancel }) {
                             type="email"
                             value={purchaser.email}
                             autoComplete="section-purchaser email"
+                            readOnly={purchaserSource !== 'other'}
                             onChange={(changeEvent) => updatePurchaser('email', changeEvent.target.value)}
                         />
                     </label>
@@ -487,6 +498,7 @@ export default function EventCheckoutForm({ event, onCancel }) {
                         type="tel"
                         value={purchaser.phone}
                         autoComplete="section-purchaser tel"
+                        readOnly={purchaserSource !== 'other'}
                         onChange={(changeEvent) => updatePurchaser('phone', changeEvent.target.value)}
                     />
                 </label>

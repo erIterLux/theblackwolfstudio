@@ -3,7 +3,7 @@ const { logger } = require('firebase-functions');
 
 let gmailEmailSecret;
 let gmailAppPasswordSecret;
-let configuredAppOrigin = 'http://localhost:5173';
+let configuredAppOrigin = 'https://theblackwolf.studio';
 let configuredStudioEmail = '';
 
 function configureEmail({ gmailEmail, gmailAppPassword, appOrigin, studioNotificationEmail } = {}) {

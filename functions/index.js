@@ -12,7 +12,7 @@ const gmailEmail = defineSecret('GMAIL_EMAIL');
 const gmailAppPassword = defineSecret('GMAIL_APP_PASSWORD');
 const geminiApiKey = defineSecret('GEMINI_API_KEY');
 
-const appOrigin = defineString('APP_ORIGIN', { default: 'http://localhost:5173' });
+const appOrigin = defineString('APP_ORIGIN', { default: 'https://theblackwolf.studio' });
 const studioNotificationEmail = defineString('STUDIO_NOTIFICATION_EMAIL', { default: '' });
 const stripePriceBegin = defineString('STRIPE_PRICE_BEGIN', { default: '' });
 const stripePriceTrain = defineString('STRIPE_PRICE_TRAIN', { default: '' });
