@@ -1,8 +1,63 @@
 rules_version = '2';
+
 service firebase.storage {
   match /b/{bucket}/o {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isInstructor() {
+      return signedIn()
+        && (request.auth.token.role == 'instructor'
+          || request.auth.token.role == 'admin'
+          || request.auth.token.admin == true);
+    }
+
+    function canManageMember(memberUid) {
+      return signedIn() && (request.auth.uid == memberUid || isInstructor());
+    }
+
+    function isSupportedMedia() {
+      return request.resource.contentType.matches('video/.*')
+        || request.resource.contentType.matches('audio/.*')
+        || request.resource.contentType.matches('image/.*');
+    }
+
     match /member-content/{userId}/{allPaths=**} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+      allow read, write: if signedIn() && request.auth.uid == userId;
+    }
+
+    match /progression-videos/{memberUid}/{levelKey}/{categoryKey}/{fileName} {
+      allow read: if canManageMember(memberUid);
+      allow create, update: if canManageMember(memberUid)
+        && request.resource.size <= 250 * 1024 * 1024
+        && request.resource.contentType.matches('video/.*');
+      allow delete: if canManageMember(memberUid);
+    }
+
+    match /progression-evidence/{memberUid}/{levelKey}/{categoryKey}/{evidenceId}/{fileName} {
+      allow read: if canManageMember(memberUid);
+      allow create, update: if canManageMember(memberUid)
+        && request.resource.size <= 250 * 1024 * 1024
+        && request.resource.contentType.matches('video/.*');
+      allow delete: if canManageMember(memberUid);
+    }
+
+    match /progression-feedback/{memberUid}/{feedbackId}/{fileName} {
+      allow read: if canManageMember(memberUid);
+      allow create, update: if isInstructor()
+        && request.resource.size <= 250 * 1024 * 1024
+        && (request.resource.contentType.matches('video/.*')
+          || request.resource.contentType.matches('audio/.*'));
+      allow delete: if isInstructor();
+    }
+
+    match /progression-content/{contentId}/{blockId}/{fileName} {
+      allow read: if signedIn();
+      allow create, update: if isInstructor()
+        && request.resource.size <= 250 * 1024 * 1024
+        && isSupportedMedia();
+      allow delete: if isInstructor();
     }
   }
 }

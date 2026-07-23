@@ -1,0 +1,750 @@
+/* Pass 3: private training packages for one to three participants */
+.private-training-page {
+  min-height: 640px;
+}
+
+.commerce-notice,
+.empty-state-card {
+  margin-bottom: 2rem;
+  padding: 1.3rem 1.4rem;
+  background: #fff;
+  border: 1px solid var(--gray-200);
+  border-left: 5px solid var(--blue);
+}
+
+.empty-state-card {
+  max-width: 720px;
+  display: grid;
+  gap: 1rem;
+}
+
+.empty-state-card h2,
+.empty-state-card p {
+  margin-bottom: 0;
+}
+
+.private-training-values {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: .85rem;
+  margin-bottom: 2rem;
+}
+
+.private-training-values > div {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: .2rem .7rem;
+  align-items: center;
+  padding: 1rem;
+  background: #fff;
+  border: 1px solid var(--gray-200);
+}
+
+.private-training-values svg {
+  grid-row: 1 / span 2;
+  color: var(--blue);
+}
+
+.private-training-values span {
+  color: var(--gray-600);
+  font-size: .8rem;
+}
+
+.private-offer-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.private-offer-card {
+  display: grid;
+  align-content: start;
+  gap: 1.25rem;
+  padding: 1.5rem;
+  background: #fff;
+  border: 1px solid var(--gray-200);
+  box-shadow: 0 12px 35px rgba(20, 23, 27, .07);
+}
+
+.private-offer-card h2 {
+  margin-bottom: .65rem;
+  font-size: clamp(2rem, 3vw, 3rem);
+}
+
+.private-offer-card > .button {
+  margin-top: auto;
+}
+
+.private-offer-price {
+  display: grid;
+  gap: .2rem;
+  padding: .9rem 0;
+  border-block: 1px solid var(--gray-200);
+}
+
+.private-offer-price span {
+  color: var(--gray-600);
+  font-size: .75rem;
+  font-weight: 800;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.private-offer-price strong {
+  font-size: 2rem;
+}
+
+.private-checkout {
+  display: grid;
+  gap: 1rem;
+  max-width: 980px;
+  margin-inline: auto;
+}
+
+.private-checkout__heading,
+.private-checkout__actions,
+.private-checkout__section-heading,
+.private-admin-panel-heading,
+.private-admin-section-heading,
+.private-admin-purchase-card__heading,
+.admin-page-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.private-checkout__heading {
+  align-items: end;
+  margin-bottom: .5rem;
+}
+
+.private-checkout__heading h2,
+.private-checkout__section h3,
+.private-admin-panel-heading h2,
+.private-admin-section-heading h2,
+.private-admin-purchase-card h3 {
+  margin-bottom: 0;
+}
+
+.private-checkout__section {
+  display: grid;
+  gap: 1.15rem;
+  padding: clamp(1.2rem, 3vw, 2rem);
+  background: #fff;
+  border: 1px solid var(--gray-200);
+}
+
+.private-checkout__section-heading {
+  justify-content: flex-start;
+}
+
+.private-checkout__section-heading > svg {
+  flex: 0 0 auto;
+  color: var(--blue);
+}
+
+.private-checkout__section-heading p {
+  margin-bottom: 0;
+  color: var(--gray-600);
+  font-size: .84rem;
+}
+
+.private-checkout label,
+.private-admin-offer-editor label,
+.private-admin-purchase-card label {
+  display: grid;
+  gap: .42rem;
+  font-size: .82rem;
+  font-weight: 800;
+}
+
+.optional-label {
+  color: var(--gray-600);
+  font-size: .72rem;
+  font-weight: 650;
+}
+
+.participant-count {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: .65rem;
+}
+
+.participant-count button {
+  min-height: 78px;
+  display: grid;
+  gap: .2rem;
+  align-content: center;
+  padding: .7rem;
+  color: var(--charcoal);
+  background: var(--gray-100);
+  border: 1px solid var(--gray-200);
+  font-weight: 850;
+}
+
+.participant-count button span {
+  color: var(--gray-600);
+  font-size: .72rem;
+  font-weight: 700;
+}
+
+.participant-count button.is-active {
+  color: var(--white);
+  background: var(--blue-dark);
+  border-color: var(--blue-dark);
+}
+
+.participant-count button.is-active span {
+  color: var(--gray-100);
+}
+
+.checkbox-row {
+  grid-template-columns: auto 1fr;
+  justify-content: start;
+  align-items: center;
+  gap: .55rem !important;
+}
+
+.checkbox-row input {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+}
+
+.participant-forms {
+  display: grid;
+  gap: .8rem;
+}
+
+.participant-form {
+  display: grid;
+  gap: .9rem;
+  margin: 0;
+  padding: 1rem;
+  background: #faf8f3;
+  border: 1px solid var(--gray-200);
+}
+
+.participant-form legend,
+.private-session-participants legend {
+  padding: 0 .35rem;
+  color: var(--blue-dark);
+  font-size: .75rem;
+  font-weight: 900;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.form-row--three {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.discount-code-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: .7rem;
+  align-items: end;
+}
+
+.quote-loading {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  margin: 0;
+  color: var(--gray-600);
+}
+
+.spin {
+  animation: private-training-spin .8s linear infinite;
+}
+
+@keyframes private-training-spin {
+  to { transform: rotate(360deg); }
+}
+
+.checkout-summary {
+  display: grid;
+  gap: .55rem;
+  padding: 1rem;
+  background: #f7f4ee;
+  border: 1px solid var(--gray-200);
+}
+
+.checkout-summary > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.checkout-summary__discount {
+  color: var(--success);
+}
+
+.checkout-summary__total {
+  margin-top: .35rem;
+  padding-top: .7rem;
+  border-top: 1px solid var(--gray-200);
+  font-size: 1.1rem;
+}
+
+.private-checkout__actions {
+  align-items: center;
+  padding: 1rem 0 0;
+}
+
+.private-checkout__actions p {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  margin: 0;
+  color: var(--gray-600);
+  font-size: .8rem;
+}
+
+.purchase-success-page {
+  min-height: 720px;
+  display: grid;
+  align-items: center;
+}
+
+.purchase-success-page__inner {
+  max-width: 760px;
+  text-align: center;
+}
+
+.purchase-success-page__inner > p:not(.eyebrow):not(.form-status) {
+  max-width: 650px;
+  margin-inline: auto;
+  color: var(--gray-600);
+}
+
+.purchase-success-icon {
+  width: 72px;
+  height: 72px;
+  display: grid;
+  place-items: center;
+  margin: 0 auto 1rem;
+  color: var(--white);
+  background: var(--blue-dark);
+  border-radius: 50%;
+}
+
+.purchase-success-icon svg {
+  width: 38px;
+  height: 38px;
+}
+
+.purchase-confirmation-card {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: .7rem;
+  margin: 2rem 0;
+  padding: 1rem;
+  text-align: left;
+  background: #fff;
+  border: 1px solid var(--gray-200);
+}
+
+.purchase-confirmation-card > div {
+  display: grid;
+  gap: .18rem;
+  padding: .8rem;
+  background: #f7f4ee;
+}
+
+.purchase-confirmation-card span {
+  color: var(--gray-600);
+  font-size: .74rem;
+  font-weight: 800;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+}
+
+.purchase-confirmation-card strong {
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+}
+
+.purchase-success-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: .7rem;
+}
+
+.private-training-summary-card__balance {
+  display: flex;
+  align-items: baseline;
+  gap: .65rem;
+  margin: .75rem 0;
+}
+
+.private-training-summary-card__balance strong {
+  font-family: var(--display);
+  font-size: 3.6rem;
+  line-height: 1;
+}
+
+.private-training-summary-card__balance span {
+  max-width: 260px;
+  color: var(--gray-600);
+  font-size: .82rem;
+}
+
+.private-training-summary-card .dashboard-hint {
+  display: flex;
+  align-items: center;
+  gap: .45rem;
+}
+
+.private-member-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: .75rem;
+  margin-bottom: 1rem;
+}
+
+.private-member-summary > div {
+  display: grid;
+  gap: .15rem;
+  padding: 1rem;
+  color: var(--charcoal);
+  background: var(--bone);
+}
+
+.private-member-summary strong {
+  font-size: 1.6rem;
+}
+
+.private-member-summary span {
+  color: var(--gray-600);
+  font-size: .75rem;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+}
+
+.private-purchase-list {
+  display: grid;
+  gap: 1rem;
+}
+
+.private-purchase-card {
+  display: grid;
+  gap: 1rem;
+  padding: 1.4rem;
+  color: var(--charcoal);
+  background: var(--bone);
+  border: 1px solid rgba(255,255,255,.08);
+}
+
+.private-purchase-card__top {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.private-purchase-card__top h2 {
+  margin-bottom: 0;
+  font-size: clamp(2rem, 4vw, 3.6rem);
+}
+
+.private-package-status {
+  align-self: flex-start;
+  padding: .42rem .65rem;
+  color: #174c31;
+  background: #dff2e7;
+  font-size: .72rem;
+  font-weight: 850;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+.private-package-status.is-used,
+.private-package-status.is-expired {
+  color: #6b4b16;
+  background: #f6e7bf;
+}
+
+.private-credit-display {
+  display: flex;
+  align-items: baseline;
+  gap: .7rem;
+  padding: 1rem;
+  background: #fff;
+  border-left: 5px solid var(--blue);
+}
+
+.private-credit-display strong {
+  font-family: var(--display);
+  font-size: 3.5rem;
+}
+
+.private-credit-display span {
+  color: var(--gray-600);
+}
+
+.private-purchase-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .65rem 1.1rem;
+  color: var(--gray-600);
+  font-size: .8rem;
+}
+
+.private-purchase-meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+}
+
+.private-participant-list {
+  display: grid;
+  gap: .5rem;
+}
+
+.private-participant-list p {
+  margin-bottom: 0;
+}
+
+.private-participant-list > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .45rem;
+}
+
+.private-participant-list span {
+  padding: .4rem .6rem;
+  background: #fff;
+  border: 1px solid var(--gray-200);
+  font-size: .78rem;
+}
+
+.instructor-admin-page {
+  min-height: 760px;
+  padding: 80px 0 120px;
+  background: var(--bone);
+}
+
+.admin-page-heading {
+  align-items: end;
+  margin-bottom: 2rem;
+}
+
+.admin-page-heading h1 {
+  margin-bottom: .55rem;
+  font-size: clamp(3rem, 7vw, 6rem);
+}
+
+.admin-page-heading p:last-child {
+  color: var(--gray-600);
+}
+
+.role-gate {
+  min-height: 520px;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 1rem;
+  text-align: center;
+}
+
+.private-admin-layout {
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr);
+  gap: 1rem;
+  align-items: start;
+}
+
+.private-admin-offer-list,
+.private-admin-offer-editor,
+.private-admin-purchase-card {
+  background: #fff;
+  border: 1px solid var(--gray-200);
+}
+
+.private-admin-offer-list {
+  position: sticky;
+  top: 110px;
+  display: grid;
+  gap: .45rem;
+  padding: 1rem;
+}
+
+.private-admin-panel-heading {
+  align-items: center;
+  padding-bottom: .7rem;
+  border-bottom: 1px solid var(--gray-200);
+}
+
+.private-admin-panel-heading > div {
+  display: flex;
+  align-items: center;
+  gap: .55rem;
+}
+
+.private-admin-panel-heading svg {
+  color: var(--blue);
+}
+
+.private-admin-offer-list > button:not(.text-link) {
+  display: grid;
+  gap: .2rem;
+  padding: .75rem;
+  text-align: left;
+  color: var(--charcoal);
+  background: #f7f4ee;
+  border: 1px solid transparent;
+}
+
+.private-admin-offer-list > button.is-active {
+  background: #edf2f6;
+  border-color: var(--blue);
+}
+
+.private-admin-offer-list > button span {
+  color: var(--gray-600);
+  font-size: .72rem;
+  text-transform: uppercase;
+}
+
+.private-admin-offer-editor {
+  display: grid;
+  gap: 1rem;
+  padding: 1.3rem;
+}
+
+.private-admin-purchases {
+  margin-top: 2.5rem;
+}
+
+.private-admin-section-heading {
+  align-items: end;
+  margin-bottom: 1rem;
+}
+
+.private-admin-section-heading > span {
+  padding: .4rem .6rem;
+  background: #fff;
+  border: 1px solid var(--gray-200);
+  font-size: .75rem;
+  font-weight: 800;
+}
+
+.private-admin-purchase-list {
+  display: grid;
+  gap: 1rem;
+}
+
+.private-admin-purchase-card {
+  display: grid;
+  gap: 1rem;
+  padding: 1.2rem;
+}
+
+.private-admin-credit-count {
+  display: grid;
+  text-align: right;
+}
+
+.private-admin-credit-count strong {
+  font-size: 2rem;
+}
+
+.private-admin-credit-count span {
+  color: var(--gray-600);
+  font-size: .75rem;
+}
+
+.private-admin-purchase-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  color: var(--gray-600);
+  font-size: .8rem;
+}
+
+.private-admin-purchase-meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+}
+
+.private-session-participants {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .8rem 1.2rem;
+  margin: 0;
+  padding: .9rem;
+  border: 1px solid var(--gray-200);
+}
+
+.credit-adjustment-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: .6rem;
+  align-items: end;
+  padding-top: 1rem;
+  border-top: 1px solid var(--gray-200);
+}
+
+@media (max-width: 980px) {
+  .private-offer-grid,
+  .private-training-values {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .private-offer-card:last-child,
+  .private-training-values > div:last-child {
+    grid-column: 1 / -1;
+  }
+
+  .private-admin-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .private-admin-offer-list {
+    position: static;
+  }
+}
+
+@media (max-width: 700px) {
+  .private-offer-grid,
+  .private-training-values,
+  .participant-count,
+  .purchase-confirmation-card,
+  .private-member-summary,
+  .form-row--three {
+    grid-template-columns: 1fr;
+  }
+
+  .private-offer-card:last-child,
+  .private-training-values > div:last-child {
+    grid-column: auto;
+  }
+
+  .private-checkout__heading,
+  .private-checkout__actions,
+  .private-purchase-card__top,
+  .admin-page-heading,
+  .private-admin-section-heading,
+  .private-admin-purchase-card__heading {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .discount-code-row,
+  .credit-adjustment-row {
+    grid-template-columns: 1fr;
+  }
+
+  .private-admin-credit-count {
+    text-align: left;
+  }
+
+  .private-checkout__actions .button,
+  .purchase-success-actions .button {
+    width: 100%;
+  }
+}

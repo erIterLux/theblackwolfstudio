@@ -1,0 +1,21 @@
+{
+  "name": "black-wolf-studio-functions",
+  "private": true,
+  "version": "0.1.0",
+  "main": "index.js",
+  "engines": {
+    "node": "22"
+  },
+  "scripts": {
+    "check": "node --check index.js && node --check ai/wolfGuide.js && node --check billing/membershipBilling.js && node --check notifications/emailService.js && node --check notifications/inquiryEmails.js && node --check notifications/progressionEmails.js && node --check progression/progressionService.js && node --check config/progressionSystem.js && node --check content/curriculumService.js && node --check commerce/commerceFoundation.js && node --check privateTraining/privateTrainingService.js && node --check privateTraining/bookingService.js && node --check notifications/privateTrainingBookingEmails.js && node --check events/eventService.js && node --check events/waiverService.js && node --check purchases/purchaseHistoryService.js && node --check reports/reportService.js && node --check notifications/notificationService.js && node --check session/appSessionService.js && node --check dashboard/memberDashboardService.js",
+    "serve": "firebase emulators:start --only functions,firestore,auth",
+    "deploy": "firebase deploy --only functions"
+  },
+  "dependencies": {
+    "@google/genai": "^2.12.0",
+    "firebase-admin": "13.10.0",
+    "firebase-functions": "7.2.5",
+    "nodemailer": "^9.0.3",
+    "stripe": "^22.3.2"
+  }
+}

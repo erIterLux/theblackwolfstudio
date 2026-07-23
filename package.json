@@ -10,7 +10,11 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "quality:static": "node scripts/quality-gate.mjs",
+    "quality:browser": "node scripts/browser-smoke.mjs",
+    "quality": "npm run lint && npm run build && npm run quality:static",
+    "quality:full": "npm run quality && npm run quality:browser"
   },
   "dependencies": {
     "firebase": "^12.16.0",

@@ -1,0 +1,1619 @@
+{
+  "generatedAt": "2026-07-22T22:15:31.658Z",
+  "passed": true,
+  "baseUrl": "http://127.0.0.1:4773",
+  "results": [
+    {
+      "route": "/",
+      "viewport": "mobile",
+      "audit": {
+        "url": "http://127.0.0.1:4773/",
+        "title": "The Black Wolf Studio",
+        "mainCount": 1,
+        "h1Count": 1,
+        "horizontalOverflow": 0,
+        "emptyInteractiveNames": [],
+        "unlabeledFields": [],
+        "imagesWithoutAlt": [],
+        "duplicateIds": [],
+        "smallTargets": [
+          {
+            "tag": "button",
+            "name": "Open navigation",
+            "width": 36,
+            "height": 26
+          },
+          {
+            "tag": "a",
+            "name": "See the approach",
+            "width": 162,
+            "height": 18
+          },
+          {
+            "tag": "a",
+            "name": "Programs",
+            "width": 362,
+            "height": 19
+          },
+          {
+            "tag": "a",
+            "name": "Events",
+            "width": 362,
+            "height": 19
+          },
+          {
+            "tag": "a",
+            "name": "Private training",
+            "width": 362,
+            "height": 19
+          },
+          {
+            "tag": "a",
+            "name": "Membership",
+            "width": 362,
+            "height": 19
+          },
+          {
+            "tag": "a",
+            "name": "Member login",
+            "width": 362,
+            "height": 19
+          },
+          {
+            "tag": "a",
+            "name": "contact@theblackwolf.studio",
+            "width": 362,
+            "height": 19
+          }
+        ],
+        "smallTargetCount": 8,
+        "documentHeight": 10324,
+        "domElements": 349,
+        "performance": {
+          "ttfbMs": 5,
+          "domContentLoadedMs": 96,
+          "loadEventMs": 96,
+          "documentTransferBytes": 828,
+          "resourceCount": 16,
+          "resourceTransferBytes": 574658,
+          "scriptCount": 4,
+          "cssCount": 1,
+          "imageCount": 2,
+          "firstPaintMs": 60,
+          "firstContentfulPaintMs": 140,
+          "longTaskCount": 0,
+          "longTaskDurationMs": 0
+        }
+      },
+      "errors": [],
+      "failures": [],
+      "warnings": [
+        "8 visible controls are smaller than 36px in one dimension."
+      ],
+      "screenshot": "quality/screenshots/mobile-home.png"
+    },
+    {
+      "route": "/programs",
+      "viewport": "mobile",
+      "audit": {
+        "url": "http://127.0.0.1:4773/programs",
+        "title": "Programs | The Black Wolf Studio",
+        "mainCount": 1,
+        "h1Count": 1,
+        "horizontalOverflow": 0,
+        "emptyInteractiveNames": [],
+        "unlabeledFields": [],
+        "imagesWithoutAlt": [],
+        "duplicateIds": [],
+        "smallTargets": [
+          {
+            "tag": "button",
+            "name": "Open navigation",
+            "width": 36,
+            "height": 26
+          },
+          {
+            "tag": "a",
+            "name": "Programs",
+            "width": 362,
+            "height": 19
+          },
+          {
+            "tag": "a",
+            "name": "Events",
+            "width": 362,
+            "height": 19
+          },
+          {
+            "tag": "a",
+            "name": "Private training",
+            "width": 362,
+            "height": 19
+          },
+          {
+            "tag": "a",
+            "name": "Membership",
+            "width": 362,
+            "height": 19
+          },
+          {
+            "tag": "a",
+            "name": "Member login",
+            "width": 362,
+            "height": 19
+          },
+          {
+            "tag": "a",
+            "name": "contact@theblackwolf.studio",
+            "width": 362,
+            "height": 19
+          }
+        ],
+        "smallTargetCount": 7,
+        "documentHeight": 4797,
+        "domElements": 218,
+        "performance": {
+          "ttfbMs": 4,
+          "domContentLoadedMs": 24,
+          "loadEventMs": 25,
+          "documentTransferBytes": 828,
+          "resourceCount": 13,
+          "resourceTransferBytes": 5095,
+          "scriptCount": 4,
+          "cssCount": 1,
+          "imageCount": 1,
+          "firstPaintMs": 24,
+          "firstContentfulPaintMs": 60,
+          "longTaskCount": 0,
+          "longTaskDurationMs": 0
+        }
+      },
+      "errors": [],
+      "failures": [],
+      "warnings": [
+        "7 visible controls are smaller than 36px in one dimension."
+      ],
+      "screenshot": "quality/screenshots/mobile-programs.png"
+    },
+    {
+      "route": "/events",
+      "viewport": "mobile",
+      "audit": {
+        "url": "http://127.0.0.1:4773/events",
+        "title": "Events | The Black Wolf Studio",
+        "mainCount": 1,
+        "h1Count": 1,
+        "horizontalOverflow": 0,
+        "emptyInteractiveNames": [],
+        "unlabeledFields": [],
+        "imagesWithoutAlt": [],
+        "duplicateIds": [],
+        "smallTargets": [
+          {
+            "tag": "button",
+            "name": "Open navigation",
+            "width": 36,
+            "height": 26
+          },
+          {
+            "tag": "a",
+            "name": "Programs",
+            "width": 362,
+            "height": 19
+          },
+          {
+            "tag": "a",
+            "name": "Events",
+            "width": 362,
+            "height": 19
+          },
+          {
+            "tag": "a",
+            "name": "Private training",
+            "width": 362,
+            "height": 19
+          },
+          {
+            "tag": "a",
+            "name": "Membership",
+            "width": 362,
+            "height": 19
+          },
+          {
+            "tag": "a",
+            "name": "Member login",
+            "width": 362,
+            "height": 19
+          },
+          {
+            "tag": "a",
+            "name": "contact@theblackwolf.studio",
+            "width": 362,
+            "height": 19
+          }
+        ],
+        "smallTargetCount": 7,
+        "documentHeight": 2298,
+        "domElements": 111,
+        "performance": {
+          "ttfbMs": 5,
+          "domContentLoadedMs": 24,
+          "loadEventMs": 25,
+          "documentTransferBytes": 828,
+          "resourceCount": 15,
+          "resourceTransferBytes": 9220,
+          "scriptCount": 5,
+          "cssCount": 1,
+          "imageCount": 1,
+          "firstPaintMs": 36,
+          "firstContentfulPaintMs": 48,
+          "longTaskCount": 0,
+          "longTaskDurationMs": 0
+        }
+      },
+      "errors": [],
+      "failures": [],
+      "warnings": [
+        "7 visible controls are smaller than 36px in one dimension."
+      ],
+      "screenshot": "quality/screenshots/mobile-events.png"
+    },
+    {
+      "route": "/membership",
+      "viewport": "mobile",
+      "audit": {
+        "url": "http://127.0.0.1:4773/membership",
+        "title": "Membership | The Black Wolf Studio",
+        "mainCount": 1,
+        "h1Count": 1,
+        "horizontalOverflow": 0,
+        "emptyInteractiveNames": [],
+        "unlabeledFields": [],
+        "imagesWithoutAlt": [],
+        "duplicateIds": [],
+        "smallTargets": [
+          {
+            "tag": "button",
+            "name": "Open navigation",
+            "width": 36,
+            "height": 26
+          },
+          {
+            "tag": "a",
+            "name": "Programs",
+            "width": 362,
+            "height": 19
+          },
+          {
+            "tag": "a",
+            "name": "Events",
+            "width": 362,
+            "height": 19
+          },
+          {
+            "tag": "a",
+            "name": "Private training",
+            "width": 362,
+            "height": 19
+          },
+          {
+            "tag": "a",
+            "name": "Membership",
+            "width": 362,
+            "height": 19
+          },
+          {
+            "tag": "a",
+            "name": "Member login",
+            "width": 362,
+            "height": 19
+          },
+          {
+            "tag": "a",
+            "name": "contact@theblackwolf.studio",
+            "width": 362,
+            "height": 19
+          }
+        ],
+        "smallTargetCount": 7,
+        "documentHeight": 3932,
+        "domElements": 164,
+        "performance": {
+          "ttfbMs": 5,
+          "domContentLoadedMs": 25,
+          "loadEventMs": 25,
+          "documentTransferBytes": 828,
+          "resourceCount": 14,
+          "resourceTransferBytes": 7166,
+          "scriptCount": 5,
+          "cssCount": 1,
+          "imageCount": 1,
+          "firstPaintMs": 32,
+          "firstContentfulPaintMs": 48,
+          "longTaskCount": 0,
+          "longTaskDurationMs": 0
+        }
+      },
+      "errors": [],
+      "failures": [],
+      "warnings": [
+        "7 visible controls are smaller than 36px in one dimension."
+      ],
+      "screenshot": "quality/screenshots/mobile-membership.png"
+    },
+    {
+      "route": "/private-training",
+      "viewport": "mobile",
+      "audit": {
+        "url": "http://127.0.0.1:4773/private-training",
+        "title": "Private training | The Black Wolf Studio",
+        "mainCount": 1,
+        "h1Count": 1,
+        "horizontalOverflow": 0,
+        "emptyInteractiveNames": [],
+        "unlabeledFields": [],
+        "imagesWithoutAlt": [],
+        "duplicateIds": [],
+        "smallTargets": [
+          {
+            "tag": "button",
+            "name": "Open navigation",
+            "width": 36,
+            "height": 26
+          },
+          {
+            "tag": "a",
+            "name": "Programs",
+            "width": 362,
+            "height": 19
+          },
+          {
+            "tag": "a",
+            "name": "Events",
+            "width": 362,
+            "height": 19
+          },
+          {
+            "tag": "a",
+            "name": "Private training",
+            "width": 362,
+            "height": 19
+          },
+          {
+            "tag": "a",
+            "name": "Membership",
+            "width": 362,
+            "height": 19
+          },
+          {
+            "tag": "a",
+            "name": "Member login",
+            "width": 362,
+            "height": 19
+          },
+          {
+            "tag": "a",
+            "name": "contact@theblackwolf.studio",
+            "width": 362,
+            "height": 19
+          }
+        ],
+        "smallTargetCount": 7,
+        "documentHeight": 2941,
+        "domElements": 144,
+        "performance": {
+          "ttfbMs": 5,
+          "domContentLoadedMs": 34,
+          "loadEventMs": 34,
+          "documentTransferBytes": 828,
+          "resourceCount": 15,
+          "resourceTransferBytes": 8285,
+          "scriptCount": 5,
+          "cssCount": 1,
+          "imageCount": 1,
+          "firstPaintMs": 52,
+          "firstContentfulPaintMs": 52,
+          "longTaskCount": 0,
+          "longTaskDurationMs": 0
+        }
+      },
+      "errors": [],
+      "failures": [],
+      "warnings": [
+        "7 visible controls are smaller than 36px in one dimension."
+      ],
+      "screenshot": "quality/screenshots/mobile-private-training.png"
+    },
+    {
+      "route": "/contact",
+      "viewport": "mobile",
+      "audit": {
+        "url": "http://127.0.0.1:4773/contact",
+        "title": "Contact | The Black Wolf Studio",
+        "mainCount": 1,
+        "h1Count": 1,
+        "horizontalOverflow": 0,
+        "emptyInteractiveNames": [],
+        "unlabeledFields": [],
+        "imagesWithoutAlt": [],
+        "duplicateIds": [],
+        "smallTargets": [
+          {
+            "tag": "button",
+            "name": "Open navigation",
+            "width": 36,
+            "height": 26
+          },
+          {
+            "tag": "a",
+            "name": "Programs",
+            "width": 362,
+            "height": 19
+          },
+          {
+            "tag": "a",
+            "name": "Events",
+            "width": 362,
+            "height": 19
+          },
+          {
+            "tag": "a",
+            "name": "Private training",
+            "width": 362,
+            "height": 19
+          },
+          {
+            "tag": "a",
+            "name": "Membership",
+            "width": 362,
+            "height": 19
+          },
+          {
+            "tag": "a",
+            "name": "Member login",
+            "width": 362,
+            "height": 19
+          },
+          {
+            "tag": "a",
+            "name": "contact@theblackwolf.studio",
+            "width": 362,
+            "height": 19
+          }
+        ],
+        "smallTargetCount": 7,
+        "documentHeight": 2703,
+        "domElements": 126,
+        "performance": {
+          "ttfbMs": 6,
+          "domContentLoadedMs": 34,
+          "loadEventMs": 34,
+          "documentTransferBytes": 828,
+          "resourceCount": 12,
+          "resourceTransferBytes": 5266,
+          "scriptCount": 3,
+          "cssCount": 1,
+          "imageCount": 1,
+          "firstPaintMs": 48,
+          "firstContentfulPaintMs": 48,
+          "longTaskCount": 0,
+          "longTaskDurationMs": 0
+        }
+      },
+      "errors": [],
+      "failures": [],
+      "warnings": [
+        "7 visible controls are smaller than 36px in one dimension."
+      ],
+      "screenshot": "quality/screenshots/mobile-contact.png"
+    },
+    {
+      "route": "/login",
+      "viewport": "mobile",
+      "audit": {
+        "url": "http://127.0.0.1:4773/login",
+        "title": "Member login | The Black Wolf Studio",
+        "mainCount": 1,
+        "h1Count": 1,
+        "horizontalOverflow": 0,
+        "emptyInteractiveNames": [],
+        "unlabeledFields": [],
+        "imagesWithoutAlt": [],
+        "duplicateIds": [],
+        "smallTargets": [
+          {
+            "tag": "button",
+            "name": "Open navigation",
+            "width": 36,
+            "height": 26
+          },
+          {
+            "tag": "a",
+            "name": "Programs",
+            "width": 362,
+            "height": 19
+          },
+          {
+            "tag": "a",
+            "name": "Events",
+            "width": 362,
+            "height": 19
+          },
+          {
+            "tag": "a",
+            "name": "Private training",
+            "width": 362,
+            "height": 19
+          },
+          {
+            "tag": "a",
+            "name": "Membership",
+            "width": 362,
+            "height": 19
+          },
+          {
+            "tag": "a",
+            "name": "Member login",
+            "width": 362,
+            "height": 19
+          },
+          {
+            "tag": "a",
+            "name": "contact@theblackwolf.studio",
+            "width": 362,
+            "height": 19
+          }
+        ],
+        "smallTargetCount": 7,
+        "documentHeight": 2013,
+        "domElements": 103,
+        "performance": {
+          "ttfbMs": 5,
+          "domContentLoadedMs": 30,
+          "loadEventMs": 30,
+          "documentTransferBytes": 828,
+          "resourceCount": 11,
+          "resourceTransferBytes": 4529,
+          "scriptCount": 2,
+          "cssCount": 1,
+          "imageCount": 1,
+          "firstPaintMs": 36,
+          "firstContentfulPaintMs": 52,
+          "longTaskCount": 0,
+          "longTaskDurationMs": 0
+        }
+      },
+      "errors": [],
+      "failures": [],
+      "warnings": [
+        "7 visible controls are smaller than 36px in one dimension."
+      ],
+      "screenshot": "quality/screenshots/mobile-login.png"
+    },
+    {
+      "route": "/member",
+      "viewport": "mobile",
+      "audit": {
+        "url": "http://127.0.0.1:4773/login",
+        "title": "Member login | The Black Wolf Studio",
+        "mainCount": 1,
+        "h1Count": 1,
+        "horizontalOverflow": 0,
+        "emptyInteractiveNames": [],
+        "unlabeledFields": [],
+        "imagesWithoutAlt": [],
+        "duplicateIds": [],
+        "smallTargets": [
+          {
+            "tag": "button",
+            "name": "Open navigation",
+            "width": 36,
+            "height": 26
+          },
+          {
+            "tag": "a",
+            "name": "Programs",
+            "width": 362,
+            "height": 19
+          },
+          {
+            "tag": "a",
+            "name": "Events",
+            "width": 362,
+            "height": 19
+          },
+          {
+            "tag": "a",
+            "name": "Private training",
+            "width": 362,
+            "height": 19
+          },
+          {
+            "tag": "a",
+            "name": "Membership",
+            "width": 362,
+            "height": 19
+          },
+          {
+            "tag": "a",
+            "name": "Member login",
+            "width": 362,
+            "height": 19
+          },
+          {
+            "tag": "a",
+            "name": "contact@theblackwolf.studio",
+            "width": 362,
+            "height": 19
+          }
+        ],
+        "smallTargetCount": 7,
+        "documentHeight": 2013,
+        "domElements": 103,
+        "performance": {
+          "ttfbMs": 5,
+          "domContentLoadedMs": 36,
+          "loadEventMs": 36,
+          "documentTransferBytes": 828,
+          "resourceCount": 11,
+          "resourceTransferBytes": 3300,
+          "scriptCount": 2,
+          "cssCount": 1,
+          "imageCount": 1,
+          "firstPaintMs": 32,
+          "firstContentfulPaintMs": 60,
+          "longTaskCount": 0,
+          "longTaskDurationMs": 0
+        }
+      },
+      "errors": [],
+      "failures": [],
+      "warnings": [
+        "7 visible controls are smaller than 36px in one dimension."
+      ],
+      "screenshot": "quality/screenshots/mobile-member.png"
+    },
+    {
+      "route": "/instructor",
+      "viewport": "mobile",
+      "audit": {
+        "url": "http://127.0.0.1:4773/login",
+        "title": "Member login | The Black Wolf Studio",
+        "mainCount": 1,
+        "h1Count": 1,
+        "horizontalOverflow": 0,
+        "emptyInteractiveNames": [],
+        "unlabeledFields": [],
+        "imagesWithoutAlt": [],
+        "duplicateIds": [],
+        "smallTargets": [
+          {
+            "tag": "button",
+            "name": "Open navigation",
+            "width": 36,
+            "height": 26
+          },
+          {
+            "tag": "a",
+            "name": "Programs",
+            "width": 362,
+            "height": 19
+          },
+          {
+            "tag": "a",
+            "name": "Events",
+            "width": 362,
+            "height": 19
+          },
+          {
+            "tag": "a",
+            "name": "Private training",
+            "width": 362,
+            "height": 19
+          },
+          {
+            "tag": "a",
+            "name": "Membership",
+            "width": 362,
+            "height": 19
+          },
+          {
+            "tag": "a",
+            "name": "Member login",
+            "width": 362,
+            "height": 19
+          },
+          {
+            "tag": "a",
+            "name": "contact@theblackwolf.studio",
+            "width": 362,
+            "height": 19
+          }
+        ],
+        "smallTargetCount": 7,
+        "documentHeight": 2013,
+        "domElements": 103,
+        "performance": {
+          "ttfbMs": 7,
+          "domContentLoadedMs": 73,
+          "loadEventMs": 73,
+          "documentTransferBytes": 828,
+          "resourceCount": 11,
+          "resourceTransferBytes": 3300,
+          "scriptCount": 2,
+          "cssCount": 1,
+          "imageCount": 1,
+          "firstPaintMs": 76,
+          "firstContentfulPaintMs": 108,
+          "longTaskCount": 0,
+          "longTaskDurationMs": 0
+        }
+      },
+      "errors": [],
+      "failures": [],
+      "warnings": [
+        "7 visible controls are smaller than 36px in one dimension."
+      ],
+      "screenshot": "quality/screenshots/mobile-instructor.png"
+    },
+    {
+      "route": "/this-route-does-not-exist",
+      "viewport": "mobile",
+      "audit": {
+        "url": "http://127.0.0.1:4773/this-route-does-not-exist",
+        "title": "Page not found | The Black Wolf Studio",
+        "mainCount": 1,
+        "h1Count": 1,
+        "horizontalOverflow": 0,
+        "emptyInteractiveNames": [],
+        "unlabeledFields": [],
+        "imagesWithoutAlt": [],
+        "duplicateIds": [],
+        "smallTargets": [
+          {
+            "tag": "button",
+            "name": "Open navigation",
+            "width": 36,
+            "height": 26
+          },
+          {
+            "tag": "a",
+            "name": "Programs",
+            "width": 362,
+            "height": 19
+          },
+          {
+            "tag": "a",
+            "name": "Events",
+            "width": 362,
+            "height": 19
+          },
+          {
+            "tag": "a",
+            "name": "Private training",
+            "width": 362,
+            "height": 19
+          },
+          {
+            "tag": "a",
+            "name": "Membership",
+            "width": 362,
+            "height": 19
+          },
+          {
+            "tag": "a",
+            "name": "Member login",
+            "width": 362,
+            "height": 19
+          },
+          {
+            "tag": "a",
+            "name": "contact@theblackwolf.studio",
+            "width": 362,
+            "height": 19
+          }
+        ],
+        "smallTargetCount": 7,
+        "documentHeight": 1697,
+        "domElements": 92,
+        "performance": {
+          "ttfbMs": 5,
+          "domContentLoadedMs": 35,
+          "loadEventMs": 35,
+          "documentTransferBytes": 828,
+          "resourceCount": 11,
+          "resourceTransferBytes": 4055,
+          "scriptCount": 2,
+          "cssCount": 1,
+          "imageCount": 1,
+          "firstPaintMs": 32,
+          "firstContentfulPaintMs": 52,
+          "longTaskCount": 0,
+          "longTaskDurationMs": 0
+        }
+      },
+      "errors": [],
+      "failures": [],
+      "warnings": [
+        "7 visible controls are smaller than 36px in one dimension."
+      ],
+      "screenshot": "quality/screenshots/mobile-this-route-does-not-exist.png"
+    },
+    {
+      "route": "/",
+      "viewport": "desktop",
+      "audit": {
+        "url": "http://127.0.0.1:4773/",
+        "title": "The Black Wolf Studio",
+        "mainCount": 1,
+        "h1Count": 1,
+        "horizontalOverflow": 0,
+        "emptyInteractiveNames": [],
+        "unlabeledFields": [],
+        "imagesWithoutAlt": [],
+        "duplicateIds": [],
+        "smallTargets": [
+          {
+            "tag": "a",
+            "name": "See the approach",
+            "width": 162,
+            "height": 18
+          },
+          {
+            "tag": "a",
+            "name": "Programs",
+            "width": 230,
+            "height": 19
+          },
+          {
+            "tag": "a",
+            "name": "Events",
+            "width": 230,
+            "height": 19
+          },
+          {
+            "tag": "a",
+            "name": "Private training",
+            "width": 230,
+            "height": 19
+          },
+          {
+            "tag": "a",
+            "name": "Membership",
+            "width": 230,
+            "height": 19
+          },
+          {
+            "tag": "a",
+            "name": "Member login",
+            "width": 230,
+            "height": 19
+          },
+          {
+            "tag": "a",
+            "name": "contact@theblackwolf.studio",
+            "width": 329,
+            "height": 19
+          }
+        ],
+        "smallTargetCount": 7,
+        "documentHeight": 6719,
+        "domElements": 349,
+        "performance": {
+          "ttfbMs": 6,
+          "domContentLoadedMs": 25,
+          "loadEventMs": 26,
+          "documentTransferBytes": 300,
+          "resourceCount": 16,
+          "resourceTransferBytes": 4200,
+          "scriptCount": 4,
+          "cssCount": 1,
+          "imageCount": 2,
+          "firstPaintMs": 68,
+          "firstContentfulPaintMs": 68,
+          "longTaskCount": 0,
+          "longTaskDurationMs": 0
+        }
+      },
+      "errors": [],
+      "failures": [],
+      "warnings": [
+        "7 visible controls are smaller than 36px in one dimension."
+      ],
+      "screenshot": "quality/screenshots/desktop-home.png"
+    },
+    {
+      "route": "/programs",
+      "viewport": "desktop",
+      "audit": {
+        "url": "http://127.0.0.1:4773/programs",
+        "title": "Programs | The Black Wolf Studio",
+        "mainCount": 1,
+        "h1Count": 1,
+        "horizontalOverflow": 0,
+        "emptyInteractiveNames": [],
+        "unlabeledFields": [],
+        "imagesWithoutAlt": [],
+        "duplicateIds": [],
+        "smallTargets": [
+          {
+            "tag": "a",
+            "name": "Programs",
+            "width": 230,
+            "height": 19
+          },
+          {
+            "tag": "a",
+            "name": "Events",
+            "width": 230,
+            "height": 19
+          },
+          {
+            "tag": "a",
+            "name": "Private training",
+            "width": 230,
+            "height": 19
+          },
+          {
+            "tag": "a",
+            "name": "Membership",
+            "width": 230,
+            "height": 19
+          },
+          {
+            "tag": "a",
+            "name": "Member login",
+            "width": 230,
+            "height": 19
+          },
+          {
+            "tag": "a",
+            "name": "contact@theblackwolf.studio",
+            "width": 329,
+            "height": 19
+          }
+        ],
+        "smallTargetCount": 6,
+        "documentHeight": 3457,
+        "domElements": 218,
+        "performance": {
+          "ttfbMs": 6,
+          "domContentLoadedMs": 33,
+          "loadEventMs": 34,
+          "documentTransferBytes": 300,
+          "resourceCount": 14,
+          "resourceTransferBytes": 3900,
+          "scriptCount": 4,
+          "cssCount": 1,
+          "imageCount": 1,
+          "firstPaintMs": 68,
+          "firstContentfulPaintMs": 68,
+          "longTaskCount": 0,
+          "longTaskDurationMs": 0
+        }
+      },
+      "errors": [],
+      "failures": [],
+      "warnings": [
+        "6 visible controls are smaller than 36px in one dimension."
+      ],
+      "screenshot": "quality/screenshots/desktop-programs.png"
+    },
+    {
+      "route": "/events",
+      "viewport": "desktop",
+      "audit": {
+        "url": "http://127.0.0.1:4773/events",
+        "title": "Events | The Black Wolf Studio",
+        "mainCount": 1,
+        "h1Count": 1,
+        "horizontalOverflow": 0,
+        "emptyInteractiveNames": [],
+        "unlabeledFields": [],
+        "imagesWithoutAlt": [],
+        "duplicateIds": [],
+        "smallTargets": [
+          {
+            "tag": "a",
+            "name": "Programs",
+            "width": 230,
+            "height": 19
+          },
+          {
+            "tag": "a",
+            "name": "Events",
+            "width": 230,
+            "height": 19
+          },
+          {
+            "tag": "a",
+            "name": "Private training",
+            "width": 230,
+            "height": 19
+          },
+          {
+            "tag": "a",
+            "name": "Membership",
+            "width": 230,
+            "height": 19
+          },
+          {
+            "tag": "a",
+            "name": "Member login",
+            "width": 230,
+            "height": 19
+          },
+          {
+            "tag": "a",
+            "name": "contact@theblackwolf.studio",
+            "width": 329,
+            "height": 19
+          }
+        ],
+        "smallTargetCount": 6,
+        "documentHeight": 2518,
+        "domElements": 111,
+        "performance": {
+          "ttfbMs": 7,
+          "domContentLoadedMs": 37,
+          "loadEventMs": 37,
+          "documentTransferBytes": 300,
+          "resourceCount": 16,
+          "resourceTransferBytes": 4200,
+          "scriptCount": 5,
+          "cssCount": 1,
+          "imageCount": 1,
+          "firstPaintMs": 44,
+          "firstContentfulPaintMs": 72,
+          "longTaskCount": 0,
+          "longTaskDurationMs": 0
+        }
+      },
+      "errors": [],
+      "failures": [],
+      "warnings": [
+        "6 visible controls are smaller than 36px in one dimension."
+      ],
+      "screenshot": "quality/screenshots/desktop-events.png"
+    },
+    {
+      "route": "/membership",
+      "viewport": "desktop",
+      "audit": {
+        "url": "http://127.0.0.1:4773/membership",
+        "title": "Membership | The Black Wolf Studio",
+        "mainCount": 1,
+        "h1Count": 1,
+        "horizontalOverflow": 0,
+        "emptyInteractiveNames": [],
+        "unlabeledFields": [],
+        "imagesWithoutAlt": [],
+        "duplicateIds": [],
+        "smallTargets": [
+          {
+            "tag": "a",
+            "name": "Programs",
+            "width": 230,
+            "height": 19
+          },
+          {
+            "tag": "a",
+            "name": "Events",
+            "width": 230,
+            "height": 19
+          },
+          {
+            "tag": "a",
+            "name": "Private training",
+            "width": 230,
+            "height": 19
+          },
+          {
+            "tag": "a",
+            "name": "Membership",
+            "width": 230,
+            "height": 19
+          },
+          {
+            "tag": "a",
+            "name": "Member login",
+            "width": 230,
+            "height": 19
+          },
+          {
+            "tag": "a",
+            "name": "contact@theblackwolf.studio",
+            "width": 329,
+            "height": 19
+          }
+        ],
+        "smallTargetCount": 6,
+        "documentHeight": 2737,
+        "domElements": 164,
+        "performance": {
+          "ttfbMs": 5,
+          "domContentLoadedMs": 29,
+          "loadEventMs": 29,
+          "documentTransferBytes": 300,
+          "resourceCount": 15,
+          "resourceTransferBytes": 4200,
+          "scriptCount": 5,
+          "cssCount": 1,
+          "imageCount": 1,
+          "firstPaintMs": 64,
+          "firstContentfulPaintMs": 76,
+          "longTaskCount": 0,
+          "longTaskDurationMs": 0
+        }
+      },
+      "errors": [],
+      "failures": [],
+      "warnings": [
+        "6 visible controls are smaller than 36px in one dimension."
+      ],
+      "screenshot": "quality/screenshots/desktop-membership.png"
+    },
+    {
+      "route": "/private-training",
+      "viewport": "desktop",
+      "audit": {
+        "url": "http://127.0.0.1:4773/private-training",
+        "title": "Private training | The Black Wolf Studio",
+        "mainCount": 1,
+        "h1Count": 1,
+        "horizontalOverflow": 0,
+        "emptyInteractiveNames": [],
+        "unlabeledFields": [],
+        "imagesWithoutAlt": [],
+        "duplicateIds": [],
+        "smallTargets": [
+          {
+            "tag": "a",
+            "name": "Programs",
+            "width": 230,
+            "height": 19
+          },
+          {
+            "tag": "a",
+            "name": "Events",
+            "width": 230,
+            "height": 19
+          },
+          {
+            "tag": "a",
+            "name": "Private training",
+            "width": 230,
+            "height": 19
+          },
+          {
+            "tag": "a",
+            "name": "Membership",
+            "width": 230,
+            "height": 19
+          },
+          {
+            "tag": "a",
+            "name": "Member login",
+            "width": 230,
+            "height": 19
+          },
+          {
+            "tag": "a",
+            "name": "contact@theblackwolf.studio",
+            "width": 329,
+            "height": 19
+          }
+        ],
+        "smallTargetCount": 6,
+        "documentHeight": 2715,
+        "domElements": 144,
+        "performance": {
+          "ttfbMs": 7,
+          "domContentLoadedMs": 30,
+          "loadEventMs": 31,
+          "documentTransferBytes": 300,
+          "resourceCount": 16,
+          "resourceTransferBytes": 4200,
+          "scriptCount": 5,
+          "cssCount": 1,
+          "imageCount": 1,
+          "firstPaintMs": 52,
+          "firstContentfulPaintMs": 68,
+          "longTaskCount": 0,
+          "longTaskDurationMs": 0
+        }
+      },
+      "errors": [],
+      "failures": [],
+      "warnings": [
+        "6 visible controls are smaller than 36px in one dimension."
+      ],
+      "screenshot": "quality/screenshots/desktop-private-training.png"
+    },
+    {
+      "route": "/contact",
+      "viewport": "desktop",
+      "audit": {
+        "url": "http://127.0.0.1:4773/contact",
+        "title": "Contact | The Black Wolf Studio",
+        "mainCount": 1,
+        "h1Count": 1,
+        "horizontalOverflow": 0,
+        "emptyInteractiveNames": [],
+        "unlabeledFields": [],
+        "imagesWithoutAlt": [],
+        "duplicateIds": [],
+        "smallTargets": [
+          {
+            "tag": "a",
+            "name": "Programs",
+            "width": 230,
+            "height": 19
+          },
+          {
+            "tag": "a",
+            "name": "Events",
+            "width": 230,
+            "height": 19
+          },
+          {
+            "tag": "a",
+            "name": "Private training",
+            "width": 230,
+            "height": 19
+          },
+          {
+            "tag": "a",
+            "name": "Membership",
+            "width": 230,
+            "height": 19
+          },
+          {
+            "tag": "a",
+            "name": "Member login",
+            "width": 230,
+            "height": 19
+          },
+          {
+            "tag": "a",
+            "name": "contact@theblackwolf.studio",
+            "width": 329,
+            "height": 19
+          }
+        ],
+        "smallTargetCount": 6,
+        "documentHeight": 2036,
+        "domElements": 126,
+        "performance": {
+          "ttfbMs": 6,
+          "domContentLoadedMs": 30,
+          "loadEventMs": 31,
+          "documentTransferBytes": 300,
+          "resourceCount": 13,
+          "resourceTransferBytes": 3600,
+          "scriptCount": 3,
+          "cssCount": 1,
+          "imageCount": 1,
+          "firstPaintMs": 68,
+          "firstContentfulPaintMs": 68,
+          "longTaskCount": 0,
+          "longTaskDurationMs": 0
+        }
+      },
+      "errors": [],
+      "failures": [],
+      "warnings": [
+        "6 visible controls are smaller than 36px in one dimension."
+      ],
+      "screenshot": "quality/screenshots/desktop-contact.png"
+    },
+    {
+      "route": "/login",
+      "viewport": "desktop",
+      "audit": {
+        "url": "http://127.0.0.1:4773/login",
+        "title": "Member login | The Black Wolf Studio",
+        "mainCount": 1,
+        "h1Count": 1,
+        "horizontalOverflow": 0,
+        "emptyInteractiveNames": [],
+        "unlabeledFields": [],
+        "imagesWithoutAlt": [],
+        "duplicateIds": [],
+        "smallTargets": [
+          {
+            "tag": "a",
+            "name": "Programs",
+            "width": 230,
+            "height": 19
+          },
+          {
+            "tag": "a",
+            "name": "Events",
+            "width": 230,
+            "height": 19
+          },
+          {
+            "tag": "a",
+            "name": "Private training",
+            "width": 230,
+            "height": 19
+          },
+          {
+            "tag": "a",
+            "name": "Membership",
+            "width": 230,
+            "height": 19
+          },
+          {
+            "tag": "a",
+            "name": "Member login",
+            "width": 230,
+            "height": 19
+          },
+          {
+            "tag": "a",
+            "name": "contact@theblackwolf.studio",
+            "width": 329,
+            "height": 19
+          }
+        ],
+        "smallTargetCount": 6,
+        "documentHeight": 1252,
+        "domElements": 103,
+        "performance": {
+          "ttfbMs": 4,
+          "domContentLoadedMs": 25,
+          "loadEventMs": 25,
+          "documentTransferBytes": 300,
+          "resourceCount": 12,
+          "resourceTransferBytes": 3300,
+          "scriptCount": 2,
+          "cssCount": 1,
+          "imageCount": 1,
+          "firstPaintMs": 64,
+          "firstContentfulPaintMs": 64,
+          "longTaskCount": 0,
+          "longTaskDurationMs": 0
+        }
+      },
+      "errors": [],
+      "failures": [],
+      "warnings": [
+        "6 visible controls are smaller than 36px in one dimension."
+      ],
+      "screenshot": "quality/screenshots/desktop-login.png"
+    },
+    {
+      "route": "/member",
+      "viewport": "desktop",
+      "audit": {
+        "url": "http://127.0.0.1:4773/login",
+        "title": "Member login | The Black Wolf Studio",
+        "mainCount": 1,
+        "h1Count": 1,
+        "horizontalOverflow": 0,
+        "emptyInteractiveNames": [],
+        "unlabeledFields": [],
+        "imagesWithoutAlt": [],
+        "duplicateIds": [],
+        "smallTargets": [
+          {
+            "tag": "a",
+            "name": "Programs",
+            "width": 230,
+            "height": 19
+          },
+          {
+            "tag": "a",
+            "name": "Events",
+            "width": 230,
+            "height": 19
+          },
+          {
+            "tag": "a",
+            "name": "Private training",
+            "width": 230,
+            "height": 19
+          },
+          {
+            "tag": "a",
+            "name": "Membership",
+            "width": 230,
+            "height": 19
+          },
+          {
+            "tag": "a",
+            "name": "Member login",
+            "width": 230,
+            "height": 19
+          },
+          {
+            "tag": "a",
+            "name": "contact@theblackwolf.studio",
+            "width": 329,
+            "height": 19
+          }
+        ],
+        "smallTargetCount": 6,
+        "documentHeight": 1252,
+        "domElements": 103,
+        "performance": {
+          "ttfbMs": 5,
+          "domContentLoadedMs": 25,
+          "loadEventMs": 26,
+          "documentTransferBytes": 300,
+          "resourceCount": 12,
+          "resourceTransferBytes": 3300,
+          "scriptCount": 2,
+          "cssCount": 1,
+          "imageCount": 1,
+          "firstPaintMs": 52,
+          "firstContentfulPaintMs": 52,
+          "longTaskCount": 0,
+          "longTaskDurationMs": 0
+        }
+      },
+      "errors": [],
+      "failures": [],
+      "warnings": [
+        "6 visible controls are smaller than 36px in one dimension."
+      ],
+      "screenshot": "quality/screenshots/desktop-member.png"
+    },
+    {
+      "route": "/instructor",
+      "viewport": "desktop",
+      "audit": {
+        "url": "http://127.0.0.1:4773/login",
+        "title": "Member login | The Black Wolf Studio",
+        "mainCount": 1,
+        "h1Count": 1,
+        "horizontalOverflow": 0,
+        "emptyInteractiveNames": [],
+        "unlabeledFields": [],
+        "imagesWithoutAlt": [],
+        "duplicateIds": [],
+        "smallTargets": [
+          {
+            "tag": "a",
+            "name": "Programs",
+            "width": 230,
+            "height": 19
+          },
+          {
+            "tag": "a",
+            "name": "Events",
+            "width": 230,
+            "height": 19
+          },
+          {
+            "tag": "a",
+            "name": "Private training",
+            "width": 230,
+            "height": 19
+          },
+          {
+            "tag": "a",
+            "name": "Membership",
+            "width": 230,
+            "height": 19
+          },
+          {
+            "tag": "a",
+            "name": "Member login",
+            "width": 230,
+            "height": 19
+          },
+          {
+            "tag": "a",
+            "name": "contact@theblackwolf.studio",
+            "width": 329,
+            "height": 19
+          }
+        ],
+        "smallTargetCount": 6,
+        "documentHeight": 1252,
+        "domElements": 103,
+        "performance": {
+          "ttfbMs": 5,
+          "domContentLoadedMs": 26,
+          "loadEventMs": 27,
+          "documentTransferBytes": 300,
+          "resourceCount": 12,
+          "resourceTransferBytes": 3300,
+          "scriptCount": 2,
+          "cssCount": 1,
+          "imageCount": 1,
+          "firstPaintMs": 44,
+          "firstContentfulPaintMs": 44,
+          "longTaskCount": 0,
+          "longTaskDurationMs": 0
+        }
+      },
+      "errors": [],
+      "failures": [],
+      "warnings": [
+        "6 visible controls are smaller than 36px in one dimension."
+      ],
+      "screenshot": "quality/screenshots/desktop-instructor.png"
+    },
+    {
+      "route": "/this-route-does-not-exist",
+      "viewport": "desktop",
+      "audit": {
+        "url": "http://127.0.0.1:4773/this-route-does-not-exist",
+        "title": "Page not found | The Black Wolf Studio",
+        "mainCount": 1,
+        "h1Count": 1,
+        "horizontalOverflow": 0,
+        "emptyInteractiveNames": [],
+        "unlabeledFields": [],
+        "imagesWithoutAlt": [],
+        "duplicateIds": [],
+        "smallTargets": [
+          {
+            "tag": "a",
+            "name": "Programs",
+            "width": 230,
+            "height": 19
+          },
+          {
+            "tag": "a",
+            "name": "Events",
+            "width": 230,
+            "height": 19
+          },
+          {
+            "tag": "a",
+            "name": "Private training",
+            "width": 230,
+            "height": 19
+          },
+          {
+            "tag": "a",
+            "name": "Membership",
+            "width": 230,
+            "height": 19
+          },
+          {
+            "tag": "a",
+            "name": "Member login",
+            "width": 230,
+            "height": 19
+          },
+          {
+            "tag": "a",
+            "name": "contact@theblackwolf.studio",
+            "width": 329,
+            "height": 19
+          }
+        ],
+        "smallTargetCount": 6,
+        "documentHeight": 1492,
+        "domElements": 92,
+        "performance": {
+          "ttfbMs": 5,
+          "domContentLoadedMs": 25,
+          "loadEventMs": 26,
+          "documentTransferBytes": 300,
+          "resourceCount": 12,
+          "resourceTransferBytes": 3300,
+          "scriptCount": 2,
+          "cssCount": 1,
+          "imageCount": 1,
+          "firstPaintMs": 56,
+          "firstContentfulPaintMs": 76,
+          "longTaskCount": 0,
+          "longTaskDurationMs": 0
+        }
+      },
+      "errors": [],
+      "failures": [],
+      "warnings": [
+        "6 visible controls are smaller than 36px in one dimension."
+      ],
+      "screenshot": "quality/screenshots/desktop-this-route-does-not-exist.png"
+    }
+  ]
+}

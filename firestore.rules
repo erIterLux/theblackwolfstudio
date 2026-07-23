@@ -1,4 +1,5 @@
 rules_version = '2';
+
 service cloud.firestore {
   match /databases/{database}/documents {
     function signedIn() {
@@ -9,24 +10,189 @@ service cloud.firestore {
       return signedIn() && request.auth.uid == userId;
     }
 
+    function isInstructor() {
+      return signedIn()
+        && (request.auth.token.role == 'instructor'
+          || request.auth.token.role == 'admin'
+          || request.auth.token.admin == true);
+    }
+
     match /inquiries/{inquiryId} {
       allow create: if request.resource.data.keys().hasOnly([
-        'name', 'email', 'phone', 'interest', 'message', 'createdAt', 'status', 'source'
+        'name',
+        'email',
+        'phone',
+        'interest',
+        'message',
+        'createdAt',
+        'status',
+        'source'
       ])
       && request.resource.data.name is string
       && request.resource.data.email is string
       && request.resource.data.interest is string
       && request.resource.data.status == 'new';
+
       allow read, update, delete: if false;
     }
 
     match /users/{userId} {
-      allow read, create, update: if isOwner(userId);
+      allow read: if isOwner(userId);
+      allow create: if isOwner(userId)
+        && (!request.resource.data.keys().hasAny(['role'])
+          || request.resource.data.role == 'member');
+      allow update: if isOwner(userId)
+        && request.resource.data.role == resource.data.role;
       allow delete: if false;
     }
 
-    match /users/{userId}/{document=**} {
-      allow read, write: if isOwner(userId);
+    match /users/{userId}/wolfGuideConversations/{conversationId} {
+      allow read: if isOwner(userId);
+      allow write: if false;
+    }
+
+    match /users/{userId}/wolfGuideConversations/{conversationId}/messages/{messageId} {
+      allow read: if isOwner(userId);
+      allow write: if false;
+    }
+
+    match /memberships/{userId} {
+      allow read: if isOwner(userId);
+      allow write: if false;
+    }
+
+    match /progressionProfiles/{userId} {
+      allow read: if isOwner(userId) || isInstructor();
+      allow write: if false;
+
+      match /levels/{levelId} {
+        allow read: if isOwner(userId) || isInstructor();
+        allow write: if false;
+
+        match /categories/{categoryId} {
+          allow read: if isOwner(userId) || isInstructor();
+          allow write: if false;
+
+          match /evidence/{evidenceId} {
+            allow read: if isOwner(userId) || isInstructor();
+            allow write: if false;
+          }
+
+          match /feedback/{feedbackId} {
+            allow read: if isOwner(userId) || isInstructor();
+            allow write: if false;
+          }
+        }
+      }
+    }
+
+    match /progressionReviews/{reviewId} {
+      allow read: if isInstructor()
+        || (signedIn() && resource.data.memberUid == request.auth.uid);
+      allow write: if false;
+    }
+
+    match /progressionContent/{contentId} {
+      allow read: if isInstructor()
+        || (signedIn()
+          && resource.data.status == 'published'
+          && resource.data.visibility == 'members');
+      allow write: if false;
+    }
+
+    match /studioOffers/{offerId} {
+      allow read: if resource.data.status == 'published' || isInstructor();
+      allow write: if false;
+    }
+
+    match /studioDiscounts/{discountId} {
+      allow read, write: if false;
+    }
+
+    match /studioOrders/{orderId} {
+      allow read: if isInstructor()
+        || (signedIn() && resource.data.uid == request.auth.uid);
+      allow write: if false;
+    }
+
+    match /privateTrainingPurchases/{purchaseId} {
+      allow read: if isInstructor()
+        || (signedIn() && resource.data.uid == request.auth.uid);
+      allow write: if false;
+
+      match /sessionHistory/{historyId} {
+        allow read: if isInstructor()
+          || (signedIn()
+            && get(/databases/$(database)/documents/privateTrainingPurchases/$(purchaseId)).data.uid == request.auth.uid);
+        allow write: if false;
+      }
+    }
+
+    match /instructorAvailability/{instructorUid} {
+      allow read: if isInstructor();
+      allow write: if false;
+
+      match /overrides/{overrideId} {
+        allow read: if isInstructor();
+        allow write: if false;
+      }
+    }
+
+    match /privateTrainingBookings/{bookingId} {
+      allow read: if isInstructor()
+        || (signedIn() && resource.data.uid == request.auth.uid);
+      allow write: if false;
+
+      match /history/{historyId} {
+        allow read: if isInstructor()
+          || (signedIn()
+            && get(/databases/$(database)/documents/privateTrainingBookings/$(bookingId)).data.uid == request.auth.uid);
+        allow write: if false;
+      }
+    }
+
+    match /privateTrainingBookingDays/{dayId} {
+      allow read, write: if false;
+    }
+
+    match /events/{eventId} {
+      allow read: if resource.data.status == 'published' || isInstructor();
+      allow write: if false;
+    }
+
+    match /eventReservations/{reservationId} {
+      allow read, write: if false;
+    }
+
+    match /eventRegistrations/{registrationId} {
+      allow read: if isInstructor()
+        || (signedIn() && resource.data.uid == request.auth.uid);
+      allow write: if false;
+    }
+
+    match /eventParticipants/{participantId} {
+      allow read: if isInstructor()
+        || (signedIn()
+          && (resource.data.purchaserUid == request.auth.uid
+            || resource.data.memberUid == request.auth.uid));
+      allow write: if false;
+    }
+
+    match /eventWaivers/{waiverId} {
+      allow read: if isInstructor();
+      allow write: if false;
+    }
+
+    match /eventWaiverAccess/{accessId} {
+      allow read, write: if false;
+    }
+
+    match /stripeEvents/{eventId} {
+      allow read, write: if false;
+    }
+
+    match /wolfGuideUsage/{userId} {
+      allow read, write: if false;
     }
   }
 }

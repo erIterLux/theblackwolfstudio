@@ -1,0 +1,58 @@
+.route-loading {
+  display: grid;
+  width: min(1180px, calc(100% - 2rem));
+  min-height: 48vh;
+  align-content: start;
+  gap: 1.2rem;
+  margin: 0 auto;
+  padding: clamp(3rem, 8vw, 7rem) 0;
+}
+
+.route-loading--workspace {
+  width: 100%;
+  min-height: min(72vh, 780px);
+  padding: clamp(1.5rem, 4vw, 3rem);
+}
+
+.route-loading__inner {
+  display: inline-flex;
+  align-items: center;
+  gap: .75rem;
+  color: inherit;
+  font-weight: 800;
+}
+
+.route-loading__spinner {
+  width: 24px;
+  height: 24px;
+  border: 3px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: route-loading-spin .75s linear infinite;
+}
+
+.route-loading__skeleton {
+  display: grid;
+  gap: .8rem;
+  max-width: 760px;
+}
+
+.route-loading__skeleton span {
+  display: block;
+  height: 18px;
+  background: currentColor;
+  border-radius: 2px;
+  opacity: .1;
+}
+
+.route-loading__skeleton span:nth-child(1) { width: 68%; height: 42px; }
+.route-loading__skeleton span:nth-child(2) { width: 92%; }
+.route-loading__skeleton span:nth-child(3) { width: 76%; }
+
+@keyframes route-loading-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .route-loading__spinner { animation: none; border-right-color: currentColor; }
+}
