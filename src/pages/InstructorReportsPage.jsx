@@ -1,8 +1,11 @@
 import {
     AlertTriangle,
     ArrowLeft,
+    ArrowLeftRight,
     BarChart3,
     CalendarCheck2,
+    ChevronLeft,
+    ChevronRight,
     CheckCircle2,
     CircleDollarSign,
     Download,
@@ -15,7 +18,13 @@ import {
     Users,
     Wrench,
 } from 'lucide-react';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import {
+    useCallback,
+    useEffect,
+    useMemo,
+    useRef,
+    useState,
+} from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import useStudioRole from '../hooks/useStudioRole';
 import {
@@ -122,11 +131,106 @@ function Empty({ children = 'No records are available for this date range.' }) {
     return <p className="report-empty">{children}</p>;
 }
 
+function ReportScrollRegion({
+    ariaLabel,
+    children,
+    className,
+    guidance = 'Swipe or use the arrow controls to see the full report.',
+}) {
+    const regionRef = useRef(null);
+    const [position, setPosition] = useState({
+        canScrollLeft: false,
+        canScrollRight: false,
+    });
+
+    const updatePosition = useCallback(() => {
+        const region = regionRef.current;
+        if (!region) return;
+        const maxScrollLeft = Math.max(0, region.scrollWidth - region.clientWidth);
+        const next = {
+            canScrollLeft: region.scrollLeft > 2,
+            canScrollRight: region.scrollLeft < maxScrollLeft - 2,
+        };
+        setPosition((current) => (
+            current.canScrollLeft === next.canScrollLeft
+            && current.canScrollRight === next.canScrollRight
+                ? current
+                : next
+        ));
+    }, []);
+
+    useEffect(() => {
+        const region = regionRef.current;
+        if (!region) return undefined;
+
+        const frame = window.requestAnimationFrame(updatePosition);
+        const observer = new ResizeObserver(updatePosition);
+        observer.observe(region);
+        [...region.children].forEach((child) => observer.observe(child));
+        window.addEventListener('resize', updatePosition);
+
+        return () => {
+            window.cancelAnimationFrame(frame);
+            observer.disconnect();
+            window.removeEventListener('resize', updatePosition);
+        };
+    }, [children, updatePosition]);
+
+    const move = (direction) => {
+        const region = regionRef.current;
+        if (!region) return;
+        region.scrollBy({
+            left: direction * Math.max(240, region.clientWidth * 0.78),
+            behavior: 'smooth',
+        });
+    };
+
+    return (
+        <div className="report-scroll-shell">
+            <div className="report-scroll-controls">
+                <span><ArrowLeftRight size={17} aria-hidden="true" /> {guidance}</span>
+                <div>
+                    <button
+                        type="button"
+                        onClick={() => move(-1)}
+                        disabled={!position.canScrollLeft}
+                        aria-label={`Scroll ${ariaLabel} left`}
+                    >
+                        <ChevronLeft size={20} aria-hidden="true" />
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => move(1)}
+                        disabled={!position.canScrollRight}
+                        aria-label={`Scroll ${ariaLabel} right`}
+                    >
+                        <ChevronRight size={20} aria-hidden="true" />
+                    </button>
+                </div>
+            </div>
+            <div
+                ref={regionRef}
+                className={className}
+                role="region"
+                aria-label={ariaLabel}
+                tabIndex={0}
+                onScroll={updatePosition}
+            >
+                {children}
+            </div>
+        </div>
+    );
+}
+
 function RevenueChart({ series = [] }) {
     const max = Math.max(1, ...series.map((item) => item.totalCents || 0));
     if (!series.length) return <Empty />;
     return (
-        <div className="report-chart" aria-label="Revenue over time">
+        <ReportScrollRegion
+            ariaLabel="Revenue over time chart"
+            className="report-chart"
+            guidance="Swipe the chart or use the arrows to review every date."
+        >
             {series.map((item) => (
                 <div className="report-chart__column" key={`${item.label}-${item.start}`}>
                     <div className="report-chart__value">{formatMoney(item.totalCents)}</div>
@@ -138,7 +242,7 @@ function RevenueChart({ series = [] }) {
                     <span>{item.label}</span>
                 </div>
             ))}
-        </div>
+        </ReportScrollRegion>
     );
 }
 
@@ -545,12 +649,9 @@ export default function InstructorReportsPage() {
                             </label>
                             <small>{filteredEvents.length} of {events.events?.length || 0} events shown</small>
                         </div>
-                        <p className="table-scroll-hint">Scroll horizontally to see every column.</p>
-                        <div
+                        <ReportScrollRegion
+                            ariaLabel="Event performance table"
                             className="report-table-wrap"
-                            role="region"
-                            aria-label="Event performance table"
-                            tabIndex={0}
                         >
                             <table className="report-table">
                                 <caption>Event registration, waiver, attendance, and revenue summary</caption>
@@ -558,7 +659,7 @@ export default function InstructorReportsPage() {
                                 <tbody>{filteredEvents.map((event) => <tr key={event.id}><td><strong>{event.title}</strong><span>{formatDate(event.startsAt)} · {readable(event.status)}</span></td><td>{event.capacity || 'Open'}</td><td>{event.participants}</td><td>{event.waiversComplete}/{event.participants}</td><td>{event.checkedIn}</td><td>{event.noShows}</td><td>{event.attendanceRate}%</td><td>{formatMoney(event.netCents)}</td></tr>)}</tbody>
                             </table>
                             {!filteredEvents.length && <Empty>{tableQuery ? 'No events match this search.' : 'No events are available for this date range.'}</Empty>}
-                        </div>
+                        </ReportScrollRegion>
                     </div>
                 )}
 
@@ -574,12 +675,9 @@ export default function InstructorReportsPage() {
                         </div>
                         <article className="report-panel">
                             <h2>Instructor workload</h2>
-                            <p className="table-scroll-hint">Scroll horizontally to see every column.</p>
-                            <div
+                            <ReportScrollRegion
+                                ariaLabel="Instructor workload table"
                                 className="report-table-wrap report-table-wrap--flat"
-                                role="region"
-                                aria-label="Instructor workload table"
-                                tabIndex={0}
                             >
                                 <table className="report-table">
                                     <caption>Scheduled and completed private-training workload</caption>
@@ -587,7 +685,7 @@ export default function InstructorReportsPage() {
                                     <tbody>{privateTraining.instructors?.map((instructor) => <tr key={instructor.instructorUid}><td><strong>{instructor.instructorName}</strong></td><td>{instructor.sessionsScheduled}</td><td>{instructor.sessionsCompleted}</td><td>{instructor.teachingHours}</td><td>{instructor.availabilityUsed == null ? 'Not configured' : `${instructor.availabilityUsed}%`}</td><td>{instructor.cancellations}</td><td>{instructor.noShows}</td></tr>)}</tbody>
                                 </table>
                                 {!privateTraining.instructors?.length && <Empty />}
-                            </div>
+                            </ReportScrollRegion>
                         </article>
                     </div>
                 )}
@@ -625,12 +723,9 @@ export default function InstructorReportsPage() {
                             </label>
                             <small>{filteredAttendance.length} of {attendance.rows?.length || 0} loaded records shown</small>
                         </div>
-                        <p className="table-scroll-hint">Scroll horizontally to see every column.</p>
-                        <div
+                        <ReportScrollRegion
+                            ariaLabel="Attendance records table"
                             className="report-table-wrap"
-                            role="region"
-                            aria-label="Attendance records table"
-                            tabIndex={0}
                         >
                             <table className="report-table">
                                 <caption>Combined event and private-training attendance records</caption>
@@ -638,7 +733,7 @@ export default function InstructorReportsPage() {
                                 <tbody>{filteredAttendance.map((row) => <tr key={row.id}><td>{formatDate(row.date, true)}</td><td>{row.type === 'event' ? 'Event' : 'Private training'}</td><td>{row.participantName}</td><td>{row.title}</td><td>{row.instructorName || '—'}</td><td><span className={`report-status is-${row.status}`}>{readable(row.status)}</span></td></tr>)}</tbody>
                             </table>
                             {!filteredAttendance.length && <Empty>{tableQuery || attendanceType !== 'all' || attendanceStatus !== 'all' ? 'No loaded attendance records match these filters.' : 'No attendance records are available for this date range.'}</Empty>}
-                        </div>
+                        </ReportScrollRegion>
                         {data.page && (
                             <div className="report-pagination">
                                 <span>Showing {attendance.rows?.length || 0} of {data.page.totalRows || 0} records</span>

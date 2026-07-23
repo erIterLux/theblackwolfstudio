@@ -139,8 +139,16 @@
 
 .report-section-stack {
     display: grid;
+    min-width: 0;
     gap: 1.25rem;
     padding-bottom: 4rem;
+}
+
+.report-section-stack > *,
+.report-metric-grid,
+.report-two-column,
+.report-three-column {
+    min-width: 0;
 }
 
 .report-metric-grid {
@@ -197,6 +205,7 @@
     }
 
 .report-panel {
+    min-width: 0;
     padding: clamp(1.1rem, 2.6vw, 1.65rem);
 }
 
@@ -258,10 +267,17 @@
 
 .report-chart {
     display: flex;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
     align-items: end;
     gap: clamp(.35rem, 1.2vw, .8rem);
     min-height: 220px;
     overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    scrollbar-gutter: stable;
+    touch-action: pan-x pan-y;
+    -webkit-overflow-scrolling: touch;
     padding: 2.5rem .4rem .5rem;
     border-bottom: 1px solid var(--gray-200);
 }
@@ -422,9 +438,15 @@
 }
 
 .report-table-wrap {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
     overflow-x: auto;
+    overflow-y: hidden;
     overscroll-behavior-inline: contain;
     scrollbar-gutter: stable;
+    touch-action: pan-x pan-y;
+    -webkit-overflow-scrolling: touch;
 }
 
 .report-table-wrap:focus-visible {
@@ -435,6 +457,76 @@
 .report-table-wrap--flat {
     border: 0;
     box-shadow: none;
+}
+
+.reports-page,
+.reports-page > .container,
+.report-scroll-shell {
+    min-width: 0;
+    max-width: 100%;
+}
+
+.report-scroll-shell {
+    display: grid;
+    width: 100%;
+    gap: .5rem;
+}
+
+.report-scroll-controls {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    justify-content: space-between;
+    gap: .75rem;
+}
+
+.report-scroll-controls > span {
+    display: inline-flex;
+    min-width: 0;
+    align-items: center;
+    gap: .42rem;
+    color: var(--ui-on-dark-muted, #b9c2cc);
+    font-size: .82rem;
+    line-height: 1.35;
+}
+
+.report-panel .report-scroll-controls > span {
+    color: var(--gray-600, #59636d);
+}
+
+.report-scroll-controls > span svg {
+    flex: 0 0 auto;
+}
+
+.report-scroll-controls > div {
+    display: flex;
+    flex: 0 0 auto;
+    gap: .35rem;
+}
+
+.report-scroll-controls button {
+    display: grid;
+    width: 2.65rem;
+    height: 2.65rem;
+    padding: 0;
+    place-items: center;
+    color: #263b50;
+    background: #fff;
+    border: 1px solid var(--gray-300);
+    border-radius: .55rem;
+    cursor: pointer;
+}
+
+.report-scroll-controls button:hover:not(:disabled),
+.report-scroll-controls button:focus-visible {
+    color: #fff;
+    background: #374e65;
+    border-color: #374e65;
+}
+
+.report-scroll-controls button:disabled {
+    opacity: .38;
+    cursor: not-allowed;
 }
 
 .report-table {
@@ -710,6 +802,14 @@
     .report-person-list small,
     .report-health-item em {
         text-align: left;
+    }
+
+    .report-scroll-controls {
+        align-items: flex-start;
+    }
+
+    .report-scroll-controls > span {
+        max-width: 13.5rem;
     }
 }
 

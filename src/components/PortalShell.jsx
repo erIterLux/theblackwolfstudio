@@ -2,6 +2,8 @@ import {
     ExternalLink,
     LogOut,
     Menu,
+    ShieldCheck,
+    UserRound,
     X,
 } from 'lucide-react';
 import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
@@ -131,6 +133,8 @@ export default function PortalShell({
     const displayName = useMemo(() => (
         user?.displayName || user?.email || 'Studio account'
     ), [user]);
+    const ModeIcon = mode === 'instructor' ? ShieldCheck : UserRound;
+    const SwitchIcon = mode === 'instructor' ? UserRound : ShieldCheck;
 
     const closeMenu = () => setMenuPathname('');
 
@@ -152,13 +156,27 @@ export default function PortalShell({
                         {menuOpen ? <X size={22} aria-hidden="true" /> : <Menu size={22} aria-hidden="true" />}
                     </button>
                     <Logo to={homePath} label={`${title} home`} />
-                    <span className="portal-topbar__mode">{title}</span>
+                    <span
+                        className="portal-topbar__mode"
+                        role="img"
+                        aria-label={`Current workspace: ${title}`}
+                        title={`Current workspace: ${title}`}
+                    >
+                        <ModeIcon size={18} aria-hidden="true" />
+                        <span className="portal-topbar__mode-label">{title}</span>
+                    </span>
                 </div>
 
                 <div className="portal-topbar__actions">
                     {switchLink && (
-                        <PrefetchLink className="portal-switch-link" to={switchLink.to}>
-                            {switchLink.label}
+                        <PrefetchLink
+                            className="portal-switch-link"
+                            to={switchLink.to}
+                            aria-label={switchLink.label}
+                            title={switchLink.label}
+                        >
+                            <SwitchIcon className="portal-switch-link__icon" size={19} aria-hidden="true" />
+                            <span className="portal-switch-link__label">{switchLink.label}</span>
                         </PrefetchLink>
                     )}
                     <NotificationBell to={notificationsPath} />
