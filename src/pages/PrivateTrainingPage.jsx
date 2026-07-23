@@ -6,7 +6,7 @@ import {
   Users,
 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import PrivateTrainingCheckoutForm from '../components/private-training/PrivateTrainingCheckoutForm';
 import SectionHeading from '../components/SectionHeading';
 import { listPrivateTrainingOffers } from '../services/privateTraining';
@@ -75,10 +75,13 @@ export default function PrivateTrainingPage() {
             build a focused plan around technique, self-defense, progression,
             movement, or regulation.
           </p>
+          <div className="page-hero__actions">
+            <a className="button button--light" href="#training-packages">View training packages</a>
+          </div>
         </div>
       </section>
 
-      <section className="section section--light private-training-page">
+      <section className="section section--light private-training-page" id="training-packages">
         <div className="container">
           {canceled && (
             <div className="commerce-notice" role="status">
@@ -108,10 +111,11 @@ export default function PrivateTrainingPage() {
                 <div className="empty-state-card">
                   <h2>Private training packages are being prepared.</h2>
                   <p>Contact the studio for current availability.</p>
+                  <Link className="button" to="/contact">Ask about private training</Link>
                 </div>
               )}
 
-              <div className="private-offer-grid">
+              <div className={`private-offer-grid${offers.length === 1 ? ' is-single' : ''}`}>
                 {offers.map((offer) => {
                   const config = offer.privateTraining || {};
                   return (

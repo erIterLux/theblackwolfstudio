@@ -22,11 +22,6 @@ function integer(value, min, max, fallback = min) {
     return Math.min(max, Math.max(min, parsed));
 }
 
-function cents(value, fallback = 0) {
-    const number = Number(value);
-    return Number.isFinite(number) ? Math.max(0, Math.round(number)) : fallback;
-}
-
 function requiredNonNegativeCents(value, fieldName) {
     if (value === '' || value === null || value === undefined) {
         throw new HttpsError('invalid-argument', `Enter ${fieldName}. Use 0 for a free event.`);

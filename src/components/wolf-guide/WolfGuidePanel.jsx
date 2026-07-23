@@ -62,16 +62,20 @@ function readStoredConversation(key) {
     }
 }
 
-export default function WolfGuidePanel({ memberState = '' }) {
-    const { user } = useAuth();
+function initialConversation(storageKey) {
+    const stored = storageKey ? readStoredConversation(storageKey) : null;
+    if (stored?.messages?.length) return stored;
+    return { conversationId: '', messages: [INTRO_MESSAGE] };
+}
+
+function WolfGuideConversation({ memberState, storageKey }) {
     const { canUseWolfGuide, loading } = useMembership();
-    const storageKey = user?.uid ? `black-wolf:wolf-guide:${user.uid}` : '';
-    const [conversationId, setConversationId] = useState('');
-    const [messages, setMessages] = useState([INTRO_MESSAGE]);
+    const [storedConversation] = useState(() => initialConversation(storageKey));
+    const [conversationId, setConversationId] = useState(storedConversation.conversationId);
+    const [messages, setMessages] = useState(storedConversation.messages);
     const [input, setInput] = useState('');
     const [sending, setSending] = useState(false);
     const [error, setError] = useState('');
-    const [hydratedKey, setHydratedKey] = useState('');
     const messagesRef = useRef(null);
     const requestRef = useRef(0);
 
@@ -79,19 +83,6 @@ export default function WolfGuidePanel({ memberState = '' }) {
 
     useEffect(() => {
         if (!storageKey) return;
-        const stored = readStoredConversation(storageKey);
-        if (stored?.messages?.length) {
-            setConversationId(stored.conversationId);
-            setMessages(stored.messages);
-        } else {
-            setConversationId('');
-            setMessages([INTRO_MESSAGE]);
-        }
-        setHydratedKey(storageKey);
-    }, [storageKey]);
-
-    useEffect(() => {
-        if (!storageKey || hydratedKey !== storageKey) return;
         try {
             window.localStorage.setItem(storageKey, JSON.stringify({
                 conversationId,
@@ -101,7 +92,7 @@ export default function WolfGuidePanel({ memberState = '' }) {
         } catch {
             // Conversation persistence is optional and must not block chat.
         }
-    }, [conversationId, hydratedKey, messages, storageKey]);
+    }, [conversationId, messages, storageKey]);
 
     useEffect(() => {
         const container = messagesRef.current;
@@ -240,5 +231,18 @@ export default function WolfGuidePanel({ memberState = '' }) {
             {error && <p className="form-error wolf-guide-error" role="alert">{error}</p>}
             <p className="wolf-guide-persistence-note">This conversation is saved on this device for seven days so you can return to it.</p>
         </article>
+    );
+}
+
+export default function WolfGuidePanel({ memberState = '' }) {
+    const { user } = useAuth();
+    const storageKey = user?.uid ? `black-wolf:wolf-guide:${user.uid}` : '';
+
+    return (
+        <WolfGuideConversation
+            key={storageKey || 'guest'}
+            memberState={memberState}
+            storageKey={storageKey}
+        />
     );
 }

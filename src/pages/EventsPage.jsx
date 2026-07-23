@@ -7,7 +7,7 @@ import {
     Users,
 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import EventCheckoutForm from '../components/events/EventCheckoutForm';
 import SectionHeading from '../components/SectionHeading';
 import { listPublishedEvents } from '../services/events';
@@ -93,10 +93,13 @@ export default function EventsPage() {
                         Register for practical workshops, special-topic training, and
                         community events. Membership is not required.
                     </p>
+                    <div className="page-hero__actions">
+                        <a className="button button--light" href="#upcoming-events">See upcoming events</a>
+                    </div>
                 </div>
             </section>
 
-            <section className="section section--light events-page">
+            <section className="section section--light events-page" id="upcoming-events">
                 <div className="container">
                     {canceled && (
                         <div className="commerce-notice" role="status">
@@ -119,7 +122,11 @@ export default function EventsPage() {
                                 <article className="empty-state-card">
                                     <CalendarDays size={38} aria-hidden="true" />
                                     <h2>No upcoming events are published yet.</h2>
-                                    <p>New workshops and special training dates will appear here.</p>
+                                    <p>Ask about the next workshop or join an intro session while new dates are being prepared.</p>
+                                    <div className="empty-state-card__actions">
+                                        <Link className="button" to="/contact">Ask about workshops</Link>
+                                        <Link className="button button--dark-ghost" to="/programs">Explore programs</Link>
+                                    </div>
                                 </article>
                             )}
 

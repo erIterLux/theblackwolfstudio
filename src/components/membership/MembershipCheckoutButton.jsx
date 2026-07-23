@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { startMembershipCheckout } from '../../services/membership';
 
-export default function MembershipCheckoutButton({ planKey, featured = false }) {
+export default function MembershipCheckoutButton({ planKey, planName, featured = false }) {
   const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -35,7 +35,7 @@ export default function MembershipCheckoutButton({ planKey, featured = false }) 
         onClick={beginCheckout}
         disabled={loading}
       >
-        {loading ? 'Opening checkout…' : user ? 'Choose this plan' : 'Sign in to join'}
+        {loading ? 'Opening checkout…' : `Choose ${planName || 'this plan'}`}
       </button>
       {error && <p className="form-error" role="alert">{error}</p>}
     </div>

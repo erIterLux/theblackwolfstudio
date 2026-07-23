@@ -5,6 +5,7 @@ import reactRefresh from 'eslint-plugin-react-refresh';
 
 const frontendFiles = ['src/**/*.{js,jsx}'];
 const functionFiles = ['functions/**/*.js'];
+const scriptFiles = ['scripts/**/*.mjs'];
 
 export default [
     {
@@ -68,6 +69,18 @@ export default [
                     argsIgnorePattern: '^_',
                 },
             ],
+        },
+    },
+
+    {
+        files: scriptFiles,
+        languageOptions: {
+            ecmaVersion: 2023,
+            sourceType: 'module',
+            globals: {
+                ...globals.node,
+                ...globals.browser,
+            },
         },
     },
 

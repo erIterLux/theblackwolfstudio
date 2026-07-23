@@ -29,9 +29,12 @@ export default function ProgramsPage() {
           <p className="eyebrow eyebrow--light">Programs</p>
           <h1>Train the whole response.</h1>
           <p>Technique matters. So do awareness, boundaries, breath, recovery, and the ability to choose what happens next.</p>
+          <div className="page-hero__actions">
+            <a className="button button--light" href="#training-programs">Explore the programs</a>
+          </div>
         </div>
       </section>
-      <section className="section section--light">
+      <section className="section section--light" id="training-programs">
         <div className="container">
           <SectionHeading eyebrow="Integrated training" title="Start with the path that meets you now." body="Programs can stand alone or work together as a complete training system." />
           <div className="program-detail-list">

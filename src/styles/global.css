@@ -18,7 +18,7 @@
     --gray-400: #a09f9b;
     --gray-600: #666b72;
     --gray-800: #202329;
-    --blue: #5d738b;
+    --blue: #506981;
     --blue-bright: #93a7ba;
     --blue-dark: #35495d;
     --blue-deep: #18222c;
@@ -272,6 +272,12 @@ p {
 
 .menu-button {
     display: none;
+    width: 44px;
+    min-width: 44px;
+    height: 44px;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
     color: var(--charcoal);
     background: transparent;
     border: 0;
@@ -588,6 +594,7 @@ p {
     display: inline-flex;
     align-items: center;
     gap: .45rem;
+    min-height: 44px;
     margin-top: 1rem;
     color: var(--blue-dark);
     font-size: .73rem;
@@ -1018,22 +1025,38 @@ p {
 }
 
 .page-hero--compact {
-    min-height: 430px;
+    min-height: 360px;
 }
 
 .page-hero__inner {
     padding-block: 120px 80px;
 }
 
-    .page-hero__inner h1 {
-        max-width: 1000px;
-    }
+.page-hero__inner h1 {
+    max-width: 1000px;
+    font-size: clamp(3.3rem, 7vw, 6.5rem);
+}
 
-    .page-hero__inner > p:last-child {
-        max-width: 720px;
-        color: var(--gray-200);
-        font-size: 1.15rem;
-    }
+.page-hero--compact .page-hero__inner {
+    padding-block: 84px 64px;
+}
+
+.page-hero--compact .page-hero__inner h1 {
+    font-size: clamp(3.1rem, 6.2vw, 5.75rem);
+}
+
+.page-hero__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .75rem;
+    margin-top: 1.5rem;
+}
+
+.page-hero__inner > p:last-child {
+    max-width: 720px;
+    color: var(--gray-200);
+    font-size: 1.15rem;
+}
 
 .program-detail-list {
     display: grid;
@@ -1476,6 +1499,7 @@ textarea {
 }
 
     .footer-links a, .footer-links span {
+        min-height: 36px;
         display: flex;
         align-items: center;
         gap: .55rem;
@@ -1497,6 +1521,12 @@ textarea {
 }
 
 @media (min-width: 981px) {
+    .hero__texture {
+        background:
+            linear-gradient(90deg, var(--bone) 0%, rgba(242,238,230,.98) 34%, rgba(242,238,230,.9) 43%, rgba(242,238,230,.42) 52%, transparent 61%),
+            radial-gradient(circle at 24% 28%, rgba(93,115,139,.12), transparent 30%);
+    }
+
     .hero__image {
         background-attachment: fixed;
     }
@@ -1632,6 +1662,24 @@ textarea {
         top: 76px;
     }
 
+    .page-hero {
+        min-height: auto;
+    }
+
+    .page-hero__inner,
+    .page-hero--compact .page-hero__inner {
+        padding-block: 64px 56px;
+    }
+
+    .page-hero__inner h1,
+    .page-hero--compact .page-hero__inner h1 {
+        font-size: clamp(2.9rem, 13vw, 4.25rem);
+    }
+
+    .page-hero__actions .button {
+        width: 100%;
+    }
+
     .brand__copy {
         display: none;
     }
@@ -1752,8 +1800,25 @@ textarea {
     }
 
     .auth-page__visual {
-        min-height: 500px;
-        padding: 2rem;
+        order: 2;
+        min-height: 0;
+        padding: 3rem 1.75rem;
+        border-top: 1px solid var(--gray-200);
+        border-right: 0;
+    }
+
+    .auth-page__visual img {
+        top: 5%;
+        width: min(280px, 68%);
+    }
+
+    .auth-page__visual h1 {
+        font-size: clamp(2.7rem, 13vw, 4.4rem);
+    }
+
+    .auth-card {
+        order: 1;
+        margin-block: 2rem;
     }
 
     .checkin-options {
@@ -1769,6 +1834,41 @@ textarea {
         flex-direction: column;
         gap: .5rem;
     }
+
+    .footer-links a,
+    .footer-links span {
+        min-height: 44px;
+    }
+}
+
+.membership-card__billing {
+    margin: -1rem 0 1.25rem;
+    color: var(--gray-600);
+    font-size: .78rem;
+    line-height: 1.45;
+}
+
+.membership-card.is-featured .membership-card__billing {
+    color: var(--gray-200);
+}
+
+.empty-state-card__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .75rem;
+}
+
+.contact-details a {
+    display: flex;
+    align-items: center;
+    gap: .65rem;
+    min-height: 44px;
+    color: var(--gray-600);
+}
+
+.contact-details a:hover {
+    color: var(--blue-dark);
+    text-decoration: underline;
 }
 
 @media (prefers-reduced-motion: reduce) {

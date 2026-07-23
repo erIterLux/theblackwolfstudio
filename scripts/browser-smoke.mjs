@@ -1,4 +1,4 @@
-import { spawn } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -39,12 +39,25 @@ const routes = [
   '/this-route-does-not-exist',
 ];
 const viewports = [
-  { name: 'mobile', width: 390, height: 844, deviceScaleFactor: 1 },
-  { name: 'desktop', width: 1440, height: 1000, deviceScaleFactor: 1 },
+  { name: 'mobile', width: 390, height: 844, deviceScaleFactor: 1, mobile: true },
+  { name: 'desktop', width: 1440, height: 1000, deviceScaleFactor: 1, mobile: false },
 ];
 
 function delay(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function writeFileWithRetry(filePath, contents) {
+  for (let attempt = 0; attempt < 6; attempt += 1) {
+    try {
+      fs.writeFileSync(filePath, contents);
+      return;
+    } catch (error) {
+      const retryable = ['EBUSY', 'EPERM', 'UNKNOWN'].includes(error?.code);
+      if (!retryable || attempt === 5) throw error;
+      await delay(100 * (attempt + 1));
+    }
+  }
 }
 
 async function waitForUrl(url, timeoutMs = 30000) {
@@ -228,10 +241,29 @@ async function run() {
     'about:blank',
   ], { stdio: 'ignore' });
 
-  const cleanup = () => {
-    preview.kill('SIGTERM');
-    chrome.kill('SIGTERM');
-    fs.rmSync(profileDir, { recursive: true, force: true });
+  const stopProcessTree = (child) => {
+    if (!child?.pid) return;
+    if (process.platform === 'win32') {
+      spawnSync('taskkill', ['/pid', String(child.pid), '/T', '/F'], {
+        stdio: 'ignore',
+        windowsHide: true,
+      });
+      return;
+    }
+    child.kill('SIGTERM');
+  };
+  const cleanup = async () => {
+    stopProcessTree(preview);
+    stopProcessTree(chrome);
+    for (let attempt = 0; attempt < 8; attempt += 1) {
+      try {
+        fs.rmSync(profileDir, { recursive: true, force: true });
+        break;
+      } catch (error) {
+        if (!['EBUSY', 'EPERM'].includes(error?.code) || attempt === 7) throw error;
+        await delay(150 * (attempt + 1));
+      }
+    }
   };
 
   try {
@@ -264,7 +296,8 @@ async function run() {
     });
 
     for (const viewport of viewports) {
-      await cdp.send('Emulation.setDeviceMetricsOverride', viewport);
+      const { name: viewportName, ...deviceMetrics } = viewport;
+      await cdp.send('Emulation.setDeviceMetricsOverride', deviceMetrics);
       for (const route of routes) {
         routeErrors = [];
         const loaded = cdp.waitFor('Page.loadEventFired');
@@ -282,7 +315,7 @@ async function run() {
           captureBeyondViewport: false,
         });
         const screenshotFile = path.join(screenshotDir, `${viewport.name}-${slug(route)}.png`);
-        fs.writeFileSync(screenshotFile, Buffer.from(screenshot.data, 'base64'));
+        await writeFileWithRetry(screenshotFile, Buffer.from(screenshot.data, 'base64'));
 
         const failures = [];
         const warnings = [];
@@ -298,14 +331,14 @@ async function run() {
 
         results.push({
           route,
-          viewport: viewport.name,
+          viewport: viewportName,
           audit,
           errors: [...routeErrors],
           failures,
           warnings,
           screenshot: path.relative(root, screenshotFile).replaceAll(path.sep, '/'),
         });
-        console.log(`${failures.length ? 'FAIL' : 'PASS'} ${viewport.name.padEnd(7)} ${route}`);
+        console.log(`${failures.length ? 'FAIL' : 'PASS'} ${viewportName.padEnd(7)} ${route}`);
       }
     }
 
@@ -322,7 +355,7 @@ async function run() {
     console.log(`\nBrowser report: quality/browser-smoke-report.json`);
     if (failed.length) process.exitCode = 1;
   } finally {
-    cleanup();
+    await cleanup();
   }
 }
 
