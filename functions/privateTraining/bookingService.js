@@ -492,6 +492,8 @@ async function handleListPrivateTrainingAvailability(request) {
     const purchaseId = clean(request.data?.purchaseId, 160);
     if (!purchaseId) throw new HttpsError('invalid-argument', 'Choose a private training package.');
 
+    const { ensurePrivateTrainingWaiversForPurchase } = require('../waivers/studioWaiverService');
+    await ensurePrivateTrainingWaiversForPurchase(purchaseId);
     const purchaseSnapshot = await db.collection('privateTrainingPurchases').doc(purchaseId).get();
     if (!purchaseSnapshot.exists) throw new HttpsError('not-found', 'That package was not found.');
     const purchase = { id: purchaseSnapshot.id, ...purchaseSnapshot.data() };
@@ -776,6 +778,12 @@ async function handleCreatePrivateTrainingBooking(request) {
         throw new HttpsError('invalid-argument', 'Choose a package, instructor, and session time.');
     }
 
+    const requestedParticipantIds = Array.isArray(request.data?.participantIds)
+        ? request.data.participantIds.map((value) => clean(value, 80)).filter(Boolean)
+        : [];
+    const { assertPrivateTrainingParticipantsCovered } = require('../waivers/studioWaiverService');
+    await assertPrivateTrainingParticipantsCovered(purchaseId, requestedParticipantIds);
+
     const purchaseRef = db.collection('privateTrainingPurchases').doc(purchaseId);
     const bookingRef = db.collection('privateTrainingBookings').doc();
     const historyRef = bookingRef.collection('history').doc();
@@ -946,6 +954,18 @@ async function handleUpdatePrivateTrainingBooking(request) {
     }
 
     const bookingRef = db.collection('privateTrainingBookings').doc(bookingId);
+    if (action === 'confirm') {
+        const bookingSnapshot = await bookingRef.get();
+        if (!bookingSnapshot.exists) {
+            throw new HttpsError('not-found', 'That booking was not found.');
+        }
+        const booking = bookingSnapshot.data() || {};
+        const { assertPrivateTrainingParticipantsCovered } = require('../waivers/studioWaiverService');
+        await assertPrivateTrainingParticipantsCovered(
+            booking.purchaseId,
+            booking.participantIds || [],
+        );
+    }
     const historyRef = bookingRef.collection('history').doc();
     let response;
 

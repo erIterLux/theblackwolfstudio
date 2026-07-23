@@ -1,6 +1,8 @@
 const crypto = require('crypto');
 const admin = require('firebase-admin');
 const { HttpsError } = require('firebase-functions/v2/https');
+const { approvedWaiverTerms } = require('../config/studioWaiver');
+const { currentMembershipWaiver } = require('../waivers/studioWaiverService');
 
 const db = admin.firestore();
 const INSTRUCTOR_ROLES = new Set(['instructor', 'admin']);
@@ -49,6 +51,19 @@ function isInstructor(request) {
     return Boolean(request.auth?.uid && INSTRUCTOR_ROLES.has(callerRole(request)));
 }
 
+function accessToken() {
+    return crypto.randomBytes(32).toString('base64url');
+}
+
+function completedStatus(status) {
+    return status === 'signed' || status === 'covered' || status === 'not_required';
+}
+
+function emergencyContactReady(participant = {}) {
+    return clean(participant.emergencyContactName, 180).length >= 2
+        && clean(participant.emergencyContactPhone, 40).replace(/\D/g, '').length >= 7;
+}
+
 function waiverReady(waiver) {
     return Boolean(
         clean(waiver?.version, 80)
@@ -58,22 +73,15 @@ function waiverReady(waiver) {
     );
 }
 
-function normalizeWaiverSnapshot(waiver) {
-    return {
-        version: clean(waiver?.version, 80),
-        title: clean(waiver?.title, 220),
-        body: clean(waiver?.body, 30000),
-        acknowledgement: clean(waiver?.acknowledgement, 1500),
-        minorAcknowledgement: clean(
-            waiver?.minorAcknowledgement
-            || 'I certify that I am the participant’s parent or legal guardian and am authorized to sign on the participant’s behalf. I have read and understand all of the terms of this Release, consent to the minor participant’s participation in the Activities, and agree to the Release on the minor participant’s behalf and in my individual capacity to the fullest extent permitted by law.',
-            1500,
-        ),
-    };
-}
-
-function accessToken() {
-    return crypto.randomBytes(32).toString('base64url');
+function eventDateLabel(value) {
+    const date = value?.toDate?.() || (value ? new Date(value) : null);
+    if (!date || Number.isNaN(date.valueOf())) return '';
+    return date.toLocaleDateString('en-US', {
+        timeZone: 'America/New_York',
+        month: 'long',
+        day: 'numeric',
+        year: 'numeric',
+    });
 }
 
 async function loadRegistrationContext(registrationId) {
@@ -93,15 +101,27 @@ async function loadRegistrationContext(registrationId) {
             .get(),
     ]);
 
-    const event = eventSnapshot.exists ? { id: eventSnapshot.id, ...eventSnapshot.data() } : null;
-    const participants = participantsSnapshot.docs.map((item) => ({ id: item.id, ...item.data() }));
-
     return {
         registrationRef,
         registration,
-        event,
-        participants,
+        event: eventSnapshot.exists ? { id: eventSnapshot.id, ...eventSnapshot.data() } : null,
+        participants: participantsSnapshot.docs.map(
+            (item) => ({ id: item.id, ...item.data() }),
+        ),
     };
+}
+
+function waiverTerms(context, participant) {
+    const event = context.registration.eventSnapshot || context.event || {};
+    return approvedWaiverTerms({
+        scope: 'event',
+        context: {
+            participantName: participant.fullName,
+            title: event.title || context.event?.title || 'Studio event',
+            dateLabel: eventDateLabel(event.startsAt || context.event?.startsAt),
+        },
+        override: context.registration.waiverSnapshot || context.event?.waiver || null,
+    });
 }
 
 async function ensureWaiversForRegistration(registrationId) {
@@ -111,47 +131,66 @@ async function ensureWaiversForRegistration(registrationId) {
     const context = await loadRegistrationContext(id);
     const waiverRequired = context.registration.eventSnapshot?.waiverRequired !== false
         && context.event?.waiverRequired !== false;
-    const snapshot = normalizeWaiverSnapshot(
-        context.registration.waiverSnapshot || context.event?.waiver || {},
+    const alwaysRequireEventWaiver = (
+        context.registration.eventSnapshot?.alwaysRequireEventWaiver === true
+        || context.event?.alwaysRequireEventWaiver === true
     );
-    const ready = !waiverRequired || waiverReady(snapshot);
 
-    const refs = context.participants.map((participant) => ({
-        participant,
-        waiverRef: db.collection('eventWaivers').doc(participant.id),
-        accessRef: db.collection('eventWaiverAccess').doc(participant.id),
-    }));
-
-    const current = await Promise.all(refs.map(async (entry) => {
-        const [waiverDocument, accessDocument] = await Promise.all([
-            entry.waiverRef.get(),
-            entry.accessRef.get(),
+    const entries = await Promise.all(context.participants.map(async (participant) => {
+        const waiverRef = db.collection('eventWaivers').doc(participant.id);
+        const accessRef = db.collection('eventWaiverAccess').doc(participant.id);
+        const [waiverDocument, accessDocument, memberWaiver] = await Promise.all([
+            waiverRef.get(),
+            accessRef.get(),
+            !alwaysRequireEventWaiver
+                ? currentMembershipWaiver(participant.memberUid, participant.fullName)
+                : Promise.resolve(null),
         ]);
-        return { ...entry, waiverDocument, accessDocument };
+        return {
+            participant,
+            waiverRef,
+            accessRef,
+            waiverDocument,
+            accessDocument,
+            memberWaiver,
+        };
     }));
 
     const batch = db.batch();
     let requiredCount = 0;
-    let signedCount = 0;
+    let completedCount = 0;
 
-    current.forEach((entry) => {
-        const { participant, waiverRef, accessRef, waiverDocument, accessDocument } = entry;
-        const existingWaiver = waiverDocument.data() || {};
-        const status = waiverDocument.exists
-            ? existingWaiver.status
+    entries.forEach((entry) => {
+        const existing = entry.waiverDocument.data() || {};
+        const terms = waiverTerms(context, entry.participant);
+        const ready = !waiverRequired || waiverReady(terms);
+        const existingSigned = existing.status === 'signed';
+        const covered = waiverRequired && !existingSigned && Boolean(entry.memberWaiver);
+        const emergencyContactName = entry.participant.emergencyContactName
+            || (covered ? entry.memberWaiver?.participantSnapshot?.emergencyContactName : null)
+            || null;
+        const emergencyContactPhone = entry.participant.emergencyContactPhone
+            || (covered ? entry.memberWaiver?.participantSnapshot?.emergencyContactPhone : null)
+            || null;
+        const status = existingSigned
+            ? 'signed'
             : !waiverRequired
                 ? 'not_required'
-                : ready
-                    ? 'pending'
-                    : 'setup_required';
+                : covered
+                    ? 'covered'
+                    : ready ? 'pending' : 'setup_required';
 
         if (status !== 'not_required') requiredCount += 1;
-        if (status === 'signed') signedCount += 1;
+        if (completedStatus(status)) completedCount += 1;
 
-        if (!accessDocument.exists && waiverRequired) {
+        if (
+            !entry.accessDocument.exists
+            && waiverRequired
+            && status !== 'covered'
+        ) {
             const token = accessToken();
-            batch.set(accessRef, {
-                participantId: participant.id,
+            batch.set(entry.accessRef, {
+                participantId: entry.participant.id,
                 registrationId: context.registration.id,
                 eventId: context.registration.eventId,
                 token,
@@ -161,72 +200,119 @@ async function ensureWaiversForRegistration(registrationId) {
             });
         }
 
-        if (!waiverDocument.exists) {
-            batch.set(waiverRef, {
-                id: participant.id,
-                participantId: participant.id,
-                registrationId: context.registration.id,
-                eventId: context.registration.eventId,
-                status,
-                participantSnapshot: {
-                    fullName: participant.fullName,
-                    email: participant.email,
-                    isMinor: participant.isMinor === true,
-                    guardianName: participant.guardianName || null,
-                },
-                eventSnapshot: {
-                    title: context.registration.eventSnapshot?.title || context.event?.title || '',
-                    startsAt: context.registration.eventSnapshot?.startsAt || context.event?.startsAt || null,
-                    endsAt: context.registration.eventSnapshot?.endsAt || context.event?.endsAt || null,
-                    timezone: context.registration.eventSnapshot?.timezone || context.event?.timezone || 'America/New_York',
-                    location: context.registration.eventSnapshot?.location || context.event?.location || {},
-                },
-                waiverSnapshot: snapshot,
+        const baseDocument = {
+            id: entry.participant.id,
+            participantId: entry.participant.id,
+            registrationId: context.registration.id,
+            eventId: context.registration.eventId,
+            memberUid: entry.participant.memberUid || null,
+            status,
+            coverageSource: covered ? 'membership' : existing.coverageSource || null,
+            coveredByWaiverId: covered
+                ? entry.memberWaiver.id
+                : existing.coveredByWaiverId || null,
+            participantSnapshot: {
+                fullName: entry.participant.fullName,
+                email: entry.participant.email,
+                emergencyContactName,
+                emergencyContactPhone,
+                isMinor: entry.participant.isMinor === true,
+                guardianName: entry.participant.guardianName || null,
+                guardianEmail: entry.participant.guardianEmail || null,
+            },
+            eventSnapshot: {
+                title: context.registration.eventSnapshot?.title || context.event?.title || '',
+                startsAt: context.registration.eventSnapshot?.startsAt
+                    || context.event?.startsAt
+                    || null,
+                endsAt: context.registration.eventSnapshot?.endsAt
+                    || context.event?.endsAt
+                    || null,
+                timezone: context.registration.eventSnapshot?.timezone
+                    || context.event?.timezone
+                    || 'America/New_York',
+                location: context.registration.eventSnapshot?.location
+                    || context.event?.location
+                    || {},
+            },
+            mediaConsentSnapshot: context.registration.eventSnapshot?.mediaConsent
+                || context.event?.mediaConsent
+                || { enabled: false, text: '' },
+            waiverSnapshot: terms,
+            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        };
+
+        if (!entry.waiverDocument.exists) {
+            batch.set(entry.waiverRef, {
+                ...baseDocument,
                 signer: null,
                 signatureDataUrl: null,
                 signatureHash: null,
                 signedAt: null,
                 createdAt: admin.firestore.FieldValue.serverTimestamp(),
-                updatedAt: admin.firestore.FieldValue.serverTimestamp(),
             });
-        } else if (existingWaiver.status === 'setup_required' && ready) {
-            batch.set(waiverRef, {
-                status: 'pending',
-                waiverSnapshot: snapshot,
+        } else if (
+            !existingSigned
+            && (
+                existing.status !== status
+                || existing.memberUid !== (entry.participant.memberUid || null)
+                || existing.coveredByWaiverId
+                    !== (covered ? entry.memberWaiver.id : existing.coveredByWaiverId || null)
+                || existing.participantSnapshot?.emergencyContactName !== emergencyContactName
+                || existing.participantSnapshot?.emergencyContactPhone !== emergencyContactPhone
+            )
+        ) {
+            batch.set(entry.waiverRef, baseDocument, { merge: true });
+        }
+
+        const participantCoverageSource = covered
+            ? 'membership'
+            : existing.coverageSource || null;
+        const coveredByWaiverId = covered
+            ? entry.memberWaiver.id
+            : existing.coveredByWaiverId || null;
+        if (
+            entry.participant.waiverStatus !== status
+            || entry.participant.waiverId !== entry.participant.id
+            || entry.participant.coverageSource !== participantCoverageSource
+            || entry.participant.coveredByWaiverId !== coveredByWaiverId
+            || entry.participant.emergencyContactName !== emergencyContactName
+            || entry.participant.emergencyContactPhone !== emergencyContactPhone
+        ) {
+            batch.set(db.collection('eventParticipants').doc(entry.participant.id), {
+                waiverId: entry.participant.id,
+                waiverStatus: status,
+                coverageSource: participantCoverageSource,
+                coveredByWaiverId,
+                emergencyContactName,
+                emergencyContactPhone,
                 updatedAt: admin.firestore.FieldValue.serverTimestamp(),
             }, { merge: true });
         }
-
-        batch.set(db.collection('eventParticipants').doc(participant.id), {
-            waiverId: participant.id,
-            waiverStatus: existingWaiver.status === 'signed'
-                ? 'signed'
-                : !waiverRequired
-                    ? 'not_required'
-                    : ready
-                        ? 'pending'
-                        : 'setup_required',
-            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-        }, { merge: true });
     });
 
     const registrationStatus = requiredCount === 0
         ? 'not_required'
-        : signedCount >= requiredCount
+        : completedCount >= requiredCount
             ? 'complete'
-            : signedCount > 0
+            : completedCount > 0
                 ? 'partial'
-                : ready
-                    ? 'pending'
-                    : 'setup_required';
+                : entries.some((entry) => !waiverReady(waiverTerms(context, entry.participant)))
+                    ? 'setup_required'
+                    : 'pending';
 
-    batch.set(context.registrationRef, {
-        waiverSnapshot: snapshot,
-        waiversRequiredCount: requiredCount,
-        waiversSignedCount: signedCount,
-        waiverStatus: registrationStatus,
-        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-    }, { merge: true });
+    if (
+        Number(context.registration.waiversRequiredCount || 0) !== requiredCount
+        || Number(context.registration.waiversSignedCount || 0) !== completedCount
+        || context.registration.waiverStatus !== registrationStatus
+    ) {
+        batch.set(context.registrationRef, {
+            waiversRequiredCount: requiredCount,
+            waiversSignedCount: completedCount,
+            waiverStatus: registrationStatus,
+            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        }, { merge: true });
+    }
 
     await batch.commit();
     return context.registration.id;
@@ -234,7 +320,7 @@ async function ensureWaiversForRegistration(registrationId) {
 
 async function decorateParticipantsWithWaiverAccess(participants) {
     if (!participants.length) return [];
-    const records = await Promise.all(participants.map(async (participant) => {
+    return Promise.all(participants.map(async (participant) => {
         const [waiverSnapshot, accessSnapshot] = await Promise.all([
             db.collection('eventWaivers').doc(participant.id).get(),
             db.collection('eventWaiverAccess').doc(participant.id).get(),
@@ -244,56 +330,81 @@ async function decorateParticipantsWithWaiverAccess(participants) {
         return serialize({
             ...participant,
             waiverStatus: waiver.status || participant.waiverStatus || 'pending',
+            coverageSource: waiver.coverageSource || participant.coverageSource || null,
             waiverSignedAt: waiver.signedAt || null,
             waiverSignerName: waiver.signer?.name || null,
             waiverAccessToken: access.token || null,
         });
     }));
-    return records;
 }
 
-async function authorizeWaiver(request, participant, access) {
-    if (isInstructor(request)) return;
+function expectedSignerEmail(participant) {
+    return normalizeEmail(
+        participant.isMinor === true
+            ? participant.guardianEmail || participant.email
+            : participant.email,
+    );
+}
+
+async function authorizeWaiver(request, participant, access, forSigning = false) {
+    if (isInstructor(request) && !forSigning) return;
 
     const uid = request.auth?.uid || '';
     const authEmail = normalizeEmail(request.auth?.token?.email);
     if (
         uid
         && (
-            participant.purchaserUid === uid
-            || participant.memberUid === uid
-            || (authEmail && authEmail === normalizeEmail(participant.email))
+            participant.memberUid === uid
+            || (authEmail && authEmail === expectedSignerEmail(participant))
+            || (!forSigning && participant.purchaserUid === uid)
         )
     ) return;
 
     const suppliedHash = hashToken(request.data?.accessToken);
     if (!access?.tokenHash || !safeEqual(access.tokenHash, suppliedHash)) {
-        throw new HttpsError('permission-denied', 'This waiver link is invalid or no longer available.');
+        throw new HttpsError(
+            'permission-denied',
+            'This waiver link is invalid or no longer available.',
+        );
     }
 }
 
-async function getWaiverDocuments(participantIdValue) {
+async function getWaiverDocuments(participantIdValue, request) {
     const participantId = clean(participantIdValue, 180);
     if (!participantId) throw new HttpsError('invalid-argument', 'Participant ID is required.');
 
     const participantRef = db.collection('eventParticipants').doc(participantId);
-    const participantSnapshot = await participantRef.get();
+    let participantSnapshot = await participantRef.get();
     if (!participantSnapshot.exists) {
         throw new HttpsError('not-found', 'That event participant was not found.');
     }
+    let participant = { id: participantSnapshot.id, ...participantSnapshot.data() };
+    const authEmail = normalizeEmail(request.auth?.token?.email);
+    if (
+        request.auth?.uid
+        && authEmail
+        && authEmail === expectedSignerEmail(participant)
+        && participant.memberUid !== request.auth.uid
+    ) {
+        await participantRef.set({
+            memberUid: request.auth.uid,
+            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        }, { merge: true });
+        participantSnapshot = await participantRef.get();
+        participant = { id: participantSnapshot.id, ...participantSnapshot.data() };
+    }
 
-    const participant = { id: participantSnapshot.id, ...participantSnapshot.data() };
     await ensureWaiversForRegistration(participant.registrationId);
-
     const [waiverSnapshot, accessSnapshot] = await Promise.all([
         db.collection('eventWaivers').doc(participant.id).get(),
         db.collection('eventWaiverAccess').doc(participant.id).get(),
     ]);
-
     if (!waiverSnapshot.exists) {
-        throw new HttpsError('not-found', 'A waiver record could not be prepared for this participant.');
+        throw new HttpsError(
+            'not-found',
+            'A waiver record could not be prepared for this participant.',
+        );
     }
-
     return {
         participantRef,
         participant,
@@ -304,16 +415,24 @@ async function getWaiverDocuments(participantIdValue) {
 }
 
 async function handleGetEventWaiver(request) {
-    const documents = await getWaiverDocuments(request.data?.participantId);
+    const documents = await getWaiverDocuments(request.data?.participantId, request);
     await authorizeWaiver(request, documents.participant, documents.access);
-
     return {
         waiver: serialize({
             id: documents.waiver.id,
+            scope: 'event',
             status: documents.waiver.status,
+            coverageSource: documents.waiver.coverageSource || null,
             participant: documents.waiver.participantSnapshot,
             event: documents.waiver.eventSnapshot,
             terms: documents.waiver.waiverSnapshot,
+            mediaConsent: {
+                ...(documents.waiver.mediaConsentSnapshot || {
+                    enabled: false,
+                    text: '',
+                }),
+                accepted: documents.waiver.mediaConsentAccepted === true,
+            },
             signer: documents.waiver.signer || null,
             signedAt: documents.waiver.signedAt || null,
         }),
@@ -323,10 +442,16 @@ async function handleGetEventWaiver(request) {
 function validateSignatureDataUrl(value) {
     const dataUrl = clean(value, MAX_SIGNATURE_DATA_URL_LENGTH + 1);
     if (!dataUrl.startsWith('data:image/png;base64,')) {
-        throw new HttpsError('invalid-argument', 'Draw your signature before submitting the waiver.');
+        throw new HttpsError(
+            'invalid-argument',
+            'Draw your signature before submitting the waiver.',
+        );
     }
     if (dataUrl.length > MAX_SIGNATURE_DATA_URL_LENGTH) {
-        throw new HttpsError('invalid-argument', 'The signature image is too large. Clear it and try again.');
+        throw new HttpsError(
+            'invalid-argument',
+            'The signature image is too large. Clear it and try again.',
+        );
     }
     return dataUrl;
 }
@@ -341,14 +466,23 @@ function requestMetadata(request) {
 }
 
 async function handleSignEventWaiver(request) {
-    const documents = await getWaiverDocuments(request.data?.participantId);
-    await authorizeWaiver(request, documents.participant, documents.access);
+    const documents = await getWaiverDocuments(request.data?.participantId, request);
+    await authorizeWaiver(request, documents.participant, documents.access, true);
 
-    if (documents.waiver.status === 'signed') {
-        return { status: 'signed', signedAt: serialize(documents.waiver.signedAt) };
+    if (
+        (documents.waiver.status === 'signed' || documents.waiver.status === 'covered')
+        && emergencyContactReady(documents.waiver.participantSnapshot)
+    ) {
+        return {
+            status: documents.waiver.status,
+            signedAt: serialize(documents.waiver.signedAt),
+        };
     }
     if (documents.waiver.status === 'not_required') {
-        throw new HttpsError('failed-precondition', 'A waiver is not required for this participant.');
+        throw new HttpsError(
+            'failed-precondition',
+            'A waiver is not required for this participant.',
+        );
     }
     if (documents.waiver.status === 'setup_required') {
         throw new HttpsError(
@@ -357,82 +491,117 @@ async function handleSignEventWaiver(request) {
         );
     }
     if (request.data?.accepted !== true || request.data?.electronicSignatureConsent !== true) {
-        throw new HttpsError('invalid-argument', 'Accept the waiver and electronic-signature statements.');
+        throw new HttpsError(
+            'invalid-argument',
+            'Accept the waiver and electronic-signature statements.',
+        );
     }
 
     const signerName = clean(request.data?.signerName, 180);
-    const signerEmail = normalizeEmail(request.data?.signerEmail);
+    const emergencyContactName = clean(request.data?.emergencyContactName, 180);
+    const emergencyContactPhone = clean(request.data?.emergencyContactPhone, 40);
+    const signerEmail = expectedSignerEmail(documents.participant);
     const signerRelationship = clean(request.data?.signerRelationship, 120);
     const signatureDataUrl = validateSignatureDataUrl(request.data?.signatureDataUrl);
-
     if (signerName.length < 2) {
-        throw new HttpsError('invalid-argument', 'Enter the signer’s full legal name.');
+        throw new HttpsError('invalid-argument', "Enter the signer's full legal name.");
     }
-    if (!signerEmail || !signerEmail.includes('@')) {
-        throw new HttpsError('invalid-argument', 'Enter a valid signer email address.');
+    if (
+        emergencyContactName.length < 2
+        || emergencyContactPhone.replace(/\D/g, '').length < 7
+    ) {
+        throw new HttpsError(
+            'invalid-argument',
+            'Enter an emergency contact name and valid phone number.',
+        );
+    }
+    if (!signerEmail) {
+        throw new HttpsError('failed-precondition', 'The registered signer email is missing.');
     }
     if (documents.participant.isMinor === true && !signerRelationship) {
-        throw new HttpsError('invalid-argument', 'Enter the parent or guardian relationship.');
+        throw new HttpsError(
+            'invalid-argument',
+            'Enter the parent or guardian relationship.',
+        );
     }
 
-    const registrationRef = db.collection('eventRegistrations').doc(documents.participant.registrationId);
-    const metadata = requestMetadata(request);
-    let signedAt = null;
-
+    const registrationRef = db.collection('eventRegistrations')
+        .doc(documents.participant.registrationId);
+    const signedAt = admin.firestore.Timestamp.now();
     await db.runTransaction(async (transaction) => {
         const [waiverSnapshot, participantSnapshot, registrationSnapshot] = await Promise.all([
             transaction.get(documents.waiverRef),
             transaction.get(documents.participantRef),
             transaction.get(registrationRef),
         ]);
-
         if (!waiverSnapshot.exists || !participantSnapshot.exists || !registrationSnapshot.exists) {
-            throw new HttpsError('not-found', 'The waiver registration could not be completed.');
+            throw new HttpsError(
+                'not-found',
+                'The waiver registration could not be completed.',
+            );
         }
 
         const currentWaiver = waiverSnapshot.data() || {};
-        if (currentWaiver.status === 'signed') {
-            signedAt = currentWaiver.signedAt || null;
-            return;
-        }
-
+        if (
+            completedStatus(currentWaiver.status)
+            && emergencyContactReady(currentWaiver.participantSnapshot)
+        ) return;
+        const previouslyCompleted = completedStatus(currentWaiver.status);
         const registration = registrationSnapshot.data() || {};
         const requiredCount = Math.max(
             1,
             Number(registration.waiversRequiredCount || registration.participantCount || 1),
         );
-        const currentSignedCount = Number(registration.waiversSignedCount || 0);
-        const nextSignedCount = Math.min(requiredCount, currentSignedCount + 1);
-        signedAt = admin.firestore.Timestamp.now();
+        const nextCompletedCount = Math.min(
+            requiredCount,
+            Number(registration.waiversSignedCount || 0) + (previouslyCompleted ? 0 : 1),
+        );
 
         transaction.set(documents.waiverRef, {
             status: 'signed',
+            coverageSource: 'event',
+            participantSnapshot: {
+                ...(currentWaiver.participantSnapshot || {}),
+                emergencyContactName,
+                emergencyContactPhone,
+            },
             signer: {
                 name: signerName,
                 email: signerEmail,
                 relationship: documents.participant.isMinor === true
                     ? signerRelationship
                     : 'self',
-                capacity: documents.participant.isMinor === true ? 'guardian' : 'participant',
+                capacity: documents.participant.isMinor === true
+                    ? 'guardian'
+                    : 'participant',
             },
             accepted: true,
             electronicSignatureConsent: true,
             signatureDataUrl,
-            signatureHash: crypto.createHash('sha256').update(signatureDataUrl).digest('hex'),
+            signatureHash: crypto.createHash('sha256')
+                .update(signatureDataUrl)
+                .digest('hex'),
             signedAt,
-            source: metadata,
+            source: requestMetadata(request),
+            signedCopyEmailStatus: 'pending',
+            mediaConsentAccepted: request.data?.mediaConsent === true,
+            mediaConsentRecordedAt: request.data?.mediaConsent === true ? signedAt : null,
             updatedAt: admin.firestore.FieldValue.serverTimestamp(),
         }, { merge: true });
 
         transaction.set(documents.participantRef, {
             waiverStatus: 'signed',
+            coverageSource: 'event',
             waiverSignedAt: signedAt,
+            emergencyContactName,
+            emergencyContactPhone,
+            mediaConsent: request.data?.mediaConsent === true,
             updatedAt: admin.firestore.FieldValue.serverTimestamp(),
         }, { merge: true });
 
         transaction.set(registrationRef, {
-            waiversSignedCount: nextSignedCount,
-            waiverStatus: nextSignedCount >= requiredCount ? 'complete' : 'partial',
+            waiversSignedCount: nextCompletedCount,
+            waiverStatus: nextCompletedCount >= requiredCount ? 'complete' : 'partial',
             updatedAt: admin.firestore.FieldValue.serverTimestamp(),
         }, { merge: true });
     });
@@ -440,6 +609,7 @@ async function handleSignEventWaiver(request) {
     return {
         status: 'signed',
         signedAt: serialize(signedAt),
+        emailRecipient: signerEmail,
     };
 }
 

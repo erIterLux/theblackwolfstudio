@@ -526,6 +526,71 @@
   font-size: .78rem;
 }
 
+.private-participant-list .private-participant-waiver {
+  display: grid;
+  gap: .35rem;
+  min-width: min(100%, 220px);
+}
+
+.private-participant-waiver small,
+.private-session-participants small {
+  display: inline-flex;
+  align-items: center;
+  gap: .3rem;
+  color: var(--gray-600);
+}
+
+.private-waiver-disclosure {
+  border-left: 4px solid #35495d;
+  background: #f4f7f8;
+}
+
+.private-waiver-status-list {
+  display: grid;
+  gap: .8rem;
+  margin: 1.5rem 0;
+  text-align: left;
+}
+
+.private-waiver-status-list__heading,
+.private-waiver-status-list > article {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem;
+  border: 1px solid var(--gray-200);
+  border-radius: 16px;
+  background: #fff;
+}
+
+.private-waiver-status-list__heading {
+  justify-content: flex-start;
+}
+
+.private-waiver-status-list__heading > svg {
+  flex: 0 0 auto;
+}
+
+.private-waiver-status-list__heading h2,
+.private-waiver-status-list__heading p {
+  margin: 0;
+}
+
+.private-waiver-status-list__heading p {
+  margin-top: .3rem;
+  color: var(--gray-600);
+}
+
+.private-waiver-status-list > article > div {
+  display: grid;
+  gap: .35rem;
+}
+
+.private-waiver-status-list > article > div:last-child {
+  justify-items: end;
+}
+
 .instructor-admin-page {
   min-height: 760px;
   padding: 80px 0 120px;
@@ -685,6 +750,20 @@
   border: 1px solid var(--gray-200);
 }
 
+.private-session-participants .checkbox-row {
+  align-items: flex-start;
+}
+
+.private-session-participant-copy {
+  display: grid;
+  gap: .22rem;
+  min-width: 0;
+}
+
+.private-session-participant-copy small {
+  overflow-wrap: anywhere;
+}
+
 .credit-adjustment-row {
   display: grid;
   grid-template-columns: 1fr auto auto;
@@ -751,5 +830,14 @@
   .private-checkout__actions .button,
   .purchase-success-actions .button {
     width: 100%;
+  }
+
+  .private-waiver-status-list__heading,
+  .private-waiver-status-list > article {
+    flex-direction: column;
+  }
+
+  .private-waiver-status-list > article > div:last-child {
+    justify-items: start;
   }
 }

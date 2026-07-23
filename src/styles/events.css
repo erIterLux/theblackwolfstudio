@@ -153,6 +153,34 @@
     background: #f2eee7;
 }
 
+.event-signup-details {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.65rem 1rem;
+    padding: 1rem 1.1rem;
+    border: 1px solid var(--event-border);
+    border-radius: 16px;
+    background: #fff;
+    margin-top: 0.85rem;
+}
+
+.event-signup-details > div {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.55rem;
+}
+
+.event-signup-details > div svg {
+    flex: 0 0 auto;
+}
+
+.event-signup-details > p {
+    grid-column: 1 / -1;
+    margin: 0;
+    color: var(--event-muted);
+    line-height: 1.55;
+}
+
     .event-registration-explainer p,
     .event-waiver-preview p {
         margin: 0.2rem 0 0;
@@ -489,6 +517,10 @@
     .event-confirmed-participants article > div:last-child {
         justify-content: flex-start;
     }
+
+    .event-signup-details {
+        grid-template-columns: 1fr;
+    }
 }
 
 /* Pass 5: event-specific waiver signing */
@@ -525,6 +557,11 @@
     min-height: 70vh;
 }
 
+.waiver-workspace-page {
+    min-height: 70vh;
+    padding: clamp(2rem, 5vw, 4.5rem) 0 6rem;
+}
+
 .waiver-shell {
     width: min(920px, 100%);
 }
@@ -539,6 +576,11 @@
     justify-items: center;
     gap: 1rem;
     padding: 4rem 1rem;
+}
+
+.waiver-shell--message > * {
+    min-width: 0;
+    max-width: 100%;
 }
 
 .waiver-page__header {
@@ -564,6 +606,8 @@
     }
 
 .waiver-event-summary,
+.waiver-scope-card,
+.waiver-member-coverage-card,
 .waiver-terms-card,
 .waiver-signer-card,
 .waiver-complete-card {
@@ -571,6 +615,39 @@
     border-radius: 20px;
     background: #fff;
     box-shadow: 0 18px 50px rgba(26, 22, 17, 0.08);
+}
+
+.waiver-scope-card {
+    padding: 1rem 1.15rem;
+    border-left: 4px solid #35495d;
+    background: #f4f7f8;
+}
+
+.waiver-scope-card p:last-child {
+    margin: 0.35rem 0 0;
+    line-height: 1.65;
+}
+
+.waiver-member-coverage-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.85rem;
+    padding: 1rem 1.15rem;
+    background: #f7f2e9;
+}
+
+.waiver-member-coverage-card > svg {
+    flex: 0 0 auto;
+}
+
+.waiver-member-coverage-card p {
+    margin: 0.25rem 0 0.75rem;
+}
+
+.event-waiver-email-note {
+    margin: -0.55rem 0 0;
+    color: var(--event-muted);
+    font-size: 0.9rem;
 }
 
 .waiver-event-summary {
@@ -713,6 +790,12 @@
 }
 
 @media (max-width: 760px) {
+    .waiver-shell--message h1,
+    .waiver-page__header h1 {
+        font-size: clamp(2.2rem, 11vw, 4.5rem);
+        overflow-wrap: anywhere;
+    }
+
     .waiver-event-summary {
         grid-template-columns: 1fr;
     }
@@ -730,6 +813,10 @@
     .event-participant-actions,
     .member-event-participant-actions {
         justify-content: flex-start;
+    }
+
+    .waiver-member-coverage-card {
+        flex-direction: column;
     }
 }
 

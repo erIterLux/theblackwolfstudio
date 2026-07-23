@@ -6,6 +6,7 @@ import {
     History,
     MapPin,
     RotateCcw,
+    ShieldCheck,
     Users,
 } from 'lucide-react';
 import { useState } from 'react';
@@ -49,6 +50,11 @@ function availableSessions(purchase) {
         0,
         Number(purchase.remainingSessions || 0) - Number(purchase.reservedSessions || 0),
     );
+}
+
+function privateWaiverPath(participant) {
+    const token = participant?.waiverAccessToken || '';
+    return `/private-training/waiver/${encodeURIComponent(participant.waiverId)}${token ? `?token=${encodeURIComponent(token)}` : ''}`;
 }
 
 export default function MemberPrivateTrainingPage() {
@@ -117,7 +123,10 @@ export default function MemberPrivateTrainingPage() {
                         </p>
                     </div>
                     <div className="header-button-group">
-                        {activePurchases.some((purchase) => availableSessions(purchase) > 0) && (
+                        {activePurchases.some((purchase) => (
+                            availableSessions(purchase) > 0
+                            && purchase.waiverStatus === 'complete'
+                        )) && (
                             <Link className="button" to="/member/private-training/book">
                                 Book a session
                             </Link>
@@ -263,16 +272,45 @@ export default function MemberPrivateTrainingPage() {
                                         <div className="private-participant-list">
                                             <p className="footer-heading">Registered group</p>
                                             <div>
-                                                {(purchase.participants || []).map((participant) => (
-                                                    <span key={participant.id}>{participant.fullName}</span>
-                                                ))}
+                                                {(purchase.participants || []).map((participant) => {
+                                                    const complete = ['signed', 'covered', 'not_required']
+                                                        .includes(participant.waiverStatus);
+                                                    return (
+                                                        <span key={participant.id} className="private-participant-waiver">
+                                                            <span>{participant.fullName}</span>
+                                                            <small>
+                                                                <ShieldCheck size={14} />
+                                                                {participant.waiverStatus === 'covered'
+                                                                    ? 'Membership waiver'
+                                                                    : complete ? 'Waiver complete' : 'Waiver required'}
+                                                            </small>
+                                                            {!complete && participant.waiverAccessToken && (
+                                                                <Link
+                                                                    className="text-link"
+                                                                    to={privateWaiverPath(participant)}
+                                                                >
+                                                                    Sign waiver
+                                                                </Link>
+                                                            )}
+                                                        </span>
+                                                    );
+                                                })}
                                             </div>
                                         </div>
 
-                                        {purchase.status === 'active' && available > 0 && (
+                                        {purchase.status === 'active'
+                                            && available > 0
+                                            && purchase.waiverStatus === 'complete' && (
                                             <Link className="button" to={`/member/private-training/book?purchaseId=${encodeURIComponent(purchase.id)}`}>
                                                 Book from this package
                                             </Link>
+                                        )}
+                                        {purchase.status === 'active'
+                                            && available > 0
+                                            && purchase.waiverStatus !== 'complete' && (
+                                            <p className="form-status form-status--notice">
+                                                Complete all participant waivers before booking.
+                                            </p>
                                         )}
                                     </article>
                                 );

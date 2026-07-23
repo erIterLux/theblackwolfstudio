@@ -22,6 +22,7 @@ export const memberNavigation = [
       { label: 'Home', to: '/member', icon: Home, end: true },
       { label: 'Progression', to: '/member/progression', icon: Target },
       { label: 'Events', to: '/member/events', icon: CalendarDays },
+      { label: 'Waiver', to: '/member/waiver', icon: ShieldCheck },
       { label: 'Private training', to: '/member/private-training', icon: CalendarClock },
       { label: 'Training library', to: '/member/library', icon: BookOpen },
       { label: 'Purchases', to: '/member/purchases', icon: ReceiptText },

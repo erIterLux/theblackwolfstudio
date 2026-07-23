@@ -60,7 +60,7 @@ function emailShell({ eyebrow = 'The Black Wolf Studio', title, bodyHtml, button
     </div>`;
 }
 
-async function sendEmail({ to, subject, text, html, replyTo }) {
+async function sendEmail({ to, subject, text, html, replyTo, attachments = [] }) {
   if (!to) throw new Error('Email recipient is required.');
   const { user, transporter } = getTransport();
   return transporter.sendMail({
@@ -70,6 +70,7 @@ async function sendEmail({ to, subject, text, html, replyTo }) {
     subject,
     text,
     html,
+    attachments,
   });
 }
 
@@ -99,10 +100,10 @@ async function sendMembershipLifecycleEmail({ type, to, displayName, planName, p
     activated: {
       subject: `Welcome to The Black Wolf Studio — ${plan}`,
       title: 'Your membership is active',
-      text: `Hi ${firstName}, your ${plan} membership is active. Open your member space: ${appUrl('/member')}`,
-      body: `<p>Hi ${escapeHtml(firstName)},</p><p>Your <strong>${escapeHtml(plan)}</strong> membership is active. Your member space is ready for training resources, account access, and—when included in your plan—the Wolf Guide.</p>`,
-      buttonLabel: 'Open member space',
-      buttonUrl: appUrl('/member'),
+      text: `Hi ${firstName}, your ${plan} membership is active. Review and sign the current membership waiver before participating: ${appUrl('/member/waiver')}`,
+      body: `<p>Hi ${escapeHtml(firstName)},</p><p>Your <strong>${escapeHtml(plan)}</strong> membership is active. Before participating, review and sign the current membership waiver. Once complete, eligible events and private training can use that verified coverage.</p>`,
+      buttonLabel: 'Review membership waiver',
+      buttonUrl: appUrl('/member/waiver'),
     },
     paymentFailed: {
       subject: 'Action needed: membership payment issue',

@@ -9,6 +9,7 @@ import {
     RefreshCw,
     Save,
     ShieldAlert,
+    ShieldCheck,
     Users,
 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -58,6 +59,12 @@ function fromLines(value) {
         .split('\n')
         .map((item) => item.trim())
         .filter(Boolean);
+}
+
+function participantReady(participant) {
+    return ['signed', 'covered', 'not_required'].includes(participant.waiverStatus)
+        && Boolean(participant.emergencyContactName)
+        && String(participant.emergencyContactPhone || '').replace(/\D/g, '').length >= 7;
 }
 
 function toDraft(offer = {}) {
@@ -174,7 +181,9 @@ export default function InstructorPrivateTrainingAdmin() {
     };
 
     const formFor = (purchase) => sessionForms[purchase.id] || {
-        participantIds: (purchase.participants || []).map((item) => item.id),
+        participantIds: (purchase.participants || [])
+            .filter(participantReady)
+            .map((item) => item.id),
         sessionAt: todayInput(),
         notes: '',
         adjustmentNote: '',
@@ -450,8 +459,24 @@ export default function InstructorPrivateTrainingAdmin() {
                                                     type="checkbox"
                                                     checked={form.participantIds.includes(participant.id)}
                                                     onChange={() => toggleParticipant(purchase, participant.id)}
+                                                    disabled={!participantReady(participant)}
                                                 />
-                                                {participant.fullName}
+                                                <span className="private-session-participant-copy">
+                                                    <strong>{participant.fullName}</strong>
+                                                    <small>
+                                                        Emergency: {participant.emergencyContactName || 'Not listed'}
+                                                        {' · '}
+                                                        {participant.emergencyContactPhone || 'Phone missing'}
+                                                    </small>
+                                                    <small>
+                                                        <ShieldCheck size={14} />
+                                                        {participant.waiverStatus === 'covered'
+                                                            ? 'Membership waiver'
+                                                            : participant.waiverStatus === 'signed'
+                                                                ? 'Waiver signed'
+                                                                : 'Waiver required'}
+                                                    </small>
+                                                </span>
                                             </label>
                                         ))}
                                     </fieldset>

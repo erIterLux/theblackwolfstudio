@@ -1,4 +1,4 @@
-import { CheckCircle2, Clock3, Home, Users } from 'lucide-react';
+import { CheckCircle2, Clock3, Home, ShieldCheck, Users } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { getPrivateTrainingPurchase } from '../services/privateTraining';
@@ -20,6 +20,11 @@ function formatMoney(cents, currency = 'usd') {
         style: 'currency',
         currency: String(currency || 'usd').toUpperCase(),
     }).format(Number(cents || 0) / 100);
+}
+
+function waiverPath(participant) {
+    const token = participant?.waiverAccessToken || '';
+    return `/private-training/waiver/${encodeURIComponent(participant.waiverId)}${token ? `?token=${encodeURIComponent(token)}` : ''}`;
 }
 
 export default function PrivateTrainingSuccessPage() {
@@ -112,7 +117,7 @@ export default function PrivateTrainingSuccessPage() {
                 <h1>{paid ? 'Your package is confirmed.' : 'Your payment is processing.'}</h1>
                 <p>
                     {paid
-                        ? 'Your private training credits are ready. Keep this confirmation page available if you purchased as a guest.'
+                        ? 'Your private training credits are ready. Complete any participant waivers below before requesting a session.'
                         : 'Stripe is still confirming the payment. This page will update automatically.'}
                 </p>
 
@@ -120,6 +125,7 @@ export default function PrivateTrainingSuccessPage() {
                 {error && <p className="form-status form-status--error">{error}</p>}
 
                 {purchase && (
+                    <>
                     <article className="purchase-confirmation-card">
                         <div>
                             <span>Package</span>
@@ -151,6 +157,54 @@ export default function PrivateTrainingSuccessPage() {
                             )}</strong>
                         </div>
                     </article>
+                    <section className="private-waiver-status-list">
+                        <div className="private-waiver-status-list__heading">
+                            <ShieldCheck />
+                            <div>
+                                <h2>Participant waiver coverage</h2>
+                                <p>
+                                    Current members may already be covered. Every other participant
+                                    receives a package-specific signing link by email.
+                                </p>
+                            </div>
+                        </div>
+                        {(purchase.participants || []).map((participant) => {
+                            const complete = ['signed', 'covered', 'not_required']
+                                .includes(participant.waiverStatus);
+                            return (
+                                <article key={participant.id}>
+                                    <div>
+                                        <strong>{participant.fullName}</strong>
+                                        <span>{participant.email}</span>
+                                        {(participant.emergencyContactName
+                                            || participant.emergencyContactPhone) && (
+                                            <span>
+                                                Emergency: {participant.emergencyContactName || 'Not listed'}
+                                                {' · '}
+                                                {participant.emergencyContactPhone || 'Phone missing'}
+                                            </span>
+                                        )}
+                                    </div>
+                                    <div>
+                                        <span className={`event-person-status ${complete ? 'is-confirmed' : 'is-pending'}`}>
+                                            {participant.waiverStatus === 'covered'
+                                                ? 'Covered by membership'
+                                                : `Waiver ${participant.waiverStatus || 'pending'}`}
+                                        </span>
+                                        {!complete && participant.waiverAccessToken && (
+                                            <Link
+                                                className="button button--small"
+                                                to={waiverPath(participant)}
+                                            >
+                                                Sign waiver
+                                            </Link>
+                                        )}
+                                    </div>
+                                </article>
+                            );
+                        })}
+                    </section>
+                    </>
                 )}
 
                 <div className="purchase-success-actions">

@@ -3,6 +3,7 @@ import {
     CalendarCheck2,
     CreditCard,
     LoaderCircle,
+    MapPin,
     ShieldCheck,
     UserRound,
     Users,
@@ -20,8 +21,11 @@ function blankParticipant(index) {
         fullName: '',
         email: '',
         phone: '',
+        emergencyContactName: '',
+        emergencyContactPhone: '',
         isMinor: false,
         guardianName: '',
+        guardianEmail: '',
         isPurchaser: false,
     };
 }
@@ -31,6 +35,23 @@ function formatMoney(cents, currency = 'usd') {
         style: 'currency',
         currency: String(currency || 'usd').toUpperCase(),
     }).format(Number(cents || 0) / 100);
+}
+
+function formatDateTime(value) {
+    const date = value ? new Date(value) : null;
+    if (!date || Number.isNaN(date.valueOf())) return 'Date announced separately';
+    return date.toLocaleString('en-US', {
+        weekday: 'long',
+        month: 'long',
+        day: 'numeric',
+        year: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+    });
+}
+
+function validEmergencyPhone(value) {
+    return String(value || '').replace(/\D/g, '').length >= 7;
 }
 
 export default function EventCheckoutForm({ event, onCancel }) {
@@ -146,7 +167,12 @@ export default function EventCheckoutForm({ event, onCancel }) {
         const invalidParticipant = visibleParticipants.find((participant) => (
             !participant.fullName.trim()
             || !participant.email.trim()
-            || (participant.isMinor && !participant.guardianName.trim())
+            || !participant.emergencyContactName.trim()
+            || !validEmergencyPhone(participant.emergencyContactPhone)
+            || (
+                participant.isMinor
+                && (!participant.guardianName.trim() || !participant.guardianEmail.trim())
+            )
         ));
         if (invalidParticipant) {
             setError('Complete the required information for every participant.');
@@ -164,8 +190,11 @@ export default function EventCheckoutForm({ event, onCancel }) {
                     fullName: participant.fullName,
                     email: participant.email,
                     phone: participant.phone,
+                    emergencyContactName: participant.emergencyContactName,
+                    emergencyContactPhone: participant.emergencyContactPhone,
                     isMinor: participant.isMinor,
                     guardianName: participant.guardianName,
+                    guardianEmail: participant.guardianEmail,
                     isPurchaser: purchaserAttending && index === 0,
                 })),
             });
@@ -188,14 +217,47 @@ export default function EventCheckoutForm({ event, onCancel }) {
                 </button>
             </div>
 
+            <article className="event-signup-details">
+                <div>
+                    <CalendarCheck2 aria-hidden="true" />
+                    <span><strong>{formatDateTime(event.startsAt)}</strong></span>
+                </div>
+                <div>
+                    <MapPin aria-hidden="true" />
+                    <span>
+                        <strong>
+                            {event.location?.name
+                                || event.location?.address
+                                || 'Location announced separately'}
+                        </strong>
+                    </span>
+                </div>
+                <p><strong>Membership:</strong> Not required. An account is optional.</p>
+                {event.ageRequirement && (
+                    <p><strong>Age requirement:</strong> {event.ageRequirement}</p>
+                )}
+                {event.prerequisites && (
+                    <p><strong>Prerequisites or preparation:</strong> {event.prerequisites}</p>
+                )}
+                {event.cancellationPolicy && (
+                    <p><strong>Cancellation and refund policy:</strong> {event.cancellationPolicy}</p>
+                )}
+                {event.accessibilityContact && (
+                    <p><strong>Accessibility and accommodations:</strong> {event.accessibilityContact}</p>
+                )}
+                {event.participantNotice && (
+                    <p><strong>Participant notice:</strong> {event.participantNotice}</p>
+                )}
+            </article>
+
             <div className="event-registration-explainer">
                 <CalendarCheck2 aria-hidden="true" />
                 <div>
                     <strong>Registration comes first.</strong>
                     <p>
                         {isAlwaysFree
-                            ? 'Registration reserves each person’s place. Every participant will then complete this event’s waiver before checking in separately at the event.'
-                            : 'Payment reserves each person’s place. Every participant will then complete this event’s waiver before checking in separately at the event.'}
+                            ? 'Registration reserves each person’s place. Every participant must then have verified waiver coverage before event check-in.'
+                            : 'Payment reserves each person’s place. Every participant must then have verified waiver coverage before event check-in.'}
                     </p>
                 </div>
             </div>
@@ -205,7 +267,10 @@ export default function EventCheckoutForm({ event, onCancel }) {
                     <Users aria-hidden="true" />
                     <div>
                         <h3>Who is attending?</h3>
-                        <p>Each participant is tracked separately, even when one person pays.</p>
+                        <p>
+                            Each participant is tracked separately. Emergency contact name and
+                            phone are required for every participant.
+                        </p>
                     </div>
                 </div>
 
@@ -280,22 +345,59 @@ export default function EventCheckoutForm({ event, onCancel }) {
                                         onChange={(changeEvent) => updateParticipant(index, {
                                             isMinor: changeEvent.target.checked,
                                             guardianName: changeEvent.target.checked ? participant.guardianName : '',
+                                            guardianEmail: changeEvent.target.checked ? participant.guardianEmail : '',
                                         })}
                                     />
                                     Participant is under 18
                                 </label>
                             </div>
-                            {participant.isMinor && (
+                            <div className="form-row">
                                 <label>
-                                    Parent or guardian full name
+                                    Emergency contact full name
                                     <input
                                         required
-                                        value={participant.guardianName}
+                                        value={participant.emergencyContactName}
                                         onChange={(changeEvent) => updateParticipant(index, {
-                                            guardianName: changeEvent.target.value,
+                                            emergencyContactName: changeEvent.target.value,
                                         })}
                                     />
                                 </label>
+                                <label>
+                                    Emergency contact phone
+                                    <input
+                                        required
+                                        type="tel"
+                                        value={participant.emergencyContactPhone}
+                                        onChange={(changeEvent) => updateParticipant(index, {
+                                            emergencyContactPhone: changeEvent.target.value,
+                                        })}
+                                    />
+                                </label>
+                            </div>
+                            {participant.isMinor && (
+                                <div className="form-row">
+                                    <label>
+                                        Parent or guardian full name
+                                        <input
+                                            required
+                                            value={participant.guardianName}
+                                            onChange={(changeEvent) => updateParticipant(index, {
+                                                guardianName: changeEvent.target.value,
+                                            })}
+                                        />
+                                    </label>
+                                    <label>
+                                        Parent or guardian email
+                                        <input
+                                            required
+                                            type="email"
+                                            value={participant.guardianEmail}
+                                            onChange={(changeEvent) => updateParticipant(index, {
+                                                guardianEmail: changeEvent.target.value,
+                                            })}
+                                        />
+                                    </label>
+                                </div>
                             )}
                         </fieldset>
                     ))}
@@ -408,10 +510,17 @@ export default function EventCheckoutForm({ event, onCancel }) {
                 <ShieldCheck aria-hidden="true" />
                 <p>
                     {isFreeRegistration
-                        ? 'This step completes registration only. A separate event waiver is required for every participant before event check-in.'
-                        : 'Payment completes registration only. A separate event waiver is required for every participant before event check-in.'}
+                        ? 'This step completes registration only. A current membership waiver may cover an eligible member; every other participant receives an event-specific waiver by email.'
+                        : 'Payment completes registration only. A current membership waiver may cover an eligible member; every other participant receives an event-specific waiver by email.'}
                 </p>
             </div>
+            <p className="event-waiver-email-note">
+                Adult participants sign for themselves. A parent or legal guardian signs for
+                a minor. The signer receives an emailed copy after completion.
+                {event.mediaConsent?.enabled
+                    ? ' Optional photo/video consent is kept separate and is offered to the signer on the waiver page.'
+                    : ''}
+            </p>
 
             {error && <p className="form-status form-status--error">{error}</p>}
 

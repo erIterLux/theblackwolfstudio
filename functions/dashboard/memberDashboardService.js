@@ -1,5 +1,6 @@
 const admin = require('firebase-admin');
 const { HttpsError } = require('firebase-functions/v2/https');
+const { STUDIO_WAIVER_VERSION } = require('../config/studioWaiver');
 
 const db = admin.firestore();
 const LIVE_MEMBERSHIP_STATUSES = new Set(['active', 'trialing']);
@@ -114,8 +115,26 @@ function summarizeEvents(registrationDocs) {
   });
 }
 
-function buildAttentionItems({ membership, privateTraining, events }) {
+function buildAttentionItems({ membership, membershipWaiver, privateTraining, events }) {
   const items = [];
+  if (
+    LIVE_MEMBERSHIP_STATUSES.has(membership?.status)
+    && (
+      membershipWaiver?.status !== 'signed'
+      || membershipWaiver?.waiverSnapshot?.version !== STUDIO_WAIVER_VERSION
+      || !membershipWaiver?.participantSnapshot?.emergencyContactName
+      || String(
+        membershipWaiver?.participantSnapshot?.emergencyContactPhone || '',
+      ).replace(/\D/g, '').length < 7
+    )
+  ) {
+    items.push({
+      key: 'membership-waiver-pending',
+      priority: 'important',
+      title: 'Complete your membership waiver',
+      actionPath: '/member/waiver',
+    });
+  }
   if (membership?.status === 'past_due') {
     items.push({
       key: 'membership-past-due',
@@ -155,8 +174,9 @@ async function handleGetMemberDashboardSummary(request) {
   const uid = requireAuthenticated(request);
   const startedAt = Date.now();
 
-  const [membershipSnapshot, role, purchaseSnapshot, bookingSnapshot, registrationSnapshot] = await Promise.all([
+  const [membershipSnapshot, membershipWaiverSnapshot, role, purchaseSnapshot, bookingSnapshot, registrationSnapshot] = await Promise.all([
     db.collection('memberships').doc(uid).get(),
+    db.collection('studioWaivers').doc(uid).get(),
     roleFor(request, uid),
     db.collection('privateTrainingPurchases').where('uid', '==', uid).limit(100).get(),
     db.collection('privateTrainingBookings').where('uid', '==', uid).limit(100).get(),
@@ -165,6 +185,9 @@ async function handleGetMemberDashboardSummary(request) {
 
   const membership = membershipSnapshot.exists
     ? serialize({ id: membershipSnapshot.id, ...membershipSnapshot.data() })
+    : null;
+  const membershipWaiver = membershipWaiverSnapshot.exists
+    ? serialize({ id: membershipWaiverSnapshot.id, ...membershipWaiverSnapshot.data() })
     : null;
   const privateTraining = summarizePrivateTraining(purchaseSnapshot.docs, bookingSnapshot.docs);
   const events = summarizeEvents(registrationSnapshot.docs);
@@ -196,6 +219,7 @@ async function handleGetMemberDashboardSummary(request) {
 
   return {
     membership,
+    membershipWaiver,
     role,
     progression,
     privateTraining,
@@ -205,7 +229,12 @@ async function handleGetMemberDashboardSummary(request) {
       remainingPrivateSessions: Number(privateTraining.availableSessions || 0),
       upcomingEvents: Number(events.upcomingCount || 0),
     },
-    attentionItems: buildAttentionItems({ membership, privateTraining, events }),
+    attentionItems: buildAttentionItems({
+      membership,
+      membershipWaiver,
+      privateTraining,
+      events,
+    }),
     meta: {
       generatedAt: new Date().toISOString(),
       durationMs: Date.now() - startedAt,

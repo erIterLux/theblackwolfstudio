@@ -568,6 +568,10 @@ function loadWaiverService() {
     return require('./events/waiverService');
 }
 
+function loadStudioWaiverService() {
+    return require('./waivers/studioWaiverService');
+}
+
 exports.getEventWaiver = onCall({
     invoker: 'public',
     memory: '256MiB',
@@ -579,6 +583,66 @@ exports.signEventWaiver = onCall({
     memory: '512MiB',
     timeoutSeconds: 60,
 }, async (request) => loadWaiverService().handleSignEventWaiver(request));
+
+exports.getMyMembershipWaiver = onCall({
+    invoker: 'public',
+    memory: '256MiB',
+    timeoutSeconds: 30,
+}, async (request) => loadStudioWaiverService().handleGetMyMembershipWaiver(request));
+
+exports.signMembershipWaiver = onCall({
+    invoker: 'public',
+    memory: '512MiB',
+    timeoutSeconds: 60,
+}, async (request) => loadStudioWaiverService().handleSignMembershipWaiver(request));
+
+exports.getPrivateTrainingWaiver = onCall({
+    invoker: 'public',
+    memory: '256MiB',
+    timeoutSeconds: 30,
+}, async (request) => loadStudioWaiverService().handleGetPrivateTrainingWaiver(request));
+
+exports.signPrivateTrainingWaiver = onCall({
+    invoker: 'public',
+    memory: '512MiB',
+    timeoutSeconds: 60,
+}, async (request) => loadStudioWaiverService().handleSignPrivateTrainingWaiver(request));
+
+function waiverEmailDependencies() {
+    return {
+        gmailEmail,
+        gmailAppPassword,
+        appOrigin: appOrigin.value(),
+        studioNotificationEmail: studioNotificationEmail.value(),
+    };
+}
+
+exports.emailOnEventWaiverWritten = onDocumentWritten({
+    document: 'eventWaivers/{waiverId}',
+    secrets: [gmailEmail, gmailAppPassword],
+    retry: true,
+}, async (event) => {
+    const { handleEventWaiverWritten } = require('./notifications/waiverEmails');
+    return handleEventWaiverWritten(event, waiverEmailDependencies());
+});
+
+exports.emailOnPrivateTrainingWaiverWritten = onDocumentWritten({
+    document: 'privateTrainingWaivers/{waiverId}',
+    secrets: [gmailEmail, gmailAppPassword],
+    retry: true,
+}, async (event) => {
+    const { handlePrivateTrainingWaiverWritten } = require('./notifications/waiverEmails');
+    return handlePrivateTrainingWaiverWritten(event, waiverEmailDependencies());
+});
+
+exports.emailOnStudioWaiverWritten = onDocumentWritten({
+    document: 'studioWaivers/{userId}',
+    secrets: [gmailEmail, gmailAppPassword],
+    retry: true,
+}, async (event) => {
+    const { handleStudioWaiverWritten } = require('./notifications/waiverEmails');
+    return handleStudioWaiverWritten(event, waiverEmailDependencies());
+});
 
 exports.wolfGuideChat = onCall({
     invoker: 'public',
