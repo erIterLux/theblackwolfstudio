@@ -272,6 +272,7 @@ export default function PrivateTrainingWaiverPage() {
                   <input
                     required
                     value={form.emergencyContactName}
+                    autoComplete="section-emergency name"
                     onChange={(event) => update({
                       emergencyContactName: event.target.value,
                     })}
@@ -283,6 +284,8 @@ export default function PrivateTrainingWaiverPage() {
                     required
                     type="tel"
                     value={form.emergencyContactPhone}
+                    autoComplete="section-emergency tel"
+                    placeholder="Example: (555) 123-4567"
                     onChange={(event) => update({
                       emergencyContactPhone: event.target.value,
                     })}
@@ -297,12 +300,17 @@ export default function PrivateTrainingWaiverPage() {
                     required
                     value={form.signerName}
                     onChange={(event) => update({ signerName: event.target.value })}
-                    autoComplete="name"
+                    autoComplete="section-signer name"
                   />
                 </label>
                 <label>
                   Verified signer email
-                  <input readOnly type="email" value={signerEmail || ''} />
+                  <input
+                    readOnly
+                    type="email"
+                    value={signerEmail || ''}
+                    autoComplete="section-signer email"
+                  />
                 </label>
               </div>
 

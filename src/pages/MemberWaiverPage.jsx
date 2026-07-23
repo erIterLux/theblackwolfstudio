@@ -223,6 +223,7 @@ export default function MemberWaiverPage() {
                   <input
                     required
                     value={form.emergencyContactName}
+                    autoComplete="section-emergency name"
                     onChange={(event) => update({
                       emergencyContactName: event.target.value,
                     })}
@@ -234,6 +235,8 @@ export default function MemberWaiverPage() {
                     required
                     type="tel"
                     value={form.emergencyContactPhone}
+                    autoComplete="section-emergency tel"
+                    placeholder="Example: (555) 123-4567"
                     onChange={(event) => update({
                       emergencyContactPhone: event.target.value,
                     })}
@@ -260,6 +263,7 @@ export default function MemberWaiverPage() {
                   <input
                     required
                     value={form.guardianName}
+                    autoComplete="section-guardian name"
                     onChange={(event) => update({
                       guardianName: event.target.value,
                       signerName: event.target.value,
@@ -275,12 +279,17 @@ export default function MemberWaiverPage() {
                     required
                     value={form.signerName}
                     onChange={(event) => update({ signerName: event.target.value })}
-                    autoComplete="name"
+                    autoComplete="section-signer name"
                   />
                 </label>
                 <label>
                   Signer email
-                  <input readOnly type="email" value={user?.email || ''} />
+                  <input
+                    readOnly
+                    type="email"
+                    value={user?.email || ''}
+                    autoComplete="section-signer email"
+                  />
                 </label>
               </div>
 

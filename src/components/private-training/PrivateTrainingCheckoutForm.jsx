@@ -39,6 +39,21 @@ function validEmergencyPhone(value) {
   return String(value || '').replace(/\D/g, '').length >= 7;
 }
 
+function purchaserFromParticipant(participant = {}) {
+  const useGuardian = participant.isMinor
+    && (participant.guardianName || participant.guardianEmail);
+  return {
+    name: (useGuardian ? participant.guardianName : participant.fullName) || '',
+    email: (useGuardian ? participant.guardianEmail : participant.email) || '',
+    phone: participant.phone || '',
+  };
+}
+
+function participantOptionLabel(participant = {}, index = 0) {
+  const name = String(participant.fullName || '').trim();
+  return `Participant ${index + 1}${name ? ` - ${name}` : ''}`;
+}
+
 function participantPriceLabel(offer, count) {
   if (offer.pricingModel === 'per_participant') {
     return `${formatMoney(offer.unitAmountCents, offer.currency)} per person`;
@@ -55,8 +70,8 @@ export default function PrivateTrainingCheckoutForm({ offer, onCancel }) {
   const { user } = useAuth();
   const maxParticipants = Number(offer.privateTraining?.maxParticipants || 3);
   const [participantCount, setParticipantCount] = useState(1);
-  const [purchaserAttending, setPurchaserAttending] = useState(true);
-  const [purchaser, setPurchaser] = useState({
+  const [purchaserSource, setPurchaserSource] = useState('participant-0');
+  const [alternatePurchaser, setAlternatePurchaser] = useState({
     name: user?.displayName || '',
     email: user?.email || '',
     phone: '',
@@ -74,30 +89,22 @@ export default function PrivateTrainingCheckoutForm({ offer, onCancel }) {
   useEffect(() => {
     if (!user) return;
     queueMicrotask(() => {
-      setPurchaser((current) => ({
+      setAlternatePurchaser((current) => ({
         ...current,
         name: current.name || user.displayName || '',
         email: current.email || user.email || '',
       }));
-    });
-  }, [user]);
-
-  useEffect(() => {
-    if (!purchaserAttending) return;
-    queueMicrotask(() => {
       setParticipants((current) => current.map((item, index) => (
         index === 0
           ? {
               ...item,
-              fullName: purchaser.name,
-              email: purchaser.email,
-              phone: purchaser.phone,
-              isPurchaser: true,
+              fullName: item.fullName || user.displayName || '',
+              email: item.email || user.email || '',
             }
           : item
       )));
     });
-  }, [purchaser, purchaserAttending]);
+  }, [user]);
 
   useEffect(() => {
     let cancelled = false;
@@ -136,6 +143,17 @@ export default function PrivateTrainingCheckoutForm({ offer, onCancel }) {
     () => participants.slice(0, participantCount),
     [participants, participantCount],
   );
+  const selectedPurchaserIndex = purchaserSource.startsWith('participant-')
+    ? Number(purchaserSource.replace('participant-', ''))
+    : -1;
+  const purchaser = purchaserSource === 'other'
+    ? alternatePurchaser
+    : purchaserFromParticipant(visibleParticipants[selectedPurchaserIndex]);
+
+  useEffect(() => {
+    if (selectedPurchaserIndex < participantCount) return;
+    queueMicrotask(() => setPurchaserSource('participant-0'));
+  }, [participantCount, selectedPurchaserIndex]);
 
   const updateParticipant = (index, patch) => {
     setParticipants((current) => current.map((item, itemIndex) => (
@@ -143,16 +161,19 @@ export default function PrivateTrainingCheckoutForm({ offer, onCancel }) {
     )));
   };
 
-  const togglePurchaserAttending = (checked) => {
-    setPurchaserAttending(checked);
-    if (!checked) {
-      updateParticipant(0, {
-        fullName: '',
-        email: '',
-        phone: '',
-        isPurchaser: false,
-      });
+  const choosePurchaserSource = (nextSource) => {
+    if (nextSource === 'other' && purchaserSource !== 'other') {
+      setAlternatePurchaser(purchaser);
     }
+    setPurchaserSource(nextSource);
+  };
+
+  const updatePurchaser = (field, value) => {
+    setAlternatePurchaser((current) => ({
+      ...(purchaserSource === 'other' ? current : purchaser),
+      [field]: value,
+    }));
+    if (purchaserSource !== 'other') setPurchaserSource('other');
   };
 
   const applyDiscount = () => {
@@ -163,14 +184,21 @@ export default function PrivateTrainingCheckoutForm({ offer, onCancel }) {
     event.preventDefault();
     setError('');
 
-    if (visibleParticipants.some((item) => (
+    const invalidParticipantIndex = visibleParticipants.findIndex((item) => (
       !item.fullName.trim()
       || !item.email.trim()
       || !item.emergencyContactName.trim()
       || !validEmergencyPhone(item.emergencyContactPhone)
       || (item.isMinor && (!item.guardianName.trim() || !item.guardianEmail.trim()))
-    ))) {
-      setError('Complete the required participant and guardian information.');
+    ));
+    if (invalidParticipantIndex >= 0) {
+      setError(
+        `Complete the required participant, emergency contact, and guardian information for Participant ${invalidParticipantIndex + 1}.`,
+      );
+      return;
+    }
+    if (!purchaser.name.trim() || !purchaser.email.trim()) {
+      setError('Choose a receipt contact or enter different purchaser information.');
       return;
     }
 
@@ -184,7 +212,7 @@ export default function PrivateTrainingCheckoutForm({ offer, onCancel }) {
         participants: visibleParticipants.map((item, index) => ({
           ...item,
           id: item.id || `participant-${index + 1}`,
-          isPurchaser: purchaserAttending && index === 0,
+          isPurchaser: purchaserSource === `participant-${index}`,
         })),
       });
     } catch (nextError) {
@@ -233,25 +261,16 @@ export default function PrivateTrainingCheckoutForm({ offer, onCancel }) {
           ))}
         </div>
 
-        <label className="checkbox-row">
-          <input
-            type="checkbox"
-            checked={purchaserAttending}
-            onChange={(event) => togglePurchaserAttending(event.target.checked)}
-          />
-          I am one of the participants
-        </label>
-
         <div className="participant-forms">
           {visibleParticipants.map((participant, index) => (
             <fieldset key={participant.id} className="participant-form">
               <legend>Participant {index + 1}</legend>
               <label>
-                Full name
+                Full legal name
                 <input
                   required
                   value={participant.fullName}
-                  readOnly={purchaserAttending && index === 0}
+                  autoComplete={`section-training-participant-${index + 1} name`}
                   onChange={(event) => updateParticipant(index, {
                     fullName: event.target.value,
                     isPurchaser: false,
@@ -265,7 +284,7 @@ export default function PrivateTrainingCheckoutForm({ offer, onCancel }) {
                     required
                     type="email"
                     value={participant.email || ''}
-                    readOnly={purchaserAttending && index === 0}
+                    autoComplete={`section-training-participant-${index + 1} email`}
                     onChange={(event) => updateParticipant(index, {
                       email: event.target.value,
                     })}
@@ -276,7 +295,7 @@ export default function PrivateTrainingCheckoutForm({ offer, onCancel }) {
                   <input
                     type="tel"
                     value={participant.phone || ''}
-                    readOnly={purchaserAttending && index === 0}
+                    autoComplete={`section-training-participant-${index + 1} tel`}
                     onChange={(event) => updateParticipant(index, {
                       phone: event.target.value,
                     })}
@@ -289,6 +308,7 @@ export default function PrivateTrainingCheckoutForm({ offer, onCancel }) {
                   <input
                     required
                     value={participant.emergencyContactName}
+                    autoComplete={`section-training-emergency-${index + 1} name`}
                     onChange={(event) => updateParticipant(index, {
                       emergencyContactName: event.target.value,
                     })}
@@ -300,6 +320,8 @@ export default function PrivateTrainingCheckoutForm({ offer, onCancel }) {
                     required
                     type="tel"
                     value={participant.emergencyContactPhone}
+                    autoComplete={`section-training-emergency-${index + 1} tel`}
+                    placeholder="Example: (555) 123-4567"
                     onChange={(event) => updateParticipant(index, {
                       emergencyContactPhone: event.target.value,
                     })}
@@ -327,6 +349,7 @@ export default function PrivateTrainingCheckoutForm({ offer, onCancel }) {
                     <input
                       required
                       value={participant.guardianName}
+                      autoComplete={`section-training-guardian-${index + 1} name`}
                       onChange={(event) => updateParticipant(index, {
                         guardianName: event.target.value,
                       })}
@@ -338,6 +361,7 @@ export default function PrivateTrainingCheckoutForm({ offer, onCancel }) {
                       required
                       type="email"
                       value={participant.guardianEmail}
+                      autoComplete={`section-training-guardian-${index + 1} email`}
                       onChange={(event) => updateParticipant(index, {
                         guardianEmail: event.target.value,
                       })}
@@ -374,19 +398,42 @@ export default function PrivateTrainingCheckoutForm({ offer, onCancel }) {
           <CreditCard aria-hidden="true" />
           <div>
             <h3>Purchaser</h3>
-            <p>The receipt and package confirmation will use this information.</p>
+            <p>
+              Choose a participant to copy their information automatically, or choose
+              someone else. The receipt and package confirmation use this information.
+            </p>
           </div>
         </div>
+        <label className="purchaser-source">
+          Purchaser and receipt contact
+          <select
+            value={purchaserSource}
+            onChange={(event) => choosePurchaserSource(event.target.value)}
+          >
+            {visibleParticipants.map((participant, index) => (
+              <option key={participant.id} value={`participant-${index}`}>
+                {participantOptionLabel(participant, index)}
+              </option>
+            ))}
+            <option value="other">Someone else</option>
+          </select>
+          <span>
+            {purchaserSource === 'other'
+              ? 'Enter the purchaser information below.'
+              : `Copied from ${participantOptionLabel(
+                visibleParticipants[selectedPurchaserIndex],
+                selectedPurchaserIndex,
+              )}. Editing a field switches the contact to someone else.`}
+          </span>
+        </label>
         <div className="form-row">
           <label>
             Full name
             <input
               required
               value={purchaser.name}
-              onChange={(event) => setPurchaser((current) => ({
-                ...current,
-                name: event.target.value,
-              }))}
+              autoComplete="section-purchaser name"
+              onChange={(event) => updatePurchaser('name', event.target.value)}
             />
           </label>
           <label>
@@ -395,10 +442,8 @@ export default function PrivateTrainingCheckoutForm({ offer, onCancel }) {
               required
               type="email"
               value={purchaser.email}
-              onChange={(event) => setPurchaser((current) => ({
-                ...current,
-                email: event.target.value,
-              }))}
+              autoComplete="section-purchaser email"
+              onChange={(event) => updatePurchaser('email', event.target.value)}
             />
           </label>
         </div>
@@ -407,10 +452,8 @@ export default function PrivateTrainingCheckoutForm({ offer, onCancel }) {
           <input
             type="tel"
             value={purchaser.phone}
-            onChange={(event) => setPurchaser((current) => ({
-              ...current,
-              phone: event.target.value,
-            }))}
+            autoComplete="section-purchaser tel"
+            onChange={(event) => updatePurchaser('phone', event.target.value)}
           />
         </label>
       </section>
@@ -428,6 +471,9 @@ export default function PrivateTrainingCheckoutForm({ offer, onCancel }) {
             Promotion code <span className="optional-label">optional</span>
             <input
               value={discountCode}
+              autoCapitalize="characters"
+              autoCorrect="off"
+              spellCheck="false"
               onChange={(event) => setDiscountCode(event.target.value.toUpperCase())}
               placeholder="ENTER CODE"
             />

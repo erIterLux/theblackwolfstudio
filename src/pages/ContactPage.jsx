@@ -53,7 +53,16 @@ export default function ContactPage() {
             <label>Full name<input required name="name" value={values.name} onChange={update} autoComplete="name" /></label>
             <div className="form-row">
               <label>Email<input required type="email" name="email" value={values.email} onChange={update} autoComplete="email" /></label>
-              <label>Phone<input name="phone" value={values.phone} onChange={update} autoComplete="tel" /></label>
+              <label>
+                Phone <span className="optional-label">optional</span>
+                <input
+                  type="tel"
+                  name="phone"
+                  value={values.phone}
+                  onChange={update}
+                  autoComplete="tel"
+                />
+              </label>
             </div>
             <label>What are you interested in?
               <select name="interest" value={values.interest} onChange={update}>

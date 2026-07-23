@@ -461,6 +461,27 @@
   line-height: 1.35;
 }
 
+.portal-main :where(
+  input[type='date'],
+  input[type='time'],
+  input[type='datetime-local']
+) {
+  color-scheme: light;
+}
+
+.portal-main :where(
+  input[type='date'],
+  input[type='time'],
+  input[type='datetime-local']
+)::-webkit-calendar-picker-indicator {
+  min-width: 24px;
+  min-height: 24px;
+  padding: .25rem;
+  opacity: 1;
+  filter: none;
+  cursor: pointer;
+}
+
 .portal-main textarea {
   min-height: 108px;
   resize: vertical;

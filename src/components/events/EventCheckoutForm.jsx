@@ -54,12 +54,27 @@ function validEmergencyPhone(value) {
     return String(value || '').replace(/\D/g, '').length >= 7;
 }
 
+function purchaserFromParticipant(participant = {}) {
+    const useGuardian = participant.isMinor
+        && (participant.guardianName || participant.guardianEmail);
+    return {
+        name: (useGuardian ? participant.guardianName : participant.fullName) || '',
+        email: (useGuardian ? participant.guardianEmail : participant.email) || '',
+        phone: participant.phone || '',
+    };
+}
+
+function participantOptionLabel(participant = {}, index = 0) {
+    const name = String(participant.fullName || '').trim();
+    return `Participant ${index + 1}${name ? ` - ${name}` : ''}`;
+}
+
 export default function EventCheckoutForm({ event, onCancel }) {
     const { user } = useAuth();
     const maxParticipants = Math.max(1, Math.min(12, Number(event.maxParticipantsPerOrder || 6)));
     const [participantCount, setParticipantCount] = useState(1);
-    const [purchaserAttending, setPurchaserAttending] = useState(true);
-    const [purchaser, setPurchaser] = useState({
+    const [purchaserSource, setPurchaserSource] = useState('participant-0');
+    const [alternatePurchaser, setAlternatePurchaser] = useState({
         name: user?.displayName || '',
         email: user?.email || '',
         phone: '',
@@ -77,30 +92,22 @@ export default function EventCheckoutForm({ event, onCancel }) {
     useEffect(() => {
         if (!user) return;
         queueMicrotask(() => {
-            setPurchaser((current) => ({
+            setAlternatePurchaser((current) => ({
                 ...current,
                 name: current.name || user.displayName || '',
                 email: current.email || user.email || '',
             }));
-        });
-    }, [user]);
-
-    useEffect(() => {
-        if (!purchaserAttending) return;
-        queueMicrotask(() => {
             setParticipants((current) => current.map((participant, index) => (
                 index === 0
                     ? {
                         ...participant,
-                        fullName: purchaser.name,
-                        email: purchaser.email,
-                        phone: purchaser.phone,
-                        isPurchaser: true,
+                        fullName: participant.fullName || user.displayName || '',
+                        email: participant.email || user.email || '',
                     }
                     : participant
             )));
         });
-    }, [purchaser, purchaserAttending]);
+    }, [user]);
 
     useEffect(() => {
         let cancelled = false;
@@ -139,8 +146,19 @@ export default function EventCheckoutForm({ event, onCancel }) {
         () => participants.slice(0, participantCount),
         [participants, participantCount],
     );
+    const selectedPurchaserIndex = purchaserSource.startsWith('participant-')
+        ? Number(purchaserSource.replace('participant-', ''))
+        : -1;
+    const purchaser = purchaserSource === 'other'
+        ? alternatePurchaser
+        : purchaserFromParticipant(visibleParticipants[selectedPurchaserIndex]);
     const isAlwaysFree = Number(event.pricePerParticipantCents || 0) === 0;
     const isFreeRegistration = quote?.totalCents === 0;
+
+    useEffect(() => {
+        if (selectedPurchaserIndex < participantCount) return;
+        queueMicrotask(() => setPurchaserSource('participant-0'));
+    }, [participantCount, selectedPurchaserIndex]);
 
     const updateParticipant = (index, patch) => {
         setParticipants((current) => current.map((participant, participantIndex) => (
@@ -148,23 +166,26 @@ export default function EventCheckoutForm({ event, onCancel }) {
         )));
     };
 
-    const togglePurchaserAttending = (checked) => {
-        setPurchaserAttending(checked);
-        if (!checked) {
-            updateParticipant(0, {
-                fullName: '',
-                email: '',
-                phone: '',
-                isPurchaser: false,
-            });
+    const choosePurchaserSource = (nextSource) => {
+        if (nextSource === 'other' && purchaserSource !== 'other') {
+            setAlternatePurchaser(purchaser);
         }
+        setPurchaserSource(nextSource);
+    };
+
+    const updatePurchaser = (field, value) => {
+        setAlternatePurchaser((current) => ({
+            ...(purchaserSource === 'other' ? current : purchaser),
+            [field]: value,
+        }));
+        if (purchaserSource !== 'other') setPurchaserSource('other');
     };
 
     const beginCheckout = async (submitEvent) => {
         submitEvent.preventDefault();
         setError('');
 
-        const invalidParticipant = visibleParticipants.find((participant) => (
+        const invalidParticipantIndex = visibleParticipants.findIndex((participant) => (
             !participant.fullName.trim()
             || !participant.email.trim()
             || !participant.emergencyContactName.trim()
@@ -174,8 +195,14 @@ export default function EventCheckoutForm({ event, onCancel }) {
                 && (!participant.guardianName.trim() || !participant.guardianEmail.trim())
             )
         ));
-        if (invalidParticipant) {
-            setError('Complete the required information for every participant.');
+        if (invalidParticipantIndex >= 0) {
+            setError(
+                `Complete the required participant, emergency contact, and guardian information for Participant ${invalidParticipantIndex + 1}.`,
+            );
+            return;
+        }
+        if (!purchaser.name.trim() || !purchaser.email.trim()) {
+            setError('Choose a confirmation contact or enter different purchaser information.');
             return;
         }
 
@@ -195,7 +222,7 @@ export default function EventCheckoutForm({ event, onCancel }) {
                     isMinor: participant.isMinor,
                     guardianName: participant.guardianName,
                     guardianEmail: participant.guardianEmail,
-                    isPurchaser: purchaserAttending && index === 0,
+                    isPurchaser: purchaserSource === `participant-${index}`,
                 })),
             });
         } catch (nextError) {
@@ -288,15 +315,6 @@ export default function EventCheckoutForm({ event, onCancel }) {
                     </select>
                 </label>
 
-                <label className="checkbox-row">
-                    <input
-                        type="checkbox"
-                        checked={purchaserAttending}
-                        onChange={(changeEvent) => togglePurchaserAttending(changeEvent.target.checked)}
-                    />
-                    The purchaser is also attending
-                </label>
-
                 <div className="event-participant-forms">
                     {visibleParticipants.map((participant, index) => (
                         <fieldset className="event-participant-form" key={participant.key}>
@@ -307,7 +325,7 @@ export default function EventCheckoutForm({ event, onCancel }) {
                                     <input
                                         required
                                         value={participant.fullName}
-                                        readOnly={purchaserAttending && index === 0}
+                                        autoComplete={`section-event-participant-${index + 1} name`}
                                         onChange={(changeEvent) => updateParticipant(index, {
                                             fullName: changeEvent.target.value,
                                         })}
@@ -319,7 +337,7 @@ export default function EventCheckoutForm({ event, onCancel }) {
                                         required
                                         type="email"
                                         value={participant.email}
-                                        readOnly={purchaserAttending && index === 0}
+                                        autoComplete={`section-event-participant-${index + 1} email`}
                                         onChange={(changeEvent) => updateParticipant(index, {
                                             email: changeEvent.target.value,
                                         })}
@@ -332,7 +350,7 @@ export default function EventCheckoutForm({ event, onCancel }) {
                                     <input
                                         type="tel"
                                         value={participant.phone}
-                                        readOnly={purchaserAttending && index === 0}
+                                        autoComplete={`section-event-participant-${index + 1} tel`}
                                         onChange={(changeEvent) => updateParticipant(index, {
                                             phone: changeEvent.target.value,
                                         })}
@@ -357,6 +375,7 @@ export default function EventCheckoutForm({ event, onCancel }) {
                                     <input
                                         required
                                         value={participant.emergencyContactName}
+                                        autoComplete={`section-event-emergency-${index + 1} name`}
                                         onChange={(changeEvent) => updateParticipant(index, {
                                             emergencyContactName: changeEvent.target.value,
                                         })}
@@ -368,6 +387,8 @@ export default function EventCheckoutForm({ event, onCancel }) {
                                         required
                                         type="tel"
                                         value={participant.emergencyContactPhone}
+                                        autoComplete={`section-event-emergency-${index + 1} tel`}
+                                        placeholder="Example: (555) 123-4567"
                                         onChange={(changeEvent) => updateParticipant(index, {
                                             emergencyContactPhone: changeEvent.target.value,
                                         })}
@@ -381,6 +402,7 @@ export default function EventCheckoutForm({ event, onCancel }) {
                                         <input
                                             required
                                             value={participant.guardianName}
+                                            autoComplete={`section-event-guardian-${index + 1} name`}
                                             onChange={(changeEvent) => updateParticipant(index, {
                                                 guardianName: changeEvent.target.value,
                                             })}
@@ -392,6 +414,7 @@ export default function EventCheckoutForm({ event, onCancel }) {
                                             required
                                             type="email"
                                             value={participant.guardianEmail}
+                                            autoComplete={`section-event-guardian-${index + 1} email`}
                                             onChange={(changeEvent) => updateParticipant(index, {
                                                 guardianEmail: changeEvent.target.value,
                                             })}
@@ -409,19 +432,42 @@ export default function EventCheckoutForm({ event, onCancel }) {
                     <CreditCard aria-hidden="true" />
                     <div>
                         <h3>Purchaser</h3>
-                        <p>An account is not required. Confirmation will be sent to this email.</p>
+                        <p>
+                            Choose a participant to copy their information automatically, or
+                            choose someone else. Confirmation will be sent to this email.
+                        </p>
                     </div>
                 </div>
+                <label className="purchaser-source">
+                    Confirmation and receipt contact
+                    <select
+                        value={purchaserSource}
+                        onChange={(changeEvent) => choosePurchaserSource(changeEvent.target.value)}
+                    >
+                        {visibleParticipants.map((participant, index) => (
+                            <option key={participant.key} value={`participant-${index}`}>
+                                {participantOptionLabel(participant, index)}
+                            </option>
+                        ))}
+                        <option value="other">Someone else</option>
+                    </select>
+                    <span>
+                        {purchaserSource === 'other'
+                            ? 'Enter the purchaser information below.'
+                            : `Copied from ${participantOptionLabel(
+                                visibleParticipants[selectedPurchaserIndex],
+                                selectedPurchaserIndex,
+                            )}. Editing a field switches the contact to someone else.`}
+                    </span>
+                </label>
                 <div className="form-row">
                     <label>
                         Full name
                         <input
                             required
                             value={purchaser.name}
-                            onChange={(changeEvent) => setPurchaser((current) => ({
-                                ...current,
-                                name: changeEvent.target.value,
-                            }))}
+                            autoComplete="section-purchaser name"
+                            onChange={(changeEvent) => updatePurchaser('name', changeEvent.target.value)}
                         />
                     </label>
                     <label>
@@ -430,10 +476,8 @@ export default function EventCheckoutForm({ event, onCancel }) {
                             required
                             type="email"
                             value={purchaser.email}
-                            onChange={(changeEvent) => setPurchaser((current) => ({
-                                ...current,
-                                email: changeEvent.target.value,
-                            }))}
+                            autoComplete="section-purchaser email"
+                            onChange={(changeEvent) => updatePurchaser('email', changeEvent.target.value)}
                         />
                     </label>
                 </div>
@@ -442,10 +486,8 @@ export default function EventCheckoutForm({ event, onCancel }) {
                     <input
                         type="tel"
                         value={purchaser.phone}
-                        onChange={(changeEvent) => setPurchaser((current) => ({
-                            ...current,
-                            phone: changeEvent.target.value,
-                        }))}
+                        autoComplete="section-purchaser tel"
+                        onChange={(changeEvent) => updatePurchaser('phone', changeEvent.target.value)}
                     />
                 </label>
             </section>
@@ -468,6 +510,9 @@ export default function EventCheckoutForm({ event, onCancel }) {
                             Promotion code <span className="optional-label">optional</span>
                             <input
                                 value={discountCode}
+                                autoCapitalize="characters"
+                                autoCorrect="off"
+                                spellCheck="false"
                                 onChange={(changeEvent) => setDiscountCode(changeEvent.target.value.toUpperCase())}
                                 placeholder="ENTER CODE"
                             />

@@ -10,6 +10,7 @@ export default function LoginPage() {
     ));
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
     const [error, setError] = useState('');
     const [busy, setBusy] = useState(false);
     const {
@@ -50,6 +51,10 @@ export default function LoginPage() {
 
     const handleSubmit = (event) => {
         event.preventDefault();
+        if (mode === 'signup' && password !== confirmPassword) {
+            setError('The passwords do not match.');
+            return;
+        }
         run(() => (
             mode === 'login'
                 ? signIn(email, password)
@@ -108,8 +113,25 @@ export default function LoginPage() {
                         />
                     </label>
 
+                    {mode === 'signup' && (
+                        <label>
+                            Confirm password
+                            <input
+                                required
+                                minLength="6"
+                                type="password"
+                                value={confirmPassword}
+                                onChange={(event) => setConfirmPassword(event.target.value)}
+                                autoComplete="new-password"
+                            />
+                            <span className="auth-field-hint">
+                                Re-enter the same password to prevent a typing mistake.
+                            </span>
+                        </label>
+                    )}
+
                     {error && (
-                        <p className="form-status form-status--error">{error}</p>
+                        <p className="form-status form-status--error" role="alert">{error}</p>
                     )}
 
                     <button
@@ -140,9 +162,13 @@ export default function LoginPage() {
                 <button
                     className="auth-toggle"
                     type="button"
-                    onClick={() => setMode((current) => (
-                        current === 'login' ? 'signup' : 'login'
-                    ))}
+                    onClick={() => {
+                        setMode((current) => (
+                            current === 'login' ? 'signup' : 'login'
+                        ));
+                        setConfirmPassword('');
+                        setError('');
+                    }}
                 >
                     {mode === 'login'
                         ? 'New here? Create an account'
