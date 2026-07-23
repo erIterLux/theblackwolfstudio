@@ -74,10 +74,156 @@
       }
     },
     {
-      "key": "brown",
-      "label": "Brown Wolf",
-      "shortLabel": "Brown",
+      "key": "yellow",
+      "label": "Yellow Wolf",
+      "shortLabel": "Yellow",
       "order": 1,
+      "theme": "Fundamentals in motion",
+      "description": "Carry the White Wolf foundation into connected movement. Show reliable basics, early defensive choices, and calm participation under light pressure.",
+      "categories": {
+        "striking": {
+          "summary": "Connect foundational strikes and defenses while preserving stance, breathing, and control.",
+          "items": [
+            "Link two- and three-strike combinations without losing balance or protective structure.",
+            "Add a simple defensive response before or after a controlled combination.",
+            "Adjust range with footwork rather than reaching, leaning, or crowding the partner.",
+            "Finish each exchange by recovering posture, awareness, and a path to safety."
+          ]
+        },
+        "movement": {
+          "summary": "Combine basic steps, pivots, and exits during cooperative partner movement.",
+          "items": [
+            "Move in more than one direction while maintaining a useful stance.",
+            "Use a pivot or angle change to leave the direct line of pressure.",
+            "Recover balance after light contact without freezing or rushing.",
+            "Navigate a simple obstacle while keeping the partner and exit in view."
+          ]
+        },
+        "situationalAwareness": {
+          "summary": "Use early awareness, boundaries, and movement to reduce risk in simple scenarios.",
+          "items": [
+            "Identify distance changes and respond before the situation becomes physical.",
+            "Pair a clear verbal boundary with balanced posture and visible hands.",
+            "Maintain awareness of exits and nearby people while communicating.",
+            "Explain when leaving or seeking help is safer than continuing the interaction."
+          ]
+        },
+        "breathControl": {
+          "summary": "Maintain usable breathing through connected drills and recover with intention.",
+          "items": [
+            "Coordinate exhale with combinations and changes of direction.",
+            "Notice breath-holding and restore a comfortable breathing rhythm without stopping unnecessarily.",
+            "Use visual orientation and grounded contact during a short recovery interval.",
+            "Communicate an appropriate need to pause, slow down, or change intensity."
+          ]
+        },
+        "grappling": {
+          "summary": "Use posture, frames, and movement to create safe space under light resistance.",
+          "items": [
+            "Maintain a stable base while a partner applies a cooperative grip or clinch.",
+            "Use an approved frame without pushing through the neck, face, or unsafe joint pressure.",
+            "Combine posture and an angle change to improve position.",
+            "Release immediately when the drill ends or a partner taps."
+          ]
+        },
+        "ground": {
+          "summary": "Connect protection, movement, and a technical return to standing.",
+          "items": [
+            "Recover a protected posture after an instructor-approved fall or transition.",
+            "Use frames and hip movement to create safe working space.",
+            "Track the partner and surroundings while preparing to stand.",
+            "Return to standing with balance and protective structure under cooperative pressure."
+          ]
+        },
+        "weapons": {
+          "summary": "Apply distance, barrier, escape, and communication priorities in simple supervised scenarios.",
+          "items": [
+            "Recognize a possible weapon cue and move toward greater time and distance.",
+            "Place an available barrier between yourself and the possible threat.",
+            "Identify an exit and communicate clearly while moving toward safety.",
+            "Explain why avoidance and escape remain the preferred response."
+          ]
+        }
+      }
+    },
+    {
+      "key": "orange",
+      "label": "Orange Wolf",
+      "shortLabel": "Orange",
+      "order": 2,
+      "theme": "Connection",
+      "description": "Connect skills across range and position. Make deliberate choices while timing, resistance, and environmental demands begin to change.",
+      "categories": {
+        "striking": {
+          "summary": "Connect offense, defense, angle, and disengagement at controlled intensity.",
+          "items": [
+            "Respond to a basic cue with an appropriate defense and controlled counter.",
+            "Change angle during a combination without crossing the feet or losing posture.",
+            "Move between long and close range on approved equipment with target discipline.",
+            "Stop striking when space to disengage becomes available."
+          ]
+        },
+        "movement": {
+          "summary": "Select movement that improves position rather than moving by habit.",
+          "items": [
+            "Use lateral movement, pivots, and direction changes in a non-fixed sequence.",
+            "Avoid being guided into a wall, corner, or obstacle during light pressure.",
+            "Recover stance after a missed step or unexpected change in direction.",
+            "Create and maintain an exit line while another task is introduced."
+          ]
+        },
+        "situationalAwareness": {
+          "summary": "Track communication, distance, environment, and changing behavior together.",
+          "items": [
+            "Reassess exits and bystanders as a scenario changes.",
+            "Distinguish discomfort, boundary testing, and immediate danger using observable information.",
+            "Use proportionate language without threatening or escalating.",
+            "Choose a safe next action and explain the information that supported it."
+          ]
+        },
+        "breathControl": {
+          "summary": "Use pacing and recovery skills as drill complexity increases.",
+          "items": [
+            "Maintain functional breathing during a longer combination or movement round.",
+            "Adjust pace before technical control deteriorates.",
+            "Recover toward a steady rhythm within an instructor-defined interval.",
+            "Remain oriented to the room and partner while using a regulation strategy."
+          ]
+        },
+        "grappling": {
+          "summary": "Connect frames, posture, grip awareness, and exits under measured resistance.",
+          "items": [
+            "Recognize when a grip or position compromises balance.",
+            "Combine a frame, posture correction, and angle change to improve position.",
+            "Move safely between two approved clinch positions.",
+            "Choose disengagement when continued control is unnecessary."
+          ]
+        },
+        "ground": {
+          "summary": "Move from a compromised position toward protection, space, and a safe exit.",
+          "items": [
+            "Maintain head protection while changing ground position.",
+            "Use an approved frame and movement sequence when the first path is blocked.",
+            "Choose whether to remain grounded or stand based on the scenario.",
+            "Disengage and stand without turning away from the partner."
+          ]
+        },
+        "weapons": {
+          "summary": "Make risk-first choices when distance, obstacles, or other people complicate escape.",
+          "items": [
+            "Reposition to prevent an obstacle or bystander from blocking the safest exit.",
+            "Use distance and barriers instead of reaching toward a suspected weapon.",
+            "Choose escape, compliance, or help-seeking within the rules of a supervised scenario.",
+            "State appropriate post-incident priorities after reaching safety."
+          ]
+        }
+      }
+    },
+    {
+      "key": "green",
+      "label": "Green Wolf",
+      "shortLabel": "Green",
+      "order": 3,
       "theme": "Integration",
       "description": "Connect fundamentals into fluid decisions. Maintain control while movement, uncertainty, and resistance increase.",
       "categories": {
@@ -147,10 +293,10 @@
       }
     },
     {
-      "key": "gray",
-      "label": "Gray Wolf",
-      "shortLabel": "Gray",
-      "order": 2,
+      "key": "blue",
+      "label": "Blue Wolf",
+      "shortLabel": "Blue",
+      "order": 4,
       "theme": "Adaptation",
       "description": "Adapt under pressure. Integrate technique, nervous-system awareness, judgment, and responsibility in changing conditions.",
       "categories": {
@@ -220,10 +366,83 @@
       }
     },
     {
+      "key": "brown-belt",
+      "label": "Brown Wolf",
+      "shortLabel": "Brown",
+      "order": 5,
+      "theme": "Refinement",
+      "description": "Refine adaptable skill into consistent performance. Demonstrate precision, restraint, recovery, and readiness to support safe practice.",
+      "categories": {
+        "striking": {
+          "summary": "Refine striking decisions across changing range, pressure, and fatigue.",
+          "items": [
+            "Maintain accuracy, balance, and protective structure during demanding integrated rounds.",
+            "Change tools and targets appropriately as range and position change.",
+            "Use only the intensity necessary to meet the supervised drill objective.",
+            "Recognize and correct a technical breakdown before it becomes unsafe."
+          ]
+        },
+        "movement": {
+          "summary": "Move with economy while managing environmental pressure and another person's safety.",
+          "items": [
+            "Choose efficient angles instead of adding unnecessary steps.",
+            "Maintain balance and awareness while assisting or shielding another person.",
+            "Adapt movement to confined space, obstacles, fatigue, or mobility needs.",
+            "Explain how a positioning choice improved safety or preserved an exit."
+          ]
+        },
+        "situationalAwareness": {
+          "summary": "Demonstrate mature, proportionate decisions in layered scenarios.",
+          "items": [
+            "Track exits, bystanders, secondary risks, communication, and behavior as conditions change.",
+            "Choose intervention, disengagement, or help-seeking without escalating unnecessarily.",
+            "Recognize when a technically possible action would create unacceptable risk.",
+            "Complete a clear after-action reflection grounded in observable decisions."
+          ]
+        },
+        "breathControl": {
+          "summary": "Sustain awareness and deliberate recovery through high-demand practice.",
+          "items": [
+            "Maintain usable breathing and communication during sustained integrated work.",
+            "Adjust pace or strategy before activation or fatigue removes safe choice.",
+            "Recover orientation and a functional breathing rhythm after a demanding scenario.",
+            "Offer a simple consent-based recovery cue without making medical claims."
+          ]
+        },
+        "grappling": {
+          "summary": "Refine positional problem-solving with control, restraint, and adaptability.",
+          "items": [
+            "Chain approved positional responses when the first option is unavailable.",
+            "Maintain control without relying on pain compliance or avoidable force.",
+            "Adapt frames, posture, and movement for varied partners and resistance.",
+            "Explain when releasing, disengaging, or changing objectives is the safer decision."
+          ]
+        },
+        "ground": {
+          "summary": "Apply reliable ground recovery while accounting for pressure and the wider environment.",
+          "items": [
+            "Recover from multiple compromised positions without abandoning head protection.",
+            "Use measured pressure while protecting the training partner.",
+            "Choose control, disengagement, or standing based on secondary risks.",
+            "Maintain awareness and communication through the end of the drill."
+          ]
+        },
+        "weapons": {
+          "summary": "Demonstrate disciplined judgment in advanced supervised weapon-awareness scenarios.",
+          "items": [
+            "Continuously reassess distance, barriers, exits, bystanders, and changing behavior.",
+            "Prioritize avoidance and escape even when a physical option is presented.",
+            "Identify when scenario speed, intensity, or behavior should be stopped or reduced.",
+            "Explain post-incident priorities including safety, communication, medical help, and emergency services."
+          ]
+        }
+      }
+    },
+    {
       "key": "black",
       "label": "Black Wolf",
       "shortLabel": "Black",
-      "order": 3,
+      "order": 6,
       "theme": "Embodied leadership",
       "description": "Demonstrate durable skill, restraint, judgment, and the ability to help others train safely without replacing qualified instruction.",
       "categories": {

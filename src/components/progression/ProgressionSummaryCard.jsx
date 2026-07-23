@@ -351,7 +351,11 @@ export default function ProgressionSummaryCard({ dashboardState }) {
                                 : 'Available';
 
                     return (
-                        <div className={`progression-level-rail__item is-${state}`} key={level.key}>
+                        <div
+                            className={`progression-level-rail__item is-${state}`}
+                            data-progression-level={level.key}
+                            key={level.key}
+                        >
                             <span aria-hidden="true" />
                             <strong>{level.label}</strong>
                             <small>{stateLabel}</small>

@@ -1,5 +1,6 @@
 const admin = require('firebase-admin');
 const { logger } = require('firebase-functions');
+const { getLevel } = require('../config/progressionSystem');
 const {
   configureEmail,
   emailShell,
@@ -13,6 +14,13 @@ function statusChanged(before = {}, after = {}) {
   return String(before.status || '') !== String(after.status || '');
 }
 
+function progressionLevelLabel(review = {}) {
+  return getLevel(review.levelKey)?.label
+    || review.levelLabel
+    || review.levelKey
+    || 'progression level';
+}
+
 async function sendInstructorSubmissionEmail(reviewId, review) {
   const to = studioNotificationEmail();
   if (!to) {
@@ -21,7 +29,7 @@ async function sendInstructorSubmissionEmail(reviewId, review) {
   }
 
   const memberName = review.memberDisplayName || review.memberEmail || 'A member';
-  const levelLabel = review.levelLabel || review.levelKey || 'progression level';
+  const levelLabel = progressionLevelLabel(review);
   await sendEmail({
     to,
     subject: `${memberName} submitted ${levelLabel} for review`,
@@ -44,7 +52,7 @@ async function sendMemberReviewEmail(type, review) {
   }
 
   const firstName = String(review.memberDisplayName || '').trim().split(/\s+/)[0] || 'there';
-  const levelLabel = review.levelLabel || review.levelKey || 'progression level';
+  const levelLabel = progressionLevelLabel(review);
 
   if (type === 'needs_work') {
     await sendEmail({

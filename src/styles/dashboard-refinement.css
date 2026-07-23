@@ -270,9 +270,11 @@
 
 .progression-level-rail {
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(7, minmax(110px, 1fr));
     gap: .5rem;
+    overflow-x: auto;
     padding-top: .2rem;
+    padding-bottom: .35rem;
 }
 
 .progression-level-rail__item {
@@ -295,9 +297,21 @@
     }
 
     .progression-level-rail__item strong {
+        display: grid;
+        grid-template-columns: 24px minmax(0, 1fr);
+        align-items: center;
+        gap: .4rem;
         color: var(--charcoal);
         font-size: .88rem;
     }
+
+        .progression-level-rail__item strong::before {
+            width: 24px;
+            height: 7px;
+            content: '';
+            background: var(--progression-belt-color, #cbc5bc);
+            border: 1px solid var(--progression-belt-outline, transparent);
+        }
 
     .progression-level-rail__item small {
         font-size: .72rem;
@@ -421,7 +435,7 @@
     }
 
     .progression-level-rail {
-        grid-template-columns: repeat(4, minmax(125px, 1fr));
+        grid-template-columns: repeat(7, minmax(125px, 1fr));
         overflow-x: auto;
         padding-bottom: .5rem;
     }

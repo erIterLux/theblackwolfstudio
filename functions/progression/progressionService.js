@@ -15,6 +15,27 @@ const MEMBER_EDITABLE_LEVEL_STATUSES = new Set(['active', 'draft', 'needs_work']
 const INSTRUCTOR_ROLES = new Set(['instructor', 'admin']);
 const LIVE_MEMBERSHIP_STATUSES = new Set(['active', 'trialing']);
 const FEEDBACK_TYPES = new Set(['text', 'audio', 'video']);
+const REQUIREMENTS_VERSION = 2;
+const LEGACY_LEVEL_MAP = {
+    white: 'white',
+    brown: 'green',
+    gray: 'blue',
+    black: 'black',
+};
+const LEGACY_SOURCE_LEVEL = {
+    white: 'white',
+    green: 'brown',
+    blue: 'gray',
+    black: 'black',
+};
+const CURRENT_LEVEL_STATUSES = new Set([
+    'active',
+    'draft',
+    'submitted',
+    'in_review',
+    'needs_work',
+    'ready_for_approval',
+]);
 
 function now() {
     return admin.firestore.FieldValue.serverTimestamp();
@@ -116,10 +137,143 @@ async function getMemberIdentity(uid, authToken = {}) {
     };
 }
 
+function canonicalLegacyLevelKey(levelKey) {
+    const key = clean(levelKey, 40);
+    return LEGACY_LEVEL_MAP[key] || key;
+}
+
+async function synchronizeProgressionProfile(profileRef, profile) {
+    if (Number(profile.requirementsVersion || 0) >= REQUIREMENTS_VERSION) return profile;
+
+    const legacyLevelsSnapshot = await profileRef.collection('levels').get();
+    const legacyLevels = new Map(legacyLevelsSnapshot.docs.map((docSnap) => [
+        docSnap.id,
+        docSnap,
+    ]));
+    const currentLevelKey = canonicalLegacyLevelKey(
+        profile.currentLevel || profile.currentLevelKey || 'white',
+    );
+    const currentDefinition = getLevel(currentLevelKey) || LEVELS[0];
+    const completedLevels = new Set(
+        (Array.isArray(profile.completedLevels) ? profile.completedLevels : [])
+            .map(canonicalLegacyLevelKey)
+            .filter((levelKey) => LEVELS.some((level) => level.key === levelKey)),
+    );
+    const legacyEarnedDefinition = getLevel(canonicalLegacyLevelKey(profile.earnedLevel));
+
+    if (legacyEarnedDefinition) {
+        LEVELS
+            .filter((level) => level.order <= legacyEarnedDefinition.order)
+            .forEach((level) => completedLevels.add(level.key));
+    }
+    LEVELS
+        .filter((level) => level.order < currentDefinition.order)
+        .forEach((level) => completedLevels.add(level.key));
+    if (profile.programComplete === true) {
+        LEVELS.forEach((level) => completedLevels.add(level.key));
+    }
+
+    const sourceCategories = new Map(await Promise.all(LEVELS.map(async (level) => {
+        const sourceKey = LEGACY_SOURCE_LEVEL[level.key] || level.key;
+        const sourceLevel = legacyLevels.get(sourceKey);
+        if (!sourceLevel) return [level.key, new Map()];
+        const categorySnapshot = await sourceLevel.ref.collection('categories').get();
+        return [level.key, new Map(categorySnapshot.docs.map((docSnap) => [
+            docSnap.id,
+            docSnap.data() || {},
+        ]))];
+    })));
+
+    const orderedCompletedLevels = LEVELS
+        .filter((level) => completedLevels.has(level.key))
+        .map((level) => level.key);
+    const earnedLevel = orderedCompletedLevels.at(-1) || null;
+    const updatedAt = now();
+    const batch = db.batch();
+
+    batch.set(profileRef, {
+        currentLevel: currentDefinition.key,
+        earnedLevel,
+        completedLevels: orderedCompletedLevels,
+        programComplete: profile.programComplete === true,
+        requirementsVersion: REQUIREMENTS_VERSION,
+        progressionSystem: 'belt-color-wolf',
+        updatedAt,
+    }, { merge: true });
+
+    for (const level of LEVELS) {
+        const sourceKey = LEGACY_SOURCE_LEVEL[level.key] || level.key;
+        const sourceLevelData = legacyLevels.get(sourceKey)?.data() || {};
+        const isApproved = completedLevels.has(level.key);
+        const isCurrent = level.key === currentDefinition.key;
+        const sourceLevelStatus = clean(sourceLevelData.status, 40);
+        const status = isApproved
+            ? 'approved'
+            : isCurrent && CURRENT_LEVEL_STATUSES.has(sourceLevelStatus)
+                ? sourceLevelStatus
+                : isCurrent
+                    ? 'active'
+                    : 'locked';
+        const levelRef = profileRef.collection('levels').doc(level.key);
+
+        batch.set(levelRef, {
+            ...sourceLevelData,
+            memberUid: profile.memberUid || profileRef.id,
+            levelKey: level.key,
+            levelLabel: level.label,
+            legacyLevelKey: sourceKey !== level.key ? sourceKey : null,
+            order: level.order,
+            status,
+            requirementsVersion: REQUIREMENTS_VERSION,
+            createdAt: sourceLevelData.createdAt || profile.createdAt || updatedAt,
+            updatedAt,
+        }, { merge: true });
+
+        for (const category of CATEGORIES) {
+            const sourceCategoryData = sourceCategories.get(level.key)?.get(category.key) || {};
+            const sourceCategoryStatus = clean(sourceCategoryData.status, 40);
+            const categoryStatus = isApproved
+                ? 'validated'
+                : isCurrent && sourceCategoryStatus && sourceCategoryStatus !== 'locked'
+                    ? sourceCategoryStatus
+                    : isCurrent
+                        ? 'not_started'
+                        : 'locked';
+
+            batch.set(levelRef.collection('categories').doc(category.key), {
+                memberNotes: '',
+                instructorNotes: '',
+                video: null,
+                currentEvidenceId: null,
+                currentEvidence: null,
+                evidenceCount: 0,
+                feedbackCount: 0,
+                latestFeedback: null,
+                ...sourceCategoryData,
+                memberUid: profile.memberUid || profileRef.id,
+                levelKey: level.key,
+                legacyLevelKey: sourceKey !== level.key ? sourceKey : null,
+                categoryKey: category.key,
+                categoryLabel: category.label,
+                status: categoryStatus,
+                requirementsVersion: REQUIREMENTS_VERSION,
+                createdAt: sourceCategoryData.createdAt || sourceLevelData.createdAt
+                    || profile.createdAt || updatedAt,
+                updatedAt,
+            }, { merge: true });
+        }
+    }
+
+    await batch.commit();
+    return (await profileRef.get()).data() || profile;
+}
+
 async function seedProgressionProfile(memberUid, authToken = {}) {
     const { profileRef } = progressionRefs(memberUid);
     const existing = await profileRef.get();
-    if (existing.exists) return existing.data() || {};
+    if (existing.exists) {
+        return synchronizeProgressionProfile(profileRef, existing.data() || {});
+    }
 
     const identity = await getMemberIdentity(memberUid, authToken);
     const batch = db.batch();
@@ -133,7 +287,8 @@ async function seedProgressionProfile(memberUid, authToken = {}) {
         earnedLevel: null,
         completedLevels: [],
         programComplete: false,
-        requirementsVersion: 1,
+        requirementsVersion: REQUIREMENTS_VERSION,
+        progressionSystem: 'belt-color-wolf',
         createdAt,
         updatedAt: createdAt,
     });
@@ -147,6 +302,7 @@ async function seedProgressionProfile(memberUid, authToken = {}) {
             levelLabel: level.label,
             order: level.order,
             status: unlocked ? 'active' : 'locked',
+            requirementsVersion: REQUIREMENTS_VERSION,
             createdAt,
             updatedAt: createdAt,
         });
@@ -166,6 +322,7 @@ async function seedProgressionProfile(memberUid, authToken = {}) {
                 evidenceCount: 0,
                 feedbackCount: 0,
                 latestFeedback: null,
+                requirementsVersion: REQUIREMENTS_VERSION,
                 createdAt,
                 updatedAt: createdAt,
             });
@@ -181,13 +338,46 @@ function sortByCreatedAtDescending(items) {
 }
 
 async function readCategoryDetail(categoryRef, categoryData) {
-    const [evidenceSnap, feedbackSnap] = await Promise.all([
+    const profileRef = categoryRef.parent.parent?.parent.parent;
+    const legacyCategoryRef = categoryData.legacyLevelKey && profileRef
+        ? profileRef.collection('levels')
+            .doc(categoryData.legacyLevelKey)
+            .collection('categories')
+            .doc(categoryData.categoryKey || categoryRef.id)
+        : null;
+    const evidenceQueries = [
         categoryRef.collection('evidence').orderBy('createdAt', 'desc').limit(30).get(),
+    ];
+    const feedbackQueries = [
         categoryRef.collection('feedback').orderBy('createdAt', 'desc').limit(30).get(),
+    ];
+    if (legacyCategoryRef) {
+        evidenceQueries.push(
+            legacyCategoryRef.collection('evidence').orderBy('createdAt', 'desc').limit(30).get(),
+        );
+        feedbackQueries.push(
+            legacyCategoryRef.collection('feedback').orderBy('createdAt', 'desc').limit(30).get(),
+        );
+    }
+    const [evidenceSnapshots, feedbackSnapshots] = await Promise.all([
+        Promise.all(evidenceQueries),
+        Promise.all(feedbackQueries),
     ]);
+    const evidenceRecords = new Map();
+    for (const snapshot of evidenceSnapshots.toReversed()) {
+        snapshot.docs.forEach((docSnap) => {
+            evidenceRecords.set(docSnap.id, { id: docSnap.id, ...docSnap.data() });
+        });
+    }
+    const feedbackRecords = new Map();
+    for (const snapshot of feedbackSnapshots.toReversed()) {
+        snapshot.docs.forEach((docSnap) => {
+            feedbackRecords.set(docSnap.id, { id: docSnap.id, ...docSnap.data() });
+        });
+    }
 
     const evidence = sortByCreatedAtDescending(
-        evidenceSnap.docs.map((docSnap) => serialize({ id: docSnap.id, ...docSnap.data() })),
+        [...evidenceRecords.values()].map(serialize),
     );
     if (!evidence.length && categoryData.video?.storagePath) {
         evidence.push(serialize({
@@ -203,7 +393,7 @@ async function readCategoryDetail(categoryRef, categoryData) {
         }));
     }
     const feedback = sortByCreatedAtDescending(
-        feedbackSnap.docs.map((docSnap) => serialize({ id: docSnap.id, ...docSnap.data() })),
+        [...feedbackRecords.values()].map(serialize),
     );
 
     return serialize({
@@ -224,8 +414,11 @@ async function readProgression(memberUid) {
 
     if (!profileSnap.exists) return null;
 
+    const levelDocuments = new Map(levelSnaps.docs.map((docSnap) => [docSnap.id, docSnap]));
     const levels = [];
-    for (const levelDoc of levelSnaps.docs) {
+    for (const levelDefinition of LEVELS) {
+        const levelDoc = levelDocuments.get(levelDefinition.key);
+        if (!levelDoc) continue;
         const categorySnap = await levelDoc.ref.collection('categories').get();
         const categoryEntries = await Promise.all(categorySnap.docs.map(async (docSnap) => [
             docSnap.id,
@@ -260,11 +453,15 @@ async function readProgressionSummary(memberUid, authToken = {}) {
         serialize({ id: item.id, ...item.data() }),
     ]));
 
-    const levels = levelsSnapshot.docs.map((item) => serialize({
-        id: item.id,
-        ...item.data(),
-        categories: item.id === currentLevelKey ? categories : {},
-    }));
+    const levelDocuments = new Map(levelsSnapshot.docs.map((item) => [item.id, item]));
+    const levels = LEVELS
+        .map((levelDefinition) => levelDocuments.get(levelDefinition.key))
+        .filter(Boolean)
+        .map((item) => serialize({
+            id: item.id,
+            ...item.data(),
+            categories: item.id === currentLevelKey ? categories : {},
+        }));
 
     return {
         profile: serialize({
@@ -328,9 +525,10 @@ function sanitizeEvidenceMedia(video, memberUid, levelKey, categoryKey, evidence
 async function handleSaveProgressionCategory(request) {
     const callerUid = requireAuth(request);
     const memberUid = clean(request.data?.memberUid || callerUid, 128);
-    const levelKey = clean(request.data?.levelKey, 40);
+    const requestedLevelKey = clean(request.data?.levelKey, 40);
     const categoryKey = clean(request.data?.categoryKey, 60);
-    const level = getLevel(levelKey);
+    const level = getLevel(requestedLevelKey);
+    const levelKey = level?.key || requestedLevelKey;
     const category = getCategory(categoryKey);
 
     if (!memberUid || !level || !category) {
@@ -432,12 +630,14 @@ async function handleSaveProgressionCategory(request) {
 async function handleSubmitProgressionLevel(request) {
     const callerUid = requireAuth(request);
     const memberUid = clean(request.data?.memberUid || callerUid, 128);
-    const levelKey = clean(request.data?.levelKey, 40);
-    const level = getLevel(levelKey);
+    const requestedLevelKey = clean(request.data?.levelKey, 40);
+    const level = getLevel(requestedLevelKey);
+    const levelKey = level?.key || requestedLevelKey;
     if (!level) throw new HttpsError('invalid-argument', 'A valid progression level is required.');
 
     const access = await canManageMember(request, memberUid);
     if (!access.isInstructor) await assertActiveMembership(memberUid);
+    await seedProgressionProfile(memberUid, request.auth?.token || {});
     const { profileRef, levelRef } = progressionRefs(memberUid, levelKey);
     const [profileSnap, levelSnap, categoriesSnap] = await Promise.all([
         profileRef.get(),
@@ -523,7 +723,16 @@ async function handleListProgressionReviews(request) {
         .get();
 
     const reviews = snapshot.docs
-        .map((docSnap) => serialize({ id: docSnap.id, ...docSnap.data() }))
+        .map((docSnap) => {
+            const review = { id: docSnap.id, ...docSnap.data() };
+            const level = getLevel(review.levelKey);
+            return serialize({
+                ...review,
+                levelKey: level?.key || review.levelKey,
+                levelLabel: level?.label || review.levelLabel,
+                levelOrder: level?.order ?? review.levelOrder,
+            });
+        })
         .sort((left, right) => String(right.submittedAt || '').localeCompare(String(left.submittedAt || '')));
     return { reviews };
 }
@@ -536,7 +745,10 @@ async function handleGetProgressionReview(request) {
     const reviewSnap = await db.collection('progressionReviews').doc(reviewId).get();
     if (!reviewSnap.exists) throw new HttpsError('not-found', 'Progression review not found.');
     const review = reviewSnap.data() || {};
-    const { profileRef, levelRef } = progressionRefs(review.memberUid, review.levelKey);
+    const level = getLevel(review.levelKey);
+    if (!level) throw new HttpsError('failed-precondition', 'The review level is invalid.');
+    await seedProgressionProfile(review.memberUid);
+    const { profileRef, levelRef } = progressionRefs(review.memberUid, level.key);
     const [profileSnap, levelSnap, categoriesSnap] = await Promise.all([
         profileRef.get(),
         levelRef.get(),
@@ -549,7 +761,13 @@ async function handleGetProgressionReview(request) {
     ]));
 
     return serialize({
-        review: { id: reviewSnap.id, ...review },
+        review: {
+            id: reviewSnap.id,
+            ...review,
+            levelKey: level.key,
+            levelLabel: level.label,
+            levelOrder: level.order,
+        },
         profile: { id: profileSnap.id, ...profileSnap.data() },
         level: { id: levelSnap.id, ...levelSnap.data() },
         categories: Object.fromEntries(categoryEntries),
@@ -589,14 +807,36 @@ async function handleSaveProgressionFeedback(request) {
     const reviewSnap = await reviewRef.get();
     if (!reviewSnap.exists) throw new HttpsError('not-found', 'Progression review not found.');
     const review = reviewSnap.data() || {};
-    const { categoryRef } = progressionRefs(review.memberUid, review.levelKey, categoryKey);
+    const level = getLevel(review.levelKey);
+    if (!level) throw new HttpsError('failed-precondition', 'The review level is invalid.');
+    await seedProgressionProfile(review.memberUid);
+    const { profileRef, categoryRef } = progressionRefs(
+        review.memberUid,
+        level.key,
+        categoryKey,
+    );
     const categorySnap = await categoryRef.get();
     if (!categorySnap.exists) throw new HttpsError('not-found', 'Progression category not found.');
 
     if (evidenceId) {
         const evidenceSnap = await categoryRef.collection('evidence').doc(evidenceId).get();
+        const legacyLevelKey = categorySnap.data()?.legacyLevelKey;
+        const legacyEvidenceSnap = !evidenceSnap.exists && legacyLevelKey
+            ? await profileRef.collection('levels')
+                .doc(legacyLevelKey)
+                .collection('categories')
+                .doc(categoryKey)
+                .collection('evidence')
+                .doc(evidenceId)
+                .get()
+            : null;
         const isLegacyEvidence = evidenceId === 'legacy-current' && categorySnap.data()?.video?.storagePath;
-        if (!evidenceSnap.exists && categorySnap.data()?.currentEvidenceId !== evidenceId && !isLegacyEvidence) {
+        if (
+            !evidenceSnap.exists
+            && !legacyEvidenceSnap?.exists
+            && categorySnap.data()?.currentEvidenceId !== evidenceId
+            && !isLegacyEvidence
+        ) {
             throw new HttpsError('invalid-argument', 'The selected evidence record was not found.');
         }
     }
@@ -615,7 +855,7 @@ async function handleSaveProgressionFeedback(request) {
         memberUid: review.memberUid,
         instructorUid: instructor.uid,
         instructorRole: instructor.role,
-        levelKey: review.levelKey,
+        levelKey: level.key,
         categoryKey,
         evidenceId: evidenceId || categorySnap.data()?.currentEvidenceId || null,
         feedbackType,
@@ -690,7 +930,10 @@ async function handleReviewProgressionCategory(request) {
     const reviewSnap = await reviewRef.get();
     if (!reviewSnap.exists) throw new HttpsError('not-found', 'Progression review not found.');
     const review = reviewSnap.data() || {};
-    const { levelRef, categoryRef } = progressionRefs(review.memberUid, review.levelKey, categoryKey);
+    const level = getLevel(review.levelKey);
+    if (!level) throw new HttpsError('failed-precondition', 'The review level is invalid.');
+    await seedProgressionProfile(review.memberUid);
+    const { levelRef, categoryRef } = progressionRefs(review.memberUid, level.key, categoryKey);
 
     await categoryRef.set({
         status,
@@ -717,7 +960,8 @@ async function handleApproveProgressionLevel(request) {
     const level = getLevel(review.levelKey);
     if (!level) throw new HttpsError('failed-precondition', 'The review level is invalid.');
 
-    const { profileRef, levelRef } = progressionRefs(review.memberUid, review.levelKey);
+    await seedProgressionProfile(review.memberUid);
+    const { profileRef, levelRef } = progressionRefs(review.memberUid, level.key);
     const categoriesSnap = await levelRef.collection('categories').get();
     const notValidated = categoriesSnap.docs.filter((docSnap) => docSnap.data()?.status !== 'validated');
     if (notValidated.length) {

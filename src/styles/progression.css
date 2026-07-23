@@ -1,3 +1,45 @@
+.progression-page [data-progression-level='white'],
+.progression-summary-card [data-progression-level='white'] {
+    --progression-belt-color: #f2eee6;
+    --progression-belt-outline: #aaa59c;
+}
+
+.progression-page [data-progression-level='yellow'],
+.progression-summary-card [data-progression-level='yellow'] {
+    --progression-belt-color: #d9b52f;
+    --progression-belt-outline: #a88918;
+}
+
+.progression-page [data-progression-level='orange'],
+.progression-summary-card [data-progression-level='orange'] {
+    --progression-belt-color: #d87628;
+    --progression-belt-outline: #a84f13;
+}
+
+.progression-page [data-progression-level='green'],
+.progression-summary-card [data-progression-level='green'] {
+    --progression-belt-color: #39734b;
+    --progression-belt-outline: #285437;
+}
+
+.progression-page [data-progression-level='blue'],
+.progression-summary-card [data-progression-level='blue'] {
+    --progression-belt-color: #356899;
+    --progression-belt-outline: #244d73;
+}
+
+.progression-page [data-progression-level='brown-belt'],
+.progression-summary-card [data-progression-level='brown-belt'] {
+    --progression-belt-color: #70472f;
+    --progression-belt-outline: #4e3020;
+}
+
+.progression-page [data-progression-level='black'],
+.progression-summary-card [data-progression-level='black'] {
+    --progression-belt-color: #17191c;
+    --progression-belt-outline: #050607;
+}
+
 .progression-page,
 .progression-admin-page {
     min-height: 100vh;
@@ -94,6 +136,8 @@
         text-align: left;
         background: rgba(255, 255, 255, .58);
         border: 1px solid rgba(20, 23, 27, .12);
+        border-left: 5px solid var(--progression-belt-color, rgba(20, 23, 27, .12));
+        box-shadow: inset 1px 0 var(--progression-belt-outline, transparent);
         cursor: pointer;
         transition: border-color .2s ease, background .2s ease, transform .2s ease;
     }
@@ -102,6 +146,7 @@
         .progression-levels button.is-selected {
             background: #fff;
             border-color: rgba(53, 73, 93, .48);
+            border-left-color: var(--progression-belt-color, rgba(53, 73, 93, .48));
             transform: translateY(-2px);
         }
 

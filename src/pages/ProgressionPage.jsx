@@ -172,6 +172,7 @@ export default function ProgressionPage() {
                             <button
                                 key={level.key}
                                 type="button"
+                                data-progression-level={level.key}
                                 className={activeLevelKey === level.key ? 'is-selected' : ''}
                                 onClick={() => setSelectedLevelKey(level.key)}
                             >
@@ -186,7 +187,11 @@ export default function ProgressionPage() {
                 <section className="progression-level-detail">
                     <div className="progression-level-detail__heading">
                         <div>
-                            <p className="eyebrow">Level {selectedDefinition.order + 1} of 4 · {selectedDefinition.theme}</p>
+                            <p className="eyebrow">
+                                Level {selectedDefinition.order + 1} of {progressionLevels.length}
+                                {' · '}
+                                {selectedDefinition.theme}
+                            </p>
                             <h2>{selectedDefinition.label}</h2>
                             <p>{selectedDefinition.description}</p>
                         </div>

@@ -4,9 +4,14 @@ const LEVELS = data.levels;
 const CATEGORIES = data.categories;
 const LEVEL_MAP = new Map(LEVELS.map((level) => [level.key, level]));
 const CATEGORY_MAP = new Map(CATEGORIES.map((category) => [category.key, category]));
+const LEGACY_LEVEL_ALIASES = new Map([
+  ['brown', 'green'],
+  ['gray', 'blue'],
+]);
 
 function getLevel(levelKey) {
-  return LEVEL_MAP.get(String(levelKey || '').trim()) || null;
+  const key = String(levelKey || '').trim();
+  return LEVEL_MAP.get(key) || LEVEL_MAP.get(LEGACY_LEVEL_ALIASES.get(key)) || null;
 }
 
 function getCategory(categoryKey) {
@@ -20,8 +25,9 @@ function getNextLevel(levelKey) {
 }
 
 function buildProgressionAiContext() {
+  const levelNames = LEVELS.map((level) => level.label).join(', ');
   const lines = [
-    'The Black Wolf Studio progression has four sequential levels: White Wolf, Brown Wolf, Gray Wolf, and Black Wolf.',
+    `The Black Wolf Studio progression follows seven sequential belt-color levels: ${levelNames}.`,
     'Every level includes seven categories: Striking, Movement, Situational Awareness, Breath Control, Grappling, Ground, and Weapons.',
     'Members may upload evidence and reflect on practice, but only an authorized instructor can validate a category or approve a level.',
     'Do not tell a member that they have passed, earned, or completed a level. You may explain requirements and suggest low-risk practice questions for an instructor.',

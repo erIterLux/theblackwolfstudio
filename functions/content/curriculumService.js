@@ -1,6 +1,10 @@
 const admin = require('firebase-admin');
 const { HttpsError } = require('firebase-functions/v2/https');
-const { LEVELS, CATEGORIES } = require('../config/progressionSystem');
+const {
+  LEVELS,
+  CATEGORIES,
+  getLevel,
+} = require('../config/progressionSystem');
 
 const db = admin.firestore();
 const INSTRUCTOR_ROLES = new Set(['instructor', 'admin']);
@@ -22,6 +26,34 @@ function clean(value, max = 4000) {
 function cleanArray(value, maxItems = 40, itemMax = 500) {
   if (!Array.isArray(value)) return [];
   return [...new Set(value.map((item) => clean(item, itemMax)).filter(Boolean))].slice(0, maxItems);
+}
+
+function canonicalLevelKey(value) {
+  return getLevel(clean(value, 40))?.key || '';
+}
+
+function normalizeRequirementRef(reference) {
+  const [rawLevelKey, categoryKey, rawIndex] = clean(reference, 120).split(':');
+  const levelKey = canonicalLevelKey(rawLevelKey);
+  return levelKey && categoryKey && rawIndex
+    ? `${levelKey}:${categoryKey}:${rawIndex}`
+    : '';
+}
+
+function normalizeContentLevels(item = {}) {
+  return {
+    ...item,
+    levelKeys: [...new Set(
+      (Array.isArray(item.levelKeys) ? item.levelKeys : [])
+        .map(canonicalLevelKey)
+        .filter(Boolean),
+    )],
+    requirementRefs: [...new Set(
+      (Array.isArray(item.requirementRefs) ? item.requirementRefs : [])
+        .map(normalizeRequirementRef)
+        .filter(Boolean),
+    )],
+  };
 }
 
 function serialize(value) {
@@ -106,20 +138,22 @@ function sanitizeBlocks(blocks, contentId) {
 }
 
 function validateRequirementRefs(refs, levelKeys, categoryKeys) {
-  return cleanArray(refs, 120, 120).filter((reference) => {
-    const [levelKey, categoryKey, rawIndex] = reference.split(':');
-    const level = LEVELS.find((item) => item.key === levelKey);
-    const index = Number(rawIndex) - 1;
-    return levelKeys.includes(levelKey)
-      && categoryKeys.includes(categoryKey)
-      && Boolean(level?.categories?.[categoryKey]?.items?.[index]);
-  });
+  return cleanArray(refs, 120, 120)
+    .map(normalizeRequirementRef)
+    .filter((reference) => {
+      const [levelKey, categoryKey, rawIndex] = reference.split(':');
+      const level = LEVELS.find((item) => item.key === levelKey);
+      const index = Number(rawIndex) - 1;
+      return levelKeys.includes(levelKey)
+        && categoryKeys.includes(categoryKey)
+        && Boolean(level?.categories?.[categoryKey]?.items?.[index]);
+    });
 }
 
 
 function describeRequirementRef(reference) {
   const [levelKey, categoryKey, rawIndex] = String(reference || '').split(':');
-  const level = LEVELS.find((item) => item.key === levelKey);
+  const level = getLevel(levelKey);
   const category = CATEGORIES.find((item) => item.key === categoryKey);
   const text = level?.categories?.[categoryKey]?.items?.[Number(rawIndex) - 1];
   if (!level || !category || !text) return '';
@@ -154,7 +188,11 @@ function sanitizeContentPayload(data = {}) {
   const contentId = clean(data.contentId, 180);
   if (!contentId) throw new HttpsError('invalid-argument', 'A content ID is required.');
 
-  const levelKeys = cleanArray(data.levelKeys, LEVELS.length, 40).filter((key) => LEVEL_KEYS.has(key));
+  const levelKeys = [...new Set(
+    cleanArray(data.levelKeys, LEVELS.length + 2, 40)
+      .map(canonicalLevelKey)
+      .filter((key) => LEVEL_KEYS.has(key)),
+  )];
   const categoryKeys = cleanArray(data.categoryKeys, CATEGORIES.length, 60).filter((key) => CATEGORY_KEYS.has(key));
   const primaryCategory = clean(data.primaryCategory, 60);
   const title = clean(data.title, 240);
@@ -201,7 +239,7 @@ async function handleListProgressionContent(request) {
 
   const snapshot = await db.collection('progressionContent').limit(250).get();
   const items = snapshot.docs
-    .map((docSnap) => ({ id: docSnap.id, ...docSnap.data() }))
+    .map((docSnap) => normalizeContentLevels({ id: docSnap.id, ...docSnap.data() }))
     .filter((item) => {
       if (!includeDrafts && item.status !== 'published') return false;
       if (!isInstructor && item.visibility !== 'members') return false;
@@ -230,7 +268,7 @@ async function handleGetProgressionContent(request) {
   if (!contentId) throw new HttpsError('invalid-argument', 'A content ID is required.');
   const snap = await db.collection('progressionContent').doc(contentId).get();
   if (!snap.exists) throw new HttpsError('not-found', 'Training reference not found.');
-  const item = { id: snap.id, ...snap.data() };
+  const item = normalizeContentLevels({ id: snap.id, ...snap.data() });
   if (!isInstructor && (item.status !== 'published' || item.visibility !== 'members')) {
     throw new HttpsError('permission-denied', 'This training reference is not available.');
   }
