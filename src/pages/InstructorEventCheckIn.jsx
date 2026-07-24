@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
+import SignedWaiverDocumentActions from '../components/waivers/SignedWaiverDocumentActions';
 import useStudioRole from '../hooks/useStudioRole';
 import {
   getEventCheckIn,
@@ -443,6 +444,15 @@ export default function InstructorEventCheckIn() {
                 </div>
 
                 <div className="event-check-in-person__actions">
+                  {['signed', 'covered'].includes(participant.waiverStatus) && (
+                    <SignedWaiverDocumentActions
+                      scope="event"
+                      waiverId={participant.waiverId || participant.id}
+                      participantName={participant.fullName}
+                      coverageSource={participant.coverageSource}
+                    />
+                  )}
+
                   {!isWaiverComplete && (
                     <Link
                       className="button button--small button--dark-ghost"

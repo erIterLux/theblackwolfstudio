@@ -38,3 +38,8 @@ export async function signPrivateTrainingWaiver(payload) {
   );
   return response.data;
 }
+
+export async function getSignedWaiverPdf({ scope, waiverId }) {
+  const response = await callable('getSignedWaiverPdf')({ scope, waiverId });
+  return response.data;
+}

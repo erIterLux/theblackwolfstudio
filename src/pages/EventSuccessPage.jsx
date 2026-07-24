@@ -1,9 +1,12 @@
 import {
+    AlertCircle,
+    ArrowRight,
     CalendarCheck2,
     CheckCircle2,
     Clock3,
     Copy,
     Home,
+    MailCheck,
     ShieldCheck,
     UserCheck,
 } from 'lucide-react';
@@ -120,6 +123,9 @@ export default function EventSuccessPage() {
         || participant.waiverStatus === 'covered'
         || participant.waiverStatus === 'not_required'
     )).length;
+    const nextWaiverParticipant = participants.find((participant) => (
+        participant.waiverStatus === 'pending' && participant.waiverAccessToken
+    ));
 
     const copyWaiverLink = async (participant) => {
         const url = new URL(waiverPath(participant), window.location.origin).toString();
@@ -129,27 +135,51 @@ export default function EventSuccessPage() {
     };
 
     return (
-        <section className="section section--light event-success-page">
-            <div className="container event-success-page__inner">
-                <div className="purchase-success-icon" aria-hidden="true">
-                    {paid ? <CheckCircle2 /> : <Clock3 />}
-                </div>
-                <p className="eyebrow">Event registration</p>
-                <h1>{paid ? 'Registration is confirmed.' : 'Payment is processing.'}</h1>
-                <p>
-                    {paid
-                        ? freeRegistration
-                            ? 'Each participant now has an individual event record. The free registration is complete, but waiver coverage and event check-in are separate steps.'
-                            : 'Each participant now has an individual event record. Registration is complete, but waiver coverage and event check-in are separate steps.'
-                        : 'Stripe is still confirming the payment. This page will update automatically.'}
-                </p>
+        <section className="section section--light signup-success-page event-success-page">
+            <div className="container signup-success-shell">
+                <header className={`signup-success-hero ${!orderId ? 'is-error' : paid ? 'is-confirmed' : 'is-processing'}`}>
+                    <div className="signup-success-hero__icon" aria-hidden="true">
+                        {!orderId ? <AlertCircle /> : paid ? <CheckCircle2 /> : <Clock3 />}
+                    </div>
+                    <div className="signup-success-hero__copy">
+                        <p className="eyebrow">Event registration</p>
+                        <h1>
+                            {!orderId
+                                ? 'This confirmation link is incomplete.'
+                                : paid ? 'You are registered.' : 'Payment is processing.'}
+                        </h1>
+                        <p>
+                            {!orderId
+                                ? 'Open the secure link from your confirmation email, or contact the Studio for help.'
+                                : paid
+                                ? freeRegistration
+                                    ? 'The free registration is complete. Finish any outstanding participant waivers before arriving.'
+                                    : 'Payment and registration are complete. Finish any outstanding participant waivers before arriving.'
+                                : 'Stripe is still confirming the payment. This page will update automatically.'}
+                        </p>
+                        {orderId && <span className="signup-success-reference">Reference {orderId}</span>}
+                    </div>
+                    {registration && (
+                        <aside className="signup-success-return-note">
+                            <MailCheck aria-hidden="true" />
+                            <div>
+                                <strong>Secure return link emailed</strong>
+                                <span>The purchaser can reopen this page without creating a membership.</span>
+                            </div>
+                        </aside>
+                    )}
+                </header>
 
-                {loading && <p className="quote-loading"><Clock3 /> Confirming registration…</p>}
+                {loading && (
+                    <p className="signup-success-loading" aria-live="polite">
+                        <Clock3 aria-hidden="true" /> Confirming registration…
+                    </p>
+                )}
                 {error && <p className="form-status form-status--error">{error}</p>}
 
                 {registration && (
                     <>
-                        <article className="event-confirmation-card">
+                        <article className="event-confirmation-card signup-success-summary">
                             <div>
                                 <span>Event</span>
                                 <strong>{registration.eventSnapshot?.title}</strong>
@@ -168,13 +198,13 @@ export default function EventSuccessPage() {
                             </div>
                         </article>
 
-                        <section className="event-next-steps">
-                            <div>
+                        <section className="event-next-steps signup-success-steps" aria-label="Registration progress">
+                            <div className="is-complete">
                                 <span>1</span>
                                 <div><strong>Registration</strong><p>Complete</p></div>
                                 <CheckCircle2 aria-hidden="true" />
                             </div>
-                            <div>
+                            <div className={coveredCount >= participants.length ? 'is-complete' : 'is-current'}>
                                 <span>2</span>
                                 <div><strong>Waiver coverage</strong><p>{coveredCount} of {participants.length} complete</p></div>
                                 <ShieldCheck aria-hidden="true" />
@@ -186,70 +216,86 @@ export default function EventSuccessPage() {
                             </div>
                         </section>
 
-                        <div className="event-confirmed-participants">
-                            <p className="footer-heading">Registered participants</p>
-                            {participants.map((participant) => {
-                                const canOpen = participant.waiverStatus === 'pending' && participant.waiverAccessToken;
-                                return (
-                                    <article key={participant.id}>
-                                        <div>
-                                            <strong>{participant.fullName}</strong>
-                                            <span>{participant.email}</span>
-                                            {(participant.emergencyContactName
-                                                || participant.emergencyContactPhone) && (
-                                                <span>
-                                                    Emergency: {participant.emergencyContactName || 'Not listed'}
-                                                    {' · '}
-                                                    {participant.emergencyContactPhone || 'Phone missing'}
+                        <section className="signup-success-panel">
+                            <div className="signup-success-panel__heading">
+                                <div>
+                                    <p className="eyebrow">Participant actions</p>
+                                    <h2>Make everyone ready for check-in</h2>
+                                </div>
+                                <span>{coveredCount}/{participants.length} waivers complete</span>
+                            </div>
+                            <div className="event-confirmed-participants">
+                                {participants.map((participant) => {
+                                    const canOpen = participant.waiverStatus === 'pending'
+                                        && participant.waiverAccessToken;
+                                    const waiverComplete = ['signed', 'covered', 'not_required']
+                                        .includes(participant.waiverStatus);
+                                    return (
+                                        <article key={participant.id}>
+                                            <div>
+                                                <strong>{participant.fullName}</strong>
+                                                <span>{participant.email}</span>
+                                                {(participant.emergencyContactName
+                                                    || participant.emergencyContactPhone) && (
+                                                    <span>
+                                                        Emergency: {participant.emergencyContactName || 'Not listed'}
+                                                        {' · '}
+                                                        {participant.emergencyContactPhone || 'Phone missing'}
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <div className="event-participant-actions">
+                                                <span className={`event-person-status ${waiverComplete ? 'is-confirmed' : 'is-pending'}`}>
+                                                    {participant.waiverStatus === 'covered'
+                                                        ? 'Covered by membership'
+                                                        : `Waiver ${readableStatus(participant.waiverStatus)}`}
                                                 </span>
-                                            )}
-                                        </div>
-                                        <div className="event-participant-actions">
-                                            <span className="event-person-status is-confirmed">Registered</span>
-                                            <span className={`event-person-status${['signed', 'covered', 'not_required'].includes(participant.waiverStatus) ? ' is-confirmed' : ' is-pending'}`}>
-                                                {participant.waiverStatus === 'covered'
-                                                    ? 'Covered by membership'
-                                                    : `Waiver ${readableStatus(participant.waiverStatus)}`}
-                                            </span>
-                                            <span className="event-person-status is-neutral">Not checked in</span>
-                                            {canOpen && (
-                                                <>
-                                                    <Link className="button button--small" to={waiverPath(participant)}>
-                                                        Sign waiver
-                                                    </Link>
-                                                    <button
-                                                        className="text-link"
-                                                        type="button"
-                                                        onClick={() => copyWaiverLink(participant)}
-                                                    >
-                                                        <Copy size={15} /> {copiedId === participant.id ? 'Copied' : 'Copy signing link'}
-                                                    </button>
-                                                </>
-                                            )}
-                                            {participant.waiverStatus === 'setup_required' && (
-                                                <small>The instructor must finish the waiver setup.</small>
-                                            )}
-                                        </div>
-                                    </article>
-                                );
-                            })}
-                        </div>
+                                                <span className="event-person-status is-neutral">Check-in on arrival</span>
+                                                {canOpen && (
+                                                    <>
+                                                        <Link className="signup-inline-action" to={waiverPath(participant)}>
+                                                            Sign waiver <ArrowRight size={15} aria-hidden="true" />
+                                                        </Link>
+                                                        <button
+                                                            className="signup-copy-action"
+                                                            type="button"
+                                                            onClick={() => copyWaiverLink(participant)}
+                                                        >
+                                                            <Copy size={15} aria-hidden="true" />
+                                                            {copiedId === participant.id ? 'Copied' : 'Copy signing link'}
+                                                        </button>
+                                                    </>
+                                                )}
+                                                {participant.waiverStatus === 'setup_required' && (
+                                                    <small>The instructor must finish the waiver setup.</small>
+                                                )}
+                                            </div>
+                                        </article>
+                                    );
+                                })}
+                            </div>
+                        </section>
                     </>
                 )}
 
-                <div className="purchase-success-actions">
+                <footer className="signup-success-actions">
+                    {nextWaiverParticipant && (
+                        <Link className="signup-action signup-action--primary" to={waiverPath(nextWaiverParticipant)}>
+                            Sign next waiver <ArrowRight size={17} aria-hidden="true" />
+                        </Link>
+                    )}
                     {orderId && (
-                        <Link className="button" to={`/order/${encodeURIComponent(orderId)}`}>
+                        <Link className="signup-action signup-action--secondary" to={`/order/${encodeURIComponent(orderId)}`}>
                             View purchase details
                         </Link>
                     )}
-                    <Link className="button button--dark-ghost" to="/events">
-                        View more events
+                    <Link className="signup-action signup-action--secondary" to="/events">
+                        Browse more events
                     </Link>
-                    <Link className="button button--dark-ghost" to="/">
-                        <Home size={17} /> Return home
+                    <Link className="signup-action signup-action--quiet" to="/">
+                        <Home size={17} aria-hidden="true" /> Studio home
                     </Link>
-                </div>
+                </footer>
             </div>
         </section>
     );

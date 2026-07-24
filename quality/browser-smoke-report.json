@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-24T17:15:21.005Z",
+  "generatedAt": "2026-07-24T19:00:10.072Z",
   "passed": true,
   "baseUrl": "http://127.0.0.1:4173",
   "results": [
@@ -67,6 +67,27 @@
       "screenshot": "quality/screenshots/mobile-events.png"
     },
     {
+      "route": "/events/success",
+      "viewport": "mobile",
+      "audit": {
+        "url": "http://127.0.0.1:4173/events/success",
+        "title": "Event registration complete | The Black Wolf Studio",
+        "mainCount": 1,
+        "h1Count": 1,
+        "horizontalOverflow": 0,
+        "emptyInteractiveNames": [],
+        "unlabeledFields": [],
+        "imagesWithoutAlt": [],
+        "duplicateIds": [],
+        "smallTargets": [],
+        "smallTargetCount": 0
+      },
+      "errors": [],
+      "failures": [],
+      "warnings": [],
+      "screenshot": "quality/screenshots/mobile-events-success.png"
+    },
+    {
       "route": "/membership",
       "viewport": "mobile",
       "audit": {
@@ -107,6 +128,27 @@
       "failures": [],
       "warnings": [],
       "screenshot": "quality/screenshots/mobile-private-training.png"
+    },
+    {
+      "route": "/private-training/success",
+      "viewport": "mobile",
+      "audit": {
+        "url": "http://127.0.0.1:4173/private-training/success",
+        "title": "Private training purchase complete | The Black Wolf Studio",
+        "mainCount": 1,
+        "h1Count": 1,
+        "horizontalOverflow": 0,
+        "emptyInteractiveNames": [],
+        "unlabeledFields": [],
+        "imagesWithoutAlt": [],
+        "duplicateIds": [],
+        "smallTargets": [],
+        "smallTargetCount": 0
+      },
+      "errors": [],
+      "failures": [],
+      "warnings": [],
+      "screenshot": "quality/screenshots/mobile-private-training-success.png"
     },
     {
       "route": "/contact",
@@ -277,6 +319,27 @@
       "screenshot": "quality/screenshots/desktop-events.png"
     },
     {
+      "route": "/events/success",
+      "viewport": "desktop",
+      "audit": {
+        "url": "http://127.0.0.1:4173/events/success",
+        "title": "Event registration complete | The Black Wolf Studio",
+        "mainCount": 1,
+        "h1Count": 1,
+        "horizontalOverflow": 0,
+        "emptyInteractiveNames": [],
+        "unlabeledFields": [],
+        "imagesWithoutAlt": [],
+        "duplicateIds": [],
+        "smallTargets": [],
+        "smallTargetCount": 0
+      },
+      "errors": [],
+      "failures": [],
+      "warnings": [],
+      "screenshot": "quality/screenshots/desktop-events-success.png"
+    },
+    {
       "route": "/membership",
       "viewport": "desktop",
       "audit": {
@@ -317,6 +380,27 @@
       "failures": [],
       "warnings": [],
       "screenshot": "quality/screenshots/desktop-private-training.png"
+    },
+    {
+      "route": "/private-training/success",
+      "viewport": "desktop",
+      "audit": {
+        "url": "http://127.0.0.1:4173/private-training/success",
+        "title": "Private training purchase complete | The Black Wolf Studio",
+        "mainCount": 1,
+        "h1Count": 1,
+        "horizontalOverflow": 0,
+        "emptyInteractiveNames": [],
+        "unlabeledFields": [],
+        "imagesWithoutAlt": [],
+        "duplicateIds": [],
+        "smallTargets": [],
+        "smallTargetCount": 0
+      },
+      "errors": [],
+      "failures": [],
+      "warnings": [],
+      "screenshot": "quality/screenshots/desktop-private-training-success.png"
     },
     {
       "route": "/contact",

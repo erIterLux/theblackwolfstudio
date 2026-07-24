@@ -431,6 +431,7 @@ async function handleCreateStudioCheckout(request, dependencies = {}) {
     if (!origin) throw new HttpsError('failed-precondition', 'APP_ORIGIN is not configured.');
 
     const orderRef = db.collection('studioOrders').doc();
+    const orderAccessRef = db.collection('studioOrderAccess').doc(orderRef.id);
     const accessToken = createAccessToken();
     const isFreeRegistration = offer.purchaseType === 'event' && quote.totalCents === 0;
     let stripe = null;
@@ -502,10 +503,20 @@ async function handleCreateStudioCheckout(request, dependencies = {}) {
         ? `${origin}/private-training/success?order_id=${orderRef.id}&access_token=${accessToken}`
         : `${origin}/events/success?order_id=${orderRef.id}&access_token=${accessToken}`;
     const cancelUrl = `${origin}/${offer.purchaseType === 'event' ? 'events' : 'private-training'}?purchase=canceled`;
+    const persistOrder = () => Promise.all([
+        orderRef.set(order),
+        orderAccessRef.set({
+            orderId: orderRef.id,
+            purchaseType: offer.purchaseType,
+            token: accessToken,
+            createdAt: admin.firestore.FieldValue.serverTimestamp(),
+            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        }),
+    ]);
 
     if (isFreeRegistration) {
         try {
-            await orderRef.set(order);
+            await persistOrder();
             const { ensureEventRegistrationFromOrder } = require('../events/eventService');
             await ensureEventRegistrationFromOrder(orderRef.id);
             if (quote.discount?.source === 'promotion') {
@@ -577,7 +588,7 @@ async function handleCreateStudioCheckout(request, dependencies = {}) {
 
     let session;
     try {
-        await orderRef.set(order);
+        await persistOrder();
         session = await stripe.checkout.sessions.create(
             sessionPayload,
             { idempotencyKey: `studio-order-${orderRef.id}` },

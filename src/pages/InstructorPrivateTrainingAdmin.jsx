@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
+import SignedWaiverDocumentActions from '../components/waivers/SignedWaiverDocumentActions';
 import useStudioRole from '../hooks/useStudioRole';
 import {
     adjustPrivateTrainingCredits,
@@ -454,7 +455,8 @@ export default function InstructorPrivateTrainingAdmin() {
                                     <fieldset className="private-session-participants">
                                         <legend>Who attended this session?</legend>
                                         {(purchase.participants || []).map((participant) => (
-                                            <label key={participant.id} className="checkbox-row">
+                                            <div className="private-session-participant-row" key={participant.id}>
+                                            <label className="checkbox-row">
                                                 <input
                                                     type="checkbox"
                                                     checked={form.participantIds.includes(participant.id)}
@@ -478,6 +480,15 @@ export default function InstructorPrivateTrainingAdmin() {
                                                     </small>
                                                 </span>
                                             </label>
+                                            {['signed', 'covered'].includes(participant.waiverStatus) && (
+                                                <SignedWaiverDocumentActions
+                                                    scope="private_training"
+                                                    waiverId={participant.waiverId || `${purchase.id}_${participant.id}`}
+                                                    participantName={participant.fullName}
+                                                    coverageSource={participant.coverageSource}
+                                                />
+                                            )}
+                                            </div>
                                         ))}
                                     </fieldset>
 

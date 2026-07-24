@@ -115,6 +115,10 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    match /studioOrderAccess/{orderId} {
+      allow read, write: if false;
+    }
+
     match /privateTrainingPurchases/{purchaseId} {
       allow read: if isInstructor()
         || (signedIn() && resource.data.uid == request.auth.uid);

@@ -1,0 +1,518 @@
+.signup-success-page {
+  min-height: 72vh;
+  background:
+    radial-gradient(circle at 88% 8%, rgba(53, 73, 93, 0.14), transparent 28rem),
+    linear-gradient(180deg, #f5f1e9 0%, #ebe6dd 100%);
+}
+
+.purchase-success-page.signup-success-page {
+  display: block;
+  min-height: 72vh;
+}
+
+.signup-success-shell {
+  width: min(1080px, 100% - 32px);
+}
+
+.signup-success-hero {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) minmax(240px, 0.44fr);
+  gap: clamp(1rem, 3vw, 2rem);
+  align-items: center;
+  padding: clamp(1.4rem, 4vw, 2.5rem);
+  overflow: hidden;
+  border-radius: 28px;
+  background:
+    linear-gradient(120deg, rgba(255, 255, 255, 0.04), transparent 55%),
+    #11151a;
+  color: #fff;
+  box-shadow: 0 26px 70px rgba(17, 21, 26, 0.18);
+}
+
+.signup-success-hero.is-processing {
+  background: #2d333a;
+}
+
+.signup-success-hero.is-error {
+  background: #2f2928;
+}
+
+.signup-success-hero__icon {
+  display: grid;
+  width: 68px;
+  height: 68px;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.1);
+  color: #dbe9df;
+}
+
+.signup-success-hero__icon svg {
+  width: 34px;
+  height: 34px;
+}
+
+.signup-success-hero__copy {
+  min-width: 0;
+}
+
+.signup-success-hero__copy .eyebrow {
+  margin: 0 0 0.45rem;
+  color: #9fb6c9;
+}
+
+.signup-success-hero__copy h1 {
+  margin: 0;
+  color: #fff;
+  font-size: clamp(2.7rem, 7vw, 5.6rem);
+  line-height: 0.95;
+}
+
+.signup-success-hero__copy > p:not(.eyebrow) {
+  max-width: 680px;
+  margin: 0.9rem 0 0;
+  color: rgba(255, 255, 255, 0.74);
+  line-height: 1.65;
+}
+
+.signup-success-reference {
+  display: block;
+  max-width: 100%;
+  margin-top: 1rem;
+  color: rgba(255, 255, 255, 0.5);
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 0.72rem;
+  overflow-wrap: anywhere;
+}
+
+.signup-success-return-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.8rem;
+  min-width: 0;
+  padding: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.signup-success-return-note > svg {
+  flex: 0 0 auto;
+  color: #9fb6c9;
+}
+
+.signup-success-return-note div {
+  display: grid;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.signup-success-return-note span {
+  color: rgba(255, 255, 255, 0.64);
+  font-size: 0.84rem;
+  line-height: 1.5;
+}
+
+.signup-success-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  margin: 1.5rem 0;
+  color: #4d5660;
+}
+
+.signup-success-summary {
+  margin: 1.25rem 0;
+  padding: 0.85rem;
+  border-radius: 22px;
+  box-shadow: none;
+}
+
+.event-confirmation-card.signup-success-summary {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.purchase-confirmation-card.signup-success-summary {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.signup-success-summary > div,
+.purchase-confirmation-card.signup-success-summary > div {
+  min-width: 0;
+  padding: 0.85rem;
+  border-radius: 14px;
+  background: #f5f2ec;
+}
+
+.signup-success-summary strong {
+  overflow-wrap: anywhere;
+}
+
+.signup-success-steps {
+  margin-bottom: 1.25rem;
+}
+
+.signup-success-steps > div {
+  min-width: 0;
+  border-radius: 18px;
+  box-shadow: 0 10px 28px rgba(21, 24, 28, 0.04);
+}
+
+.signup-success-steps > div.is-current {
+  border-color: #6d8295;
+  background: #f1f6f8;
+  box-shadow: inset 0 0 0 1px rgba(53, 73, 93, 0.16);
+}
+
+.signup-success-steps > div.is-complete > span {
+  background: #276441;
+}
+
+.signup-success-steps > div.is-complete > svg {
+  color: #276441;
+}
+
+.signup-success-panel {
+  display: grid;
+  gap: 0.8rem;
+  margin: 0;
+  padding: clamp(1rem, 3vw, 1.4rem);
+  border: 1px solid rgba(21, 18, 16, 0.13);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: 0 18px 45px rgba(24, 18, 14, 0.06);
+  text-align: left;
+}
+
+.signup-success-panel__heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(21, 18, 16, 0.12);
+}
+
+.signup-success-panel__heading h2,
+.signup-success-panel__heading p {
+  margin: 0;
+}
+
+.signup-success-panel__heading h2 {
+  margin-top: 0.25rem;
+}
+
+.signup-success-panel__heading p:not(.eyebrow) {
+  max-width: 650px;
+  margin-top: 0.45rem;
+  color: #626a72;
+}
+
+.signup-success-panel__heading > span {
+  flex: 0 0 auto;
+  padding: 0.5rem 0.7rem;
+  border-radius: 999px;
+  background: #e8f4ec;
+  color: #205a3a;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.signup-success-panel .event-confirmed-participants {
+  gap: 0.65rem;
+}
+
+.signup-success-panel .event-confirmed-participants article,
+.signup-success-panel.private-waiver-status-list > article {
+  border-radius: 16px;
+  box-shadow: none;
+}
+
+.signup-inline-action,
+.signup-copy-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  min-height: 38px;
+  padding: 0.5rem 0.72rem;
+  border-radius: 10px;
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.signup-inline-action {
+  border: 1px solid #35495d;
+  background: #35495d;
+  color: #fff;
+}
+
+.signup-copy-action {
+  border: 1px solid rgba(21, 18, 16, 0.16);
+  background: #fff;
+  color: #252a30;
+  cursor: pointer;
+}
+
+.signup-success-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.65rem;
+  margin-top: 1.25rem;
+  padding: 1rem;
+  border: 1px solid rgba(21, 18, 16, 0.13);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.78);
+}
+
+.signup-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 46px;
+  padding: 0.72rem 1rem;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  font-weight: 850;
+  transition: transform 160ms ease, box-shadow 160ms ease, background 160ms ease;
+}
+
+.signup-action:hover {
+  transform: translateY(-1px);
+}
+
+.signup-action--primary {
+  background: #35495d;
+  color: #fff;
+  box-shadow: 0 10px 24px rgba(53, 73, 93, 0.2);
+}
+
+.signup-action--secondary {
+  border-color: rgba(21, 18, 16, 0.18);
+  background: #fff;
+  color: #1c2228;
+}
+
+.signup-action--quiet {
+  margin-left: auto;
+  color: #545d65;
+}
+
+.signed-waiver-document-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.4rem;
+}
+
+.waiver-document-button,
+.waiver-document-modal__icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(34, 44, 54, 0.2);
+  background: #fff;
+  color: #253543;
+  cursor: pointer;
+}
+
+.waiver-document-button {
+  gap: 0.4rem;
+  min-height: 36px;
+  padding: 0.48rem 0.68rem;
+  border-radius: 9px;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.waiver-document-button--icon,
+.waiver-document-modal__icon-button {
+  width: 36px;
+  padding: 0;
+}
+
+.waiver-document-button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.waiver-document-error {
+  flex-basis: 100%;
+  color: #9f2f2f;
+  text-align: right;
+}
+
+.waiver-document-modal {
+  position: fixed;
+  z-index: 1200;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background: rgba(8, 11, 14, 0.78);
+  backdrop-filter: blur(6px);
+}
+
+.waiver-document-modal__dialog {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  width: min(1080px, 100%);
+  height: min(88vh, 900px);
+  overflow: hidden;
+  border-radius: 18px;
+  background: #f5f2ec;
+  box-shadow: 0 35px 100px rgba(0, 0, 0, 0.38);
+}
+
+.waiver-document-modal__dialog > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.15rem;
+  border-bottom: 1px solid rgba(21, 18, 16, 0.16);
+  background: #fff;
+}
+
+.waiver-document-modal__dialog h2,
+.waiver-document-modal__dialog p {
+  margin: 0;
+}
+
+.waiver-document-modal__dialog h2 {
+  margin-top: 0.2rem;
+  font-size: clamp(1.25rem, 3vw, 1.8rem);
+}
+
+.waiver-document-modal__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.waiver-document-modal__icon-button {
+  height: 36px;
+  border-radius: 9px;
+}
+
+.waiver-document-modal__dialog iframe {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: #d9d9d9;
+}
+
+.private-session-participant-row {
+  display: grid;
+  flex: 1 1 320px;
+  gap: 0.65rem;
+  min-width: 0;
+  padding: 0.75rem;
+  border: 1px solid rgba(21, 18, 16, 0.1);
+  border-radius: 12px;
+  background: #fff;
+}
+
+.private-session-participant-row .signed-waiver-document-actions {
+  justify-content: flex-start;
+  padding-left: 1.75rem;
+}
+
+@media (max-width: 900px) {
+  .signup-success-hero {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .signup-success-return-note {
+    grid-column: 1 / -1;
+  }
+
+  .event-confirmation-card.signup-success-summary,
+  .purchase-confirmation-card.signup-success-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .signup-success-shell {
+    width: min(100% - 24px, 1080px);
+  }
+
+  .signup-success-hero {
+    grid-template-columns: 1fr;
+    border-radius: 22px;
+  }
+
+  .signup-success-hero__icon {
+    width: 58px;
+    height: 58px;
+  }
+
+  .signup-success-return-note {
+    grid-column: auto;
+  }
+
+  .event-confirmation-card.signup-success-summary,
+  .purchase-confirmation-card.signup-success-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .signup-success-panel__heading {
+    flex-direction: column;
+  }
+
+  .signup-success-panel__heading > span {
+    align-self: flex-start;
+  }
+
+  .signup-success-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .signup-action,
+  .signup-action--quiet {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .signup-success-panel .event-confirmed-participants article,
+  .signup-success-panel.private-waiver-status-list > article {
+    align-items: stretch;
+  }
+
+  .signup-success-panel .event-participant-actions,
+  .signup-success-panel.private-waiver-status-list > article > div:last-child {
+    justify-content: flex-start;
+    justify-items: start;
+  }
+
+  .waiver-document-modal {
+    padding: 0;
+  }
+
+  .waiver-document-modal__dialog {
+    width: 100%;
+    height: 100%;
+    border-radius: 0;
+  }
+
+  .waiver-document-modal__dialog > header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .waiver-document-modal__actions {
+    width: 100%;
+  }
+
+  .waiver-document-modal__actions .button {
+    flex: 1;
+  }
+}

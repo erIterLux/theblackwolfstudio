@@ -184,18 +184,23 @@ async function registrationRecipients(ref, registration) {
     .limit(MAX_RECIPIENTS)
     .get();
   const participants = participantsSnapshot.docs.map((item) => item.data() || {});
-  return uniqueEmails([
-    registration.purchaser?.email,
-    ...participants.flatMap((participant) => [
+  const purchaserEmail = normalizeEmail(registration.purchaser?.email);
+  const participantEmails = uniqueEmails(
+    participants.flatMap((participant) => [
       participant.email,
       participant.isMinor === true ? participant.guardianEmail : null,
     ]),
-  ]);
+  ).filter((email) => email !== purchaserEmail);
+  return { purchaserEmail, participantEmails };
 }
 
 async function sendEventRegistrationConfirmation({ ref, registration }) {
-  const recipients = await registrationRecipients(ref, registration);
-  if (!recipients.length) {
+  const { purchaserEmail, participantEmails } = await registrationRecipients(
+    ref,
+    registration,
+  );
+  const recipientCount = uniqueEmails([purchaserEmail, ...participantEmails]).length;
+  if (!recipientCount) {
     logger.warn('Skipping event registration confirmation because no recipient was available.', {
       registrationId: ref.id,
     });
@@ -209,44 +214,82 @@ async function sendEventRegistrationConfirmation({ ref, registration }) {
   const location = locationText(event) || 'Location information will be provided by the Studio.';
   const participantCount = Math.max(1, Number(registration.participantCount || 1));
   const calendar = createEventCalendar(registration, ref.id);
-  const recipientFields = recipients.length === 1
-    ? { to: recipients[0] }
-    : { bcc: recipients };
+  const calendarAttachment = {
+    filename: calendarFilename(title),
+    content: Buffer.from(calendar, 'utf8'),
+    contentType: 'text/calendar; charset=utf-8; method=PUBLISH',
+    contentDisposition: 'attachment',
+  };
+  const accessSnapshot = await ref.firestore
+    .collection('studioOrderAccess')
+    .doc(registration.orderId || ref.id)
+    .get();
+  const managementToken = clean(accessSnapshot.data()?.token, 500);
+  const managementUrl = managementToken
+    ? appUrl(
+      `/events/success?order_id=${encodeURIComponent(registration.orderId || ref.id)}`
+      + `&access_token=${encodeURIComponent(managementToken)}`,
+    )
+    : appUrl('/events');
+  const commonText = [
+    `Your registration for ${title} is confirmed.`,
+    `When: ${dateLabel}`,
+    `Where: ${location}`,
+    `Participants: ${participantCount}`,
+    `Registration reference: ${ref.id}`,
+    'A calendar file is attached. Complete any required participant waivers before check-in.',
+  ];
+  const commonBody = `
+    <p>Your registration is confirmed.</p>
+    <p><strong>When</strong><br>${escapeHtml(dateLabel)}</p>
+    <p><strong>Where</strong><br>${escapeHtml(location)}</p>
+    <p><strong>Registered participants</strong><br>${participantCount}</p>
+    <p><strong>Registration reference</strong><br>${escapeHtml(ref.id)}</p>
+    <p>A calendar file is attached. Complete any required participant waivers before event check-in.</p>`;
 
-  await sendEmail({
-    ...recipientFields,
-    subject: `Event registration confirmed - ${title}`,
-    text: [
-      `Your registration for ${title} is confirmed.`,
-      `When: ${dateLabel}`,
-      `Where: ${location}`,
-      `Participants: ${participantCount}`,
-      `Registration reference: ${ref.id}`,
-      'A calendar file is attached. Complete any required participant waivers before check-in.',
-      `Event information: ${appUrl('/events')}`,
-    ].join('\n'),
-    html: emailShell({
-      eyebrow: 'Event registration confirmed',
-      title,
-      bodyHtml: `
-        <p>Your registration is confirmed.</p>
-        <p><strong>When</strong><br>${escapeHtml(dateLabel)}</p>
-        <p><strong>Where</strong><br>${escapeHtml(location)}</p>
-        <p><strong>Registered participants</strong><br>${participantCount}</p>
-        <p><strong>Registration reference</strong><br>${escapeHtml(ref.id)}</p>
-        <p>A calendar file is attached. Complete any required participant waivers before event check-in.</p>`,
-      buttonLabel: 'View upcoming events',
-      buttonUrl: appUrl('/events'),
-    }),
-    attachments: [{
-      filename: calendarFilename(title),
-      content: Buffer.from(calendar, 'utf8'),
-      contentType: 'text/calendar; charset=utf-8; method=PUBLISH',
-      contentDisposition: 'attachment',
-    }],
-  });
+  if (purchaserEmail) {
+    await sendEmail({
+      to: purchaserEmail,
+      subject: `Event registration confirmed - ${title}`,
+      text: [
+        ...commonText,
+        `Manage this registration: ${managementUrl}`,
+      ].join('\n'),
+      html: emailShell({
+        eyebrow: 'Event registration confirmed',
+        title,
+        bodyHtml: `${commonBody}
+          <p>Use the secure registration page to review every participant and complete outstanding actions. This link is intended for the purchaser and should not be forwarded.</p>`,
+        buttonLabel: 'Manage registration',
+        buttonUrl: managementUrl,
+      }),
+      attachments: [calendarAttachment],
+    });
+  }
 
-  await markConfirmationEmail(ref, 'sent', { recipientCount: recipients.length });
+  if (participantEmails.length) {
+    const recipientFields = participantEmails.length === 1
+      ? { to: participantEmails[0] }
+      : { bcc: participantEmails };
+    await sendEmail({
+      ...recipientFields,
+      subject: `Event registration confirmed - ${title}`,
+      text: [
+        ...commonText,
+        `Event information: ${appUrl('/events')}`,
+      ].join('\n'),
+      html: emailShell({
+        eyebrow: 'Event registration confirmed',
+        title,
+        bodyHtml: commonBody,
+        buttonLabel: 'View upcoming events',
+        buttonUrl: appUrl('/events'),
+      }),
+      attachments: [calendarAttachment],
+    });
+  }
+
+  await markConfirmationEmail(ref, 'sent', { recipientCount });
 }
 
 async function handleEventRegistrationCreated(event, dependencies = {}) {

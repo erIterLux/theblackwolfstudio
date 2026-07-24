@@ -7,6 +7,7 @@ import './styles/progression.css';
 import './styles/content.css';
 import './styles/private-training.css';
 import './styles/events.css';
+import './styles/signup-success.css';
 import './styles/commerce-admin.css';
 import './styles/purchases.css';
 import './styles/private-booking.css';

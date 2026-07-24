@@ -516,6 +516,17 @@ exports.emailOnEventRegistrationCreated = onDocumentCreated({
     return handleEventRegistrationCreated(event, waiverEmailDependencies());
 });
 
+exports.emailOnPrivateTrainingPurchaseCreated = onDocumentCreated({
+    document: 'privateTrainingPurchases/{purchaseId}',
+    secrets: [gmailEmail, gmailAppPassword],
+    retry: true,
+}, async (event) => {
+    const {
+        handlePrivateTrainingPurchaseCreated,
+    } = require('./notifications/privateTrainingPurchaseEmails');
+    return handlePrivateTrainingPurchaseCreated(event, waiverEmailDependencies());
+});
+
 exports.createScheduledStudioNotifications = onSchedule({
     schedule: 'every 60 minutes',
     timeZone: 'America/New_York',
@@ -616,6 +627,12 @@ exports.signPrivateTrainingWaiver = onCall({
     memory: '512MiB',
     timeoutSeconds: 60,
 }, async (request) => loadStudioWaiverService().handleSignPrivateTrainingWaiver(request));
+
+exports.getSignedWaiverPdf = onCall({
+    invoker: 'public',
+    memory: '512MiB',
+    timeoutSeconds: 60,
+}, async (request) => loadStudioWaiverService().handleGetSignedWaiverPdf(request));
 
 function waiverEmailDependencies() {
     return {

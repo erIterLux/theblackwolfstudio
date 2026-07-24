@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
+import SignedWaiverDocumentActions from '../components/waivers/SignedWaiverDocumentActions';
 import useStudioRole from '../hooks/useStudioRole';
 import { BLACK_WOLF_EVENT_WAIVER, standardBlackWolfWaiverFields } from '../config/blackWolfEventWaiver';
 import { listEventsAdmin, saveEvent } from '../services/events';
@@ -729,6 +730,14 @@ export default function InstructorEventsAdmin() {
                                             <div>
                                                 <span><ShieldCheck size={15} /> {readable(participant.waiverStatus)}</span>
                                                 <span><UserCheck size={15} /> {readable(participant.checkInStatus)}</span>
+                                                {['signed', 'covered'].includes(participant.waiverStatus) && (
+                                                    <SignedWaiverDocumentActions
+                                                        scope="event"
+                                                        waiverId={participant.waiverId || participant.id}
+                                                        participantName={participant.fullName}
+                                                        coverageSource={participant.coverageSource}
+                                                    />
+                                                )}
                                             </div>
                                         </div>
                                     ))}

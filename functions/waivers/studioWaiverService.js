@@ -6,6 +6,7 @@ const {
   STUDIO_WAIVER_VERSION,
   approvedWaiverTerms,
 } = require('../config/studioWaiver');
+const { createSignedWaiverPdf } = require('../notifications/waiverPdf');
 
 const db = admin.firestore();
 const LIVE_MEMBERSHIP_STATUSES = new Set(['active', 'trialing']);
@@ -739,6 +740,81 @@ async function assertPrivateTrainingParticipantsCovered(purchaseId, participantI
   return true;
 }
 
+function waiverCollectionForScope(scope) {
+  if (scope === 'event') return 'eventWaivers';
+  if (scope === 'private_training') return 'privateTrainingWaivers';
+  if (scope === 'membership') return 'studioWaivers';
+  throw new HttpsError('invalid-argument', 'Choose a valid waiver type.');
+}
+
+function waiverPdfFilename(waiver, referenceId) {
+  const participant = clean(waiver.participantSnapshot?.fullName, 120)
+    .toLowerCase()
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 55);
+  const reference = clean(referenceId, 80)
+    .replace(/[^a-zA-Z0-9_-]+/g, '-')
+    .slice(0, 55);
+  return `signed-waiver-${participant || 'participant'}-${reference || 'record'}.pdf`;
+}
+
+async function resolveSignedWaiver(scope, waiverId) {
+  const collection = waiverCollectionForScope(scope);
+  const snapshot = await db.collection(collection).doc(waiverId).get();
+  if (!snapshot.exists) {
+    throw new HttpsError('not-found', 'That waiver record was not found.');
+  }
+
+  let referenceId = snapshot.id;
+  let waiver = { id: snapshot.id, ...snapshot.data() };
+  if (waiver.status === 'covered' && waiver.coveredByWaiverId) {
+    const membershipSnapshot = await db.collection('studioWaivers')
+      .doc(clean(waiver.coveredByWaiverId, 160))
+      .get();
+    if (!membershipSnapshot.exists) {
+      throw new HttpsError(
+        'not-found',
+        'The signed membership waiver providing this coverage was not found.',
+      );
+    }
+    referenceId = membershipSnapshot.id;
+    waiver = { id: membershipSnapshot.id, ...membershipSnapshot.data() };
+  }
+
+  if (waiver.status !== 'signed') {
+    throw new HttpsError(
+      'failed-precondition',
+      'A signed PDF is available after the waiver has been completed.',
+    );
+  }
+  return { waiver, referenceId };
+}
+
+async function handleGetSignedWaiverPdf(request) {
+  if (!isInstructor(request)) {
+    throw new HttpsError(
+      'permission-denied',
+      'Instructor access is required to view signed waiver PDFs.',
+    );
+  }
+  const scope = clean(request.data?.scope, 40);
+  const waiverId = clean(request.data?.waiverId, 260);
+  if (!waiverId) throw new HttpsError('invalid-argument', 'Waiver ID is required.');
+
+  const { waiver, referenceId } = await resolveSignedWaiver(scope, waiverId);
+  const content = await createSignedWaiverPdf(waiver, referenceId);
+  return {
+    filename: waiverPdfFilename(waiver, referenceId),
+    contentType: 'application/pdf',
+    contentBase64: content.toString('base64'),
+    participantName: clean(waiver.participantSnapshot?.fullName, 180),
+    signedAt: serialize(waiver.signedAt || null),
+  };
+}
+
 module.exports = {
   currentMembershipWaiver,
   ensurePrivateTrainingWaiversForPurchase,
@@ -748,4 +824,5 @@ module.exports = {
   handleSignMembershipWaiver,
   handleGetPrivateTrainingWaiver,
   handleSignPrivateTrainingWaiver,
+  handleGetSignedWaiverPdf,
 };
