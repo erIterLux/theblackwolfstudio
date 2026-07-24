@@ -3,10 +3,6 @@ import { useAuth } from '../context/AuthContext';
 import { getMemberDashboardSummary } from '../services/memberDashboard';
 import { startPerformanceMeasure } from '../utils/performance';
 
-const CACHE_TTL_MS = 30_000;
-const dashboardRequests = new Map();
-const dashboardCache = new Map();
-
 const EMPTY = {
   membership: null,
   role: 'member',
@@ -17,23 +13,6 @@ const EMPTY = {
   attentionItems: [],
   meta: null,
 };
-
-function requestDashboard(uid, force = false) {
-  const cached = dashboardCache.get(uid);
-  if (!force && cached && Date.now() - cached.cachedAt < CACHE_TTL_MS) {
-    return Promise.resolve(cached.data);
-  }
-  if (!force && dashboardRequests.has(uid)) return dashboardRequests.get(uid);
-
-  const request = getMemberDashboardSummary()
-    .then((data) => {
-      dashboardCache.set(uid, { data, cachedAt: Date.now() });
-      return data;
-    })
-    .finally(() => dashboardRequests.delete(uid));
-  dashboardRequests.set(uid, request);
-  return request;
-}
 
 export default function useMemberDashboardSummary({ enabled = true } = {}) {
   const { user } = useAuth();
@@ -64,7 +43,7 @@ export default function useMemberDashboardSummary({ enabled = true } = {}) {
     });
 
     try {
-      const result = await requestDashboard(user.uid, force);
+      const result = await getMemberDashboardSummary(user.uid, { force });
       setState({
         uid: user.uid,
         data: { ...EMPTY, ...(result || {}) },

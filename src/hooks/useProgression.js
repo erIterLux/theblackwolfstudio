@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { invalidateMemberDashboardSummaryCache } from '../services/memberDashboard';
 import { getMyProgression } from '../services/progression';
 
 export default function useProgression({ enabled = true } = {}) {
@@ -20,6 +21,7 @@ export default function useProgression({ enabled = true } = {}) {
         setState((current) => ({ ...current, loading: true, error: '' }));
         try {
             const data = await getMyProgression({ force });
+            invalidateMemberDashboardSummaryCache(user.uid);
             setState({ data, loading: false, error: '' });
             return data;
         } catch (error) {

@@ -26,6 +26,22 @@ const MEMBER_LEVEL_STATES = {
     locked: 'Not yet available',
 };
 
+const AVAILABLE_LEVEL_STATUSES = new Set([
+    'active',
+    'draft',
+    'submitted',
+    'in_review',
+    'needs_work',
+    'ready_for_approval',
+]);
+
+function getLevelRailState(levelKey, currentLevelKey, record) {
+    if (levelKey === currentLevelKey) return 'current';
+    if (record?.status === 'approved') return 'complete';
+    if (AVAILABLE_LEVEL_STATUSES.has(record?.status)) return 'available';
+    return 'locked';
+}
+
 function hasEvidence(record = {}) {
     return Boolean(
         record.currentEvidence?.storagePath
@@ -334,13 +350,11 @@ export default function ProgressionSummaryCard({ dashboardState }) {
                     const record = levels.find(
                         (item) => item.levelKey === level.key || item.key === level.key,
                     );
-                    const state = level.key === currentLevelKey
-                        ? 'current'
-                        : record?.status === 'approved'
-                            ? 'complete'
-                            : record?.status === 'locked'
-                                ? 'locked'
-                                : 'available';
+                    const state = getLevelRailState(
+                        level.key,
+                        currentLevelKey,
+                        record,
+                    );
 
                     const stateLabel = state === 'current'
                         ? 'Current level'
