@@ -87,7 +87,9 @@ h1, h2 {
 }
 
 h1 {
-    font-size: clamp(3.4rem, 9vw, 8rem);
+    /* Keep the default safe for legal, account, and data-driven page titles.
+       Marketing heroes opt into their larger display scale below. */
+    font-size: clamp(2.5rem, 5.5vw, 5.25rem);
     margin-bottom: 1.3rem;
 }
 
@@ -151,6 +153,11 @@ p {
     max-width: 760px;
     margin-bottom: 3.4rem;
 }
+
+    .section-heading h2 {
+        font-size: clamp(2.2rem, 4.2vw, 3.75rem);
+        text-wrap: balance;
+    }
 
     .section-heading > p:last-child {
         max-width: 680px;
@@ -1035,7 +1042,8 @@ p {
 
 .page-hero__inner h1 {
     max-width: 1000px;
-    font-size: clamp(3.3rem, 7vw, 6.5rem);
+    font-size: clamp(3rem, 6vw, 5.75rem);
+    text-wrap: balance;
 }
 
 .page-hero--compact .page-hero__inner {
@@ -1043,7 +1051,7 @@ p {
 }
 
 .page-hero--compact .page-hero__inner h1 {
-    font-size: clamp(3.1rem, 6.2vw, 5.75rem);
+    font-size: clamp(2.85rem, 5.4vw, 5rem);
 }
 
 .page-hero__actions {
@@ -1325,7 +1333,7 @@ textarea {
         position: relative;
         z-index: 1;
         max-width: 700px;
-        font-size: clamp(3rem, 6vw, 6rem);
+        font-size: clamp(3rem, 5.4vw, 5.25rem);
     }
 
     .auth-page__visual > p {
@@ -1669,7 +1677,7 @@ textarea {
 
 @media (max-width: 700px) {
     h1 {
-        font-size: clamp(3.2rem, 16vw, 5.2rem);
+        font-size: clamp(2.3rem, 10vw, 3.75rem);
     }
 
     .container {
@@ -1709,7 +1717,7 @@ textarea {
 
     .page-hero__inner h1,
     .page-hero--compact .page-hero__inner h1 {
-        font-size: clamp(2.9rem, 13vw, 4.25rem);
+        font-size: clamp(2.5rem, 10.5vw, 3.6rem);
     }
 
     .page-hero__actions .button {
@@ -1849,7 +1857,7 @@ textarea {
     }
 
     .auth-page__visual h1 {
-        font-size: clamp(2.7rem, 13vw, 4.4rem);
+        font-size: clamp(2.45rem, 10.5vw, 3.6rem);
     }
 
     .auth-card {

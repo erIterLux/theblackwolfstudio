@@ -42,6 +42,7 @@ const routes = [
 ];
 const viewports = [
   { name: 'mobile', width: 390, height: 844, deviceScaleFactor: 1, mobile: true },
+  { name: 'tablet', width: 820, height: 1180, deviceScaleFactor: 1, mobile: true },
   { name: 'desktop', width: 1440, height: 1000, deviceScaleFactor: 1, mobile: false },
 ];
 
@@ -196,6 +197,26 @@ const auditExpression = `(() => {
     width: Math.round(element.getBoundingClientRect().width),
     height: Math.round(element.getBoundingClientRect().height),
   }));
+  const headings = [...document.querySelectorAll('h1')]
+    .filter(visible)
+    .map((element) => {
+      const rect = element.getBoundingClientRect();
+      const style = getComputedStyle(element);
+      const lineHeight = Number.parseFloat(style.lineHeight) || Number.parseFloat(style.fontSize);
+      return {
+        text: (element.textContent || '').trim().replace(/\\s+/g, ' ').slice(0, 160),
+        fontSize: Math.round(Number.parseFloat(style.fontSize)),
+        height: Math.round(rect.height),
+        width: Math.round(rect.width),
+        estimatedLines: Math.max(1, Math.round(rect.height / lineHeight)),
+        viewportHeightShare: Number((rect.height / innerHeight).toFixed(2)),
+      };
+    });
+  const oversizedHeadings = headings.filter((heading) => (
+    heading.viewportHeightShare > 0.48
+    || (heading.fontSize > 96 && heading.estimatedLines > 2 && heading.text.length > 32)
+    || (heading.fontSize > 76 && heading.estimatedLines > 4)
+  ));
 
   return {
     url: location.href,
@@ -215,6 +236,8 @@ const auditExpression = `(() => {
     duplicateIds,
     smallTargets: smallTargets.slice(0, 20),
     smallTargetCount: smallTargets.length,
+    headings,
+    oversizedHeadings,
   };
 })()`;
 
@@ -329,6 +352,9 @@ async function run() {
         if (audit.duplicateIds.length) failures.push(`Duplicate ids: ${audit.duplicateIds.join(', ')}.`);
         if (audit.unlabeledFields.length) warnings.push(`${audit.unlabeledFields.length} visible form fields appear unlabeled.`);
         if (audit.smallTargetCount) warnings.push(`${audit.smallTargetCount} visible controls are smaller than 36px in one dimension.`);
+        if (audit.oversizedHeadings.length) {
+          failures.push(`${audit.oversizedHeadings.length} visible h1 title(s) consume too much of the viewport.`);
+        }
         if (routeErrors.length) failures.push(`${routeErrors.length} browser error(s) were recorded.`);
 
         results.push({

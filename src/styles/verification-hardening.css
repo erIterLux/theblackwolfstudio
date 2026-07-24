@@ -72,7 +72,10 @@ canvas {
 .not-found-card h1 {
   margin-bottom: 1rem;
   color: #171b20;
-  font-size: clamp(2.5rem, 7vw, 5.5rem);
+  max-width: 18ch;
+  font-size: clamp(2.25rem, 5vw, 3.75rem);
+  text-wrap: balance;
+  overflow-wrap: break-word;
 }
 
 .system-state-card p,

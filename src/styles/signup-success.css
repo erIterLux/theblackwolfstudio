@@ -65,8 +65,11 @@
 .signup-success-hero__copy h1 {
   margin: 0;
   color: #fff;
-  font-size: clamp(2.7rem, 7vw, 5.6rem);
+  max-width: 16ch;
+  font-size: clamp(2.55rem, 5.4vw, 4.4rem);
   line-height: 0.95;
+  text-wrap: balance;
+  overflow-wrap: break-word;
 }
 
 .signup-success-hero__copy > p:not(.eyebrow) {
@@ -447,6 +450,10 @@
   .signup-success-hero {
     grid-template-columns: 1fr;
     border-radius: 22px;
+  }
+
+  .signup-success-hero__copy h1 {
+    font-size: clamp(2.3rem, 10.5vw, 3.45rem);
   }
 
   .signup-success-hero__icon {

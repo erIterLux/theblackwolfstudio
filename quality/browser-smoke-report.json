@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-24T19:00:10.072Z",
+  "generatedAt": "2026-07-24T19:36:07.163Z",
   "passed": true,
   "baseUrl": "http://127.0.0.1:4173",
   "results": [
@@ -17,7 +17,18 @@
         "imagesWithoutAlt": [],
         "duplicateIds": [],
         "smallTargets": [],
-        "smallTargetCount": 0
+        "smallTargetCount": 0,
+        "headings": [
+          {
+            "text": "Power without panic.",
+            "fontSize": 58,
+            "height": 169,
+            "width": 362,
+            "estimatedLines": 3,
+            "viewportHeightShare": 0.2
+          }
+        ],
+        "oversizedHeadings": []
       },
       "errors": [],
       "failures": [],
@@ -38,7 +49,18 @@
         "imagesWithoutAlt": [],
         "duplicateIds": [],
         "smallTargets": [],
-        "smallTargetCount": 0
+        "smallTargetCount": 0,
+        "headings": [
+          {
+            "text": "Train the whole response.",
+            "fontSize": 41,
+            "height": 80,
+            "width": 362,
+            "estimatedLines": 2,
+            "viewportHeightShare": 0.1
+          }
+        ],
+        "oversizedHeadings": []
       },
       "errors": [],
       "failures": [],
@@ -59,7 +81,18 @@
         "imagesWithoutAlt": [],
         "duplicateIds": [],
         "smallTargets": [],
-        "smallTargetCount": 0
+        "smallTargetCount": 0,
+        "headings": [
+          {
+            "text": "Focused training experiences throughout the year.",
+            "fontSize": 41,
+            "height": 161,
+            "width": 362,
+            "estimatedLines": 4,
+            "viewportHeightShare": 0.19
+          }
+        ],
+        "oversizedHeadings": []
       },
       "errors": [],
       "failures": [],
@@ -80,7 +113,18 @@
         "imagesWithoutAlt": [],
         "duplicateIds": [],
         "smallTargets": [],
-        "smallTargetCount": 0
+        "smallTargetCount": 0,
+        "headings": [
+          {
+            "text": "This confirmation link is incomplete.",
+            "fontSize": 41,
+            "height": 156,
+            "width": 299,
+            "estimatedLines": 4,
+            "viewportHeightShare": 0.18
+          }
+        ],
+        "oversizedHeadings": []
       },
       "errors": [],
       "failures": [],
@@ -101,7 +145,18 @@
         "imagesWithoutAlt": [],
         "duplicateIds": [],
         "smallTargets": [],
-        "smallTargetCount": 0
+        "smallTargetCount": 0,
+        "headings": [
+          {
+            "text": "Practice that fits real life.",
+            "fontSize": 41,
+            "height": 80,
+            "width": 362,
+            "estimatedLines": 2,
+            "viewportHeightShare": 0.1
+          }
+        ],
+        "oversizedHeadings": []
       },
       "errors": [],
       "failures": [],
@@ -122,7 +177,18 @@
         "imagesWithoutAlt": [],
         "duplicateIds": [],
         "smallTargets": [],
-        "smallTargetCount": 0
+        "smallTargetCount": 0,
+        "headings": [
+          {
+            "text": "Focused instruction for one to three people.",
+            "fontSize": 41,
+            "height": 161,
+            "width": 362,
+            "estimatedLines": 4,
+            "viewportHeightShare": 0.19
+          }
+        ],
+        "oversizedHeadings": []
       },
       "errors": [],
       "failures": [],
@@ -143,7 +209,18 @@
         "imagesWithoutAlt": [],
         "duplicateIds": [],
         "smallTargets": [],
-        "smallTargetCount": 0
+        "smallTargetCount": 0,
+        "headings": [
+          {
+            "text": "This confirmation link is incomplete.",
+            "fontSize": 41,
+            "height": 156,
+            "width": 299,
+            "estimatedLines": 4,
+            "viewportHeightShare": 0.18
+          }
+        ],
+        "oversizedHeadings": []
       },
       "errors": [],
       "failures": [],
@@ -164,7 +241,18 @@
         "imagesWithoutAlt": [],
         "duplicateIds": [],
         "smallTargets": [],
-        "smallTargetCount": 0
+        "smallTargetCount": 0,
+        "headings": [
+          {
+            "text": "Tell us what you want to build.",
+            "fontSize": 41,
+            "height": 80,
+            "width": 362,
+            "estimatedLines": 2,
+            "viewportHeightShare": 0.1
+          }
+        ],
+        "oversizedHeadings": []
       },
       "errors": [],
       "failures": [],
@@ -185,7 +273,18 @@
         "imagesWithoutAlt": [],
         "duplicateIds": [],
         "smallTargets": [],
-        "smallTargetCount": 0
+        "smallTargetCount": 0,
+        "headings": [
+          {
+            "text": "Continue your practice between classes.",
+            "fontSize": 41,
+            "height": 161,
+            "width": 334,
+            "estimatedLines": 4,
+            "viewportHeightShare": 0.19
+          }
+        ],
+        "oversizedHeadings": []
       },
       "errors": [],
       "failures": [],
@@ -206,7 +305,18 @@
         "imagesWithoutAlt": [],
         "duplicateIds": [],
         "smallTargets": [],
-        "smallTargetCount": 0
+        "smallTargetCount": 0,
+        "headings": [
+          {
+            "text": "Continue your practice between classes.",
+            "fontSize": 41,
+            "height": 161,
+            "width": 334,
+            "estimatedLines": 4,
+            "viewportHeightShare": 0.19
+          }
+        ],
+        "oversizedHeadings": []
       },
       "errors": [],
       "failures": [],
@@ -227,7 +337,18 @@
         "imagesWithoutAlt": [],
         "duplicateIds": [],
         "smallTargets": [],
-        "smallTargetCount": 0
+        "smallTargetCount": 0,
+        "headings": [
+          {
+            "text": "Continue your practice between classes.",
+            "fontSize": 41,
+            "height": 161,
+            "width": 334,
+            "estimatedLines": 4,
+            "viewportHeightShare": 0.19
+          }
+        ],
+        "oversizedHeadings": []
       },
       "errors": [],
       "failures": [],
@@ -248,12 +369,407 @@
         "imagesWithoutAlt": [],
         "duplicateIds": [],
         "smallTargets": [],
-        "smallTargetCount": 0
+        "smallTargetCount": 0,
+        "headings": [
+          {
+            "text": "That page is not available.",
+            "fontSize": 36,
+            "height": 71,
+            "width": 277,
+            "estimatedLines": 2,
+            "viewportHeightShare": 0.08
+          }
+        ],
+        "oversizedHeadings": []
       },
       "errors": [],
       "failures": [],
       "warnings": [],
       "screenshot": "quality/screenshots/mobile-this-route-does-not-exist.png"
+    },
+    {
+      "route": "/",
+      "viewport": "tablet",
+      "audit": {
+        "url": "http://127.0.0.1:4173/",
+        "title": "The Black Wolf Studio",
+        "mainCount": 1,
+        "h1Count": 1,
+        "horizontalOverflow": 0,
+        "emptyInteractiveNames": [],
+        "unlabeledFields": [],
+        "imagesWithoutAlt": [],
+        "duplicateIds": [],
+        "smallTargets": [],
+        "smallTargetCount": 0,
+        "headings": [
+          {
+            "text": "Power without panic.",
+            "fontSize": 58,
+            "height": 56,
+            "width": 600,
+            "estimatedLines": 1,
+            "viewportHeightShare": 0.05
+          }
+        ],
+        "oversizedHeadings": []
+      },
+      "errors": [],
+      "failures": [],
+      "warnings": [],
+      "screenshot": "quality/screenshots/tablet-home.png"
+    },
+    {
+      "route": "/programs",
+      "viewport": "tablet",
+      "audit": {
+        "url": "http://127.0.0.1:4173/programs",
+        "title": "Programs | The Black Wolf Studio",
+        "mainCount": 1,
+        "h1Count": 1,
+        "horizontalOverflow": 0,
+        "emptyInteractiveNames": [],
+        "unlabeledFields": [],
+        "imagesWithoutAlt": [],
+        "duplicateIds": [],
+        "smallTargets": [],
+        "smallTargetCount": 0,
+        "headings": [
+          {
+            "text": "Train the whole response.",
+            "fontSize": 49,
+            "height": 48,
+            "width": 780,
+            "estimatedLines": 1,
+            "viewportHeightShare": 0.04
+          }
+        ],
+        "oversizedHeadings": []
+      },
+      "errors": [],
+      "failures": [],
+      "warnings": [],
+      "screenshot": "quality/screenshots/tablet-programs.png"
+    },
+    {
+      "route": "/events",
+      "viewport": "tablet",
+      "audit": {
+        "url": "http://127.0.0.1:4173/events",
+        "title": "Events | The Black Wolf Studio",
+        "mainCount": 1,
+        "h1Count": 1,
+        "horizontalOverflow": 0,
+        "emptyInteractiveNames": [],
+        "unlabeledFields": [],
+        "imagesWithoutAlt": [],
+        "duplicateIds": [],
+        "smallTargets": [],
+        "smallTargetCount": 0,
+        "headings": [
+          {
+            "text": "Focused training experiences throughout the year.",
+            "fontSize": 46,
+            "height": 89,
+            "width": 780,
+            "estimatedLines": 2,
+            "viewportHeightShare": 0.08
+          }
+        ],
+        "oversizedHeadings": []
+      },
+      "errors": [],
+      "failures": [],
+      "warnings": [],
+      "screenshot": "quality/screenshots/tablet-events.png"
+    },
+    {
+      "route": "/events/success",
+      "viewport": "tablet",
+      "audit": {
+        "url": "http://127.0.0.1:4173/events/success",
+        "title": "Event registration complete | The Black Wolf Studio",
+        "mainCount": 1,
+        "h1Count": 1,
+        "horizontalOverflow": 0,
+        "emptyInteractiveNames": [],
+        "unlabeledFields": [],
+        "imagesWithoutAlt": [],
+        "duplicateIds": [],
+        "smallTargets": [],
+        "smallTargetCount": 0,
+        "headings": [
+          {
+            "text": "This confirmation link is incomplete.",
+            "fontSize": 44,
+            "height": 168,
+            "width": 323,
+            "estimatedLines": 4,
+            "viewportHeightShare": 0.14
+          }
+        ],
+        "oversizedHeadings": []
+      },
+      "errors": [],
+      "failures": [],
+      "warnings": [],
+      "screenshot": "quality/screenshots/tablet-events-success.png"
+    },
+    {
+      "route": "/membership",
+      "viewport": "tablet",
+      "audit": {
+        "url": "http://127.0.0.1:4173/membership",
+        "title": "Membership | The Black Wolf Studio",
+        "mainCount": 1,
+        "h1Count": 1,
+        "horizontalOverflow": 0,
+        "emptyInteractiveNames": [],
+        "unlabeledFields": [],
+        "imagesWithoutAlt": [],
+        "duplicateIds": [],
+        "smallTargets": [],
+        "smallTargetCount": 0,
+        "headings": [
+          {
+            "text": "Practice that fits real life.",
+            "fontSize": 46,
+            "height": 45,
+            "width": 780,
+            "estimatedLines": 1,
+            "viewportHeightShare": 0.04
+          }
+        ],
+        "oversizedHeadings": []
+      },
+      "errors": [],
+      "failures": [],
+      "warnings": [],
+      "screenshot": "quality/screenshots/tablet-membership.png"
+    },
+    {
+      "route": "/private-training",
+      "viewport": "tablet",
+      "audit": {
+        "url": "http://127.0.0.1:4173/private-training",
+        "title": "Private training | The Black Wolf Studio",
+        "mainCount": 1,
+        "h1Count": 1,
+        "horizontalOverflow": 0,
+        "emptyInteractiveNames": [],
+        "unlabeledFields": [],
+        "imagesWithoutAlt": [],
+        "duplicateIds": [],
+        "smallTargets": [],
+        "smallTargetCount": 0,
+        "headings": [
+          {
+            "text": "Focused instruction for one to three people.",
+            "fontSize": 46,
+            "height": 89,
+            "width": 780,
+            "estimatedLines": 2,
+            "viewportHeightShare": 0.08
+          }
+        ],
+        "oversizedHeadings": []
+      },
+      "errors": [],
+      "failures": [],
+      "warnings": [],
+      "screenshot": "quality/screenshots/tablet-private-training.png"
+    },
+    {
+      "route": "/private-training/success",
+      "viewport": "tablet",
+      "audit": {
+        "url": "http://127.0.0.1:4173/private-training/success",
+        "title": "Private training purchase complete | The Black Wolf Studio",
+        "mainCount": 1,
+        "h1Count": 1,
+        "horizontalOverflow": 0,
+        "emptyInteractiveNames": [],
+        "unlabeledFields": [],
+        "imagesWithoutAlt": [],
+        "duplicateIds": [],
+        "smallTargets": [],
+        "smallTargetCount": 0,
+        "headings": [
+          {
+            "text": "This confirmation link is incomplete.",
+            "fontSize": 44,
+            "height": 168,
+            "width": 323,
+            "estimatedLines": 4,
+            "viewportHeightShare": 0.14
+          }
+        ],
+        "oversizedHeadings": []
+      },
+      "errors": [],
+      "failures": [],
+      "warnings": [],
+      "screenshot": "quality/screenshots/tablet-private-training-success.png"
+    },
+    {
+      "route": "/contact",
+      "viewport": "tablet",
+      "audit": {
+        "url": "http://127.0.0.1:4173/contact",
+        "title": "Contact | The Black Wolf Studio",
+        "mainCount": 1,
+        "h1Count": 1,
+        "horizontalOverflow": 0,
+        "emptyInteractiveNames": [],
+        "unlabeledFields": [],
+        "imagesWithoutAlt": [],
+        "duplicateIds": [],
+        "smallTargets": [],
+        "smallTargetCount": 0,
+        "headings": [
+          {
+            "text": "Tell us what you want to build.",
+            "fontSize": 46,
+            "height": 45,
+            "width": 780,
+            "estimatedLines": 1,
+            "viewportHeightShare": 0.04
+          }
+        ],
+        "oversizedHeadings": []
+      },
+      "errors": [],
+      "failures": [],
+      "warnings": [],
+      "screenshot": "quality/screenshots/tablet-contact.png"
+    },
+    {
+      "route": "/login",
+      "viewport": "tablet",
+      "audit": {
+        "url": "http://127.0.0.1:4173/login",
+        "title": "Member login | The Black Wolf Studio",
+        "mainCount": 1,
+        "h1Count": 1,
+        "horizontalOverflow": 0,
+        "emptyInteractiveNames": [],
+        "unlabeledFields": [],
+        "imagesWithoutAlt": [],
+        "duplicateIds": [],
+        "smallTargets": [],
+        "smallTargetCount": 0,
+        "headings": [
+          {
+            "text": "Continue your practice between classes.",
+            "fontSize": 48,
+            "height": 94,
+            "width": 700,
+            "estimatedLines": 2,
+            "viewportHeightShare": 0.08
+          }
+        ],
+        "oversizedHeadings": []
+      },
+      "errors": [],
+      "failures": [],
+      "warnings": [],
+      "screenshot": "quality/screenshots/tablet-login.png"
+    },
+    {
+      "route": "/member",
+      "viewport": "tablet",
+      "audit": {
+        "url": "http://127.0.0.1:4173/login",
+        "title": "Member login | The Black Wolf Studio",
+        "mainCount": 1,
+        "h1Count": 1,
+        "horizontalOverflow": 0,
+        "emptyInteractiveNames": [],
+        "unlabeledFields": [],
+        "imagesWithoutAlt": [],
+        "duplicateIds": [],
+        "smallTargets": [],
+        "smallTargetCount": 0,
+        "headings": [
+          {
+            "text": "Continue your practice between classes.",
+            "fontSize": 48,
+            "height": 94,
+            "width": 700,
+            "estimatedLines": 2,
+            "viewportHeightShare": 0.08
+          }
+        ],
+        "oversizedHeadings": []
+      },
+      "errors": [],
+      "failures": [],
+      "warnings": [],
+      "screenshot": "quality/screenshots/tablet-member.png"
+    },
+    {
+      "route": "/instructor",
+      "viewport": "tablet",
+      "audit": {
+        "url": "http://127.0.0.1:4173/login",
+        "title": "Member login | The Black Wolf Studio",
+        "mainCount": 1,
+        "h1Count": 1,
+        "horizontalOverflow": 0,
+        "emptyInteractiveNames": [],
+        "unlabeledFields": [],
+        "imagesWithoutAlt": [],
+        "duplicateIds": [],
+        "smallTargets": [],
+        "smallTargetCount": 0,
+        "headings": [
+          {
+            "text": "Continue your practice between classes.",
+            "fontSize": 48,
+            "height": 94,
+            "width": 700,
+            "estimatedLines": 2,
+            "viewportHeightShare": 0.08
+          }
+        ],
+        "oversizedHeadings": []
+      },
+      "errors": [],
+      "failures": [],
+      "warnings": [],
+      "screenshot": "quality/screenshots/tablet-instructor.png"
+    },
+    {
+      "route": "/this-route-does-not-exist",
+      "viewport": "tablet",
+      "audit": {
+        "url": "http://127.0.0.1:4173/this-route-does-not-exist",
+        "title": "Page not found | The Black Wolf Studio",
+        "mainCount": 1,
+        "h1Count": 1,
+        "horizontalOverflow": 0,
+        "emptyInteractiveNames": [],
+        "unlabeledFields": [],
+        "imagesWithoutAlt": [],
+        "duplicateIds": [],
+        "smallTargets": [],
+        "smallTargetCount": 0,
+        "headings": [
+          {
+            "text": "That page is not available.",
+            "fontSize": 41,
+            "height": 80,
+            "width": 337,
+            "estimatedLines": 2,
+            "viewportHeightShare": 0.07
+          }
+        ],
+        "oversizedHeadings": []
+      },
+      "errors": [],
+      "failures": [],
+      "warnings": [],
+      "screenshot": "quality/screenshots/tablet-this-route-does-not-exist.png"
     },
     {
       "route": "/",
@@ -269,7 +785,18 @@
         "imagesWithoutAlt": [],
         "duplicateIds": [],
         "smallTargets": [],
-        "smallTargetCount": 0
+        "smallTargetCount": 0,
+        "headings": [
+          {
+            "text": "Power without panic.",
+            "fontSize": 101,
+            "height": 296,
+            "width": 600,
+            "estimatedLines": 3,
+            "viewportHeightShare": 0.3
+          }
+        ],
+        "oversizedHeadings": []
       },
       "errors": [],
       "failures": [],
@@ -290,7 +817,18 @@
         "imagesWithoutAlt": [],
         "duplicateIds": [],
         "smallTargets": [],
-        "smallTargetCount": 0
+        "smallTargetCount": 0,
+        "headings": [
+          {
+            "text": "Train the whole response.",
+            "fontSize": 86,
+            "height": 169,
+            "width": 1000,
+            "estimatedLines": 2,
+            "viewportHeightShare": 0.17
+          }
+        ],
+        "oversizedHeadings": []
       },
       "errors": [],
       "failures": [],
@@ -311,7 +849,18 @@
         "imagesWithoutAlt": [],
         "duplicateIds": [],
         "smallTargets": [],
-        "smallTargetCount": 0
+        "smallTargetCount": 0,
+        "headings": [
+          {
+            "text": "Focused training experiences throughout the year.",
+            "fontSize": 78,
+            "height": 229,
+            "width": 1000,
+            "estimatedLines": 3,
+            "viewportHeightShare": 0.23
+          }
+        ],
+        "oversizedHeadings": []
       },
       "errors": [],
       "failures": [],
@@ -332,7 +881,18 @@
         "imagesWithoutAlt": [],
         "duplicateIds": [],
         "smallTargets": [],
-        "smallTargetCount": 0
+        "smallTargetCount": 0,
+        "headings": [
+          {
+            "text": "This confirmation link is incomplete.",
+            "fontSize": 70,
+            "height": 268,
+            "width": 514,
+            "estimatedLines": 4,
+            "viewportHeightShare": 0.27
+          }
+        ],
+        "oversizedHeadings": []
       },
       "errors": [],
       "failures": [],
@@ -353,7 +913,18 @@
         "imagesWithoutAlt": [],
         "duplicateIds": [],
         "smallTargets": [],
-        "smallTargetCount": 0
+        "smallTargetCount": 0,
+        "headings": [
+          {
+            "text": "Practice that fits real life.",
+            "fontSize": 78,
+            "height": 152,
+            "width": 1000,
+            "estimatedLines": 2,
+            "viewportHeightShare": 0.15
+          }
+        ],
+        "oversizedHeadings": []
       },
       "errors": [],
       "failures": [],
@@ -374,7 +945,18 @@
         "imagesWithoutAlt": [],
         "duplicateIds": [],
         "smallTargets": [],
-        "smallTargetCount": 0
+        "smallTargetCount": 0,
+        "headings": [
+          {
+            "text": "Focused instruction for one to three people.",
+            "fontSize": 78,
+            "height": 152,
+            "width": 1000,
+            "estimatedLines": 2,
+            "viewportHeightShare": 0.15
+          }
+        ],
+        "oversizedHeadings": []
       },
       "errors": [],
       "failures": [],
@@ -395,7 +977,18 @@
         "imagesWithoutAlt": [],
         "duplicateIds": [],
         "smallTargets": [],
-        "smallTargetCount": 0
+        "smallTargetCount": 0,
+        "headings": [
+          {
+            "text": "This confirmation link is incomplete.",
+            "fontSize": 70,
+            "height": 268,
+            "width": 514,
+            "estimatedLines": 4,
+            "viewportHeightShare": 0.27
+          }
+        ],
+        "oversizedHeadings": []
       },
       "errors": [],
       "failures": [],
@@ -416,7 +1009,18 @@
         "imagesWithoutAlt": [],
         "duplicateIds": [],
         "smallTargets": [],
-        "smallTargetCount": 0
+        "smallTargetCount": 0,
+        "headings": [
+          {
+            "text": "Tell us what you want to build.",
+            "fontSize": 78,
+            "height": 152,
+            "width": 1000,
+            "estimatedLines": 2,
+            "viewportHeightShare": 0.15
+          }
+        ],
+        "oversizedHeadings": []
       },
       "errors": [],
       "failures": [],
@@ -437,7 +1041,18 @@
         "imagesWithoutAlt": [],
         "duplicateIds": [],
         "smallTargets": [],
-        "smallTargetCount": 0
+        "smallTargetCount": 0,
+        "headings": [
+          {
+            "text": "Continue your practice between classes.",
+            "fontSize": 78,
+            "height": 305,
+            "width": 546,
+            "estimatedLines": 4,
+            "viewportHeightShare": 0.3
+          }
+        ],
+        "oversizedHeadings": []
       },
       "errors": [],
       "failures": [],
@@ -458,7 +1073,18 @@
         "imagesWithoutAlt": [],
         "duplicateIds": [],
         "smallTargets": [],
-        "smallTargetCount": 0
+        "smallTargetCount": 0,
+        "headings": [
+          {
+            "text": "Continue your practice between classes.",
+            "fontSize": 78,
+            "height": 305,
+            "width": 546,
+            "estimatedLines": 4,
+            "viewportHeightShare": 0.3
+          }
+        ],
+        "oversizedHeadings": []
       },
       "errors": [],
       "failures": [],
@@ -479,7 +1105,18 @@
         "imagesWithoutAlt": [],
         "duplicateIds": [],
         "smallTargets": [],
-        "smallTargetCount": 0
+        "smallTargetCount": 0,
+        "headings": [
+          {
+            "text": "Continue your practice between classes.",
+            "fontSize": 78,
+            "height": 305,
+            "width": 546,
+            "estimatedLines": 4,
+            "viewportHeightShare": 0.3
+          }
+        ],
+        "oversizedHeadings": []
       },
       "errors": [],
       "failures": [],
@@ -500,7 +1137,18 @@
         "imagesWithoutAlt": [],
         "duplicateIds": [],
         "smallTargets": [],
-        "smallTargetCount": 0
+        "smallTargetCount": 0,
+        "headings": [
+          {
+            "text": "That page is not available.",
+            "fontSize": 60,
+            "height": 118,
+            "width": 493,
+            "estimatedLines": 2,
+            "viewportHeightShare": 0.12
+          }
+        ],
+        "oversizedHeadings": []
       },
       "errors": [],
       "failures": [],

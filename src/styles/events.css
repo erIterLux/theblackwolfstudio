@@ -590,6 +590,24 @@
     margin-bottom: 1.5rem;
 }
 
+.waiver-shell--message h1 {
+    max-width: 16ch;
+    margin: 0;
+    font-size: clamp(2.25rem, 4.2vw, 3.6rem);
+    line-height: 1;
+    text-wrap: balance;
+    overflow-wrap: anywhere;
+}
+
+.waiver-page__header h1 {
+    max-width: 22ch;
+    margin: 0;
+    font-size: clamp(2.25rem, 3.6vw, 4rem);
+    line-height: .98;
+    text-wrap: balance;
+    overflow-wrap: anywhere;
+}
+
 .waiver-page__icon {
     display: grid;
     width: 62px;
@@ -792,8 +810,7 @@
 @media (max-width: 760px) {
     .waiver-shell--message h1,
     .waiver-page__header h1 {
-        font-size: clamp(2.2rem, 11vw, 4.5rem);
-        overflow-wrap: anywhere;
+        font-size: clamp(2rem, 8.8vw, 3.1rem);
     }
 
     .waiver-event-summary {
