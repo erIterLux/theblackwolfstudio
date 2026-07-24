@@ -139,7 +139,7 @@ export default function PortalShell({
     const closeMenu = () => setMenuPathname('');
 
     return (
-        <div className={`portal-shell portal-shell--${mode}`}>
+        <div className={`portal-shell portal-shell--${mode}${menuOpen ? ' has-open-navigation' : ''}`}>
             <a className="skip-link" href="#main-content">Skip to content</a>
 
             <header className="portal-topbar">
@@ -240,7 +240,7 @@ export default function PortalShell({
                     </Suspense>
                 </main>
             </div>
-            {showWolfGuide && <WolfGuideWidget />}
+            {showWolfGuide && <WolfGuideWidget suspended={menuOpen} />}
         </div>
     );
 }

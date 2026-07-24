@@ -392,6 +392,12 @@
 }
 
 @media (max-width: 980px) {
+  .portal-shell.has-open-navigation .wolf-guide-widget,
+  .wolf-guide-widget.is-suspended {
+    visibility: hidden;
+    pointer-events: none;
+  }
+
   .wolf-guide-dialog {
     width: min(31rem, calc(100vw - 2rem));
   }
@@ -406,7 +412,8 @@
   .wolf-guide-widget {
     right: .75rem;
     bottom: calc(.75rem + env(safe-area-inset-bottom));
-    left: .75rem;
+    left: auto;
+    width: min(60vw, 16rem);
   }
 
   .wolf-guide-launcher {
@@ -415,17 +422,22 @@
     min-height: 3.35rem;
   }
 
-  .wolf-guide-dialog,
-  .wolf-guide-widget.is-expanded .wolf-guide-dialog {
-    inset: .65rem .65rem calc(4.85rem + env(safe-area-inset-bottom));
+  .wolf-guide-dialog {
+    inset: auto .65rem calc(4.85rem + env(safe-area-inset-bottom)) .65rem;
     width: auto;
-    height: auto;
-    max-height: none;
+    height: min(60dvh, 34rem);
+    max-height: min(60dvh, 34rem);
     transform: none;
   }
 
   .wolf-guide-widget.is-expanded .wolf-guide-dialog {
-    bottom: calc(.65rem + env(safe-area-inset-bottom));
+    inset: .65rem .65rem calc(.65rem + env(safe-area-inset-bottom));
+    height: auto;
+    max-height: none;
+  }
+
+  .wolf-guide-dialog__body {
+    overflow-y: auto;
   }
 
   .wolf-guide-dialog__header {

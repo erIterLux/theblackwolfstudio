@@ -303,7 +303,7 @@ function WolfGuideUpgrade() {
     );
 }
 
-export default function WolfGuideWidget() {
+export default function WolfGuideWidget({ suspended = false }) {
     const { user } = useAuth();
     const { memberState } = useWolfGuideState();
     const { canUseWolfGuide, loading } = useMembership();
@@ -319,6 +319,12 @@ export default function WolfGuideWidget() {
         setOpen(false);
         setExpanded(false);
     }, []);
+
+    useEffect(() => {
+        if (!suspended) return undefined;
+        const closeFrame = window.requestAnimationFrame(close);
+        return () => window.cancelAnimationFrame(closeFrame);
+    }, [close, suspended]);
 
     useEffect(() => {
         if (!open) return undefined;
@@ -362,7 +368,10 @@ export default function WolfGuideWidget() {
     }, [close, expanded, open]);
 
     return (
-        <div className={`wolf-guide-widget${expanded ? ' is-expanded' : ''}`}>
+        <div
+            className={`wolf-guide-widget${expanded ? ' is-expanded' : ''}${suspended ? ' is-suspended' : ''}`}
+            aria-hidden={suspended ? 'true' : undefined}
+        >
             {open && expanded && (
                 <button
                     className="wolf-guide-widget__backdrop"

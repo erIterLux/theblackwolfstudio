@@ -195,19 +195,29 @@ async function getMembershipDiscount(uid, purchaseType) {
     if (!LIVE_MEMBERSHIP_STATUSES.has(membership.status)) return null;
 
     const plan = getPlanDefinition(membership.planKey);
-    const percent = purchaseType === 'event'
-        ? Number(
+    let percent = 0;
+    if (purchaseType === 'event') {
+        percent = Number(
             membership.discounts?.eventPercent
             ?? membership.eventDiscountPercent
             ?? plan?.discounts?.eventPercent
             ?? 0,
-        )
-        : Number(
+        );
+    } else if (purchaseType === 'private_training') {
+        percent = Number(
             membership.discounts?.privateTrainingPercent
             ?? membership.privateTrainingDiscountPercent
             ?? plan?.discounts?.privateTrainingPercent
             ?? 0,
         );
+    } else if (purchaseType === 'merchandise') {
+        percent = Number(
+            membership.discounts?.merchandisePercent
+            ?? membership.merchandiseDiscountPercent
+            ?? plan?.discounts?.merchandisePercent
+            ?? 0,
+        );
+    }
 
     const normalized = Math.min(100, Math.max(0, percent));
     if (!normalized) return null;

@@ -9,6 +9,7 @@ import {
 import { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import {
+  claimMembershipPrivateTrainingCredit,
   quotePrivateTrainingCheckout,
   startPrivateTrainingCheckout,
 } from '../../services/privateTraining';
@@ -55,6 +56,7 @@ function participantOptionLabel(participant = {}, index = 0) {
 }
 
 function participantPriceLabel(offer, count) {
+  if (offer.membershipBenefit) return 'Included';
   if (offer.pricingModel === 'per_participant') {
     return `${formatMoney(offer.unitAmountCents, offer.currency)} per person`;
   }
@@ -68,6 +70,7 @@ function participantPriceLabel(offer, count) {
 
 export default function PrivateTrainingCheckoutForm({ offer, onCancel }) {
   const { user } = useAuth();
+  const isMembershipBenefit = offer.membershipBenefit === true;
   const maxParticipants = Number(offer.privateTraining?.maxParticipants || 3);
   const [participantCount, setParticipantCount] = useState(1);
   const [purchaserSource, setPurchaserSource] = useState('other');
@@ -107,6 +110,20 @@ export default function PrivateTrainingCheckoutForm({ offer, onCancel }) {
   }, [user]);
 
   useEffect(() => {
+    if (isMembershipBenefit) {
+      queueMicrotask(() => {
+        setQuote({
+          currency: 'usd',
+          subtotalCents: 0,
+          discountAmountCents: 0,
+          totalCents: 0,
+        });
+        setQuoteLoading(false);
+        setError('');
+      });
+      return undefined;
+    }
+
     let cancelled = false;
     queueMicrotask(() => {
       if (!cancelled) {
@@ -137,7 +154,7 @@ export default function PrivateTrainingCheckoutForm({ offer, onCancel }) {
     return () => {
       cancelled = true;
     };
-  }, [offer.id, participantCount, appliedCode]);
+  }, [offer.id, participantCount, appliedCode, isMembershipBenefit]);
 
   const visibleParticipants = useMemo(
     () => participants.slice(0, participantCount),
@@ -200,7 +217,7 @@ export default function PrivateTrainingCheckoutForm({ offer, onCancel }) {
 
     setBusy(true);
     try {
-      await startPrivateTrainingCheckout({
+      const payload = {
         offerId: offer.id,
         participantCount,
         discountCode: appliedCode,
@@ -210,10 +227,21 @@ export default function PrivateTrainingCheckoutForm({ offer, onCancel }) {
           id: item.id || `participant-${index + 1}`,
           isPurchaser: purchaserSource === `participant-${index}`,
         })),
-      });
+      };
+      if (isMembershipBenefit) {
+        await claimMembershipPrivateTrainingCredit(payload);
+        window.location.assign('/member/private-training?membership_credit=claimed');
+      } else {
+        await startPrivateTrainingCheckout(payload);
+      }
     } catch (nextError) {
       console.error(nextError);
-      setError(nextError?.message || 'Checkout could not be started.');
+      setError(
+        nextError?.message
+        || (isMembershipBenefit
+          ? 'The included lesson credit could not be set up.'
+          : 'Checkout could not be started.'),
+      );
       setBusy(false);
     }
   };
@@ -222,7 +250,9 @@ export default function PrivateTrainingCheckoutForm({ offer, onCancel }) {
     <form className="private-checkout" onSubmit={beginCheckout}>
       <div className="private-checkout__heading">
         <div>
-          <p className="eyebrow">Private training checkout</p>
+          <p className="eyebrow">
+            {isMembershipBenefit ? 'Integrate membership benefit' : 'Private training checkout'}
+          </p>
           <h2>{offer.name}</h2>
         </div>
         <button className="text-link" type="button" onClick={onCancel}>
@@ -375,7 +405,11 @@ export default function PrivateTrainingCheckoutForm({ offer, onCancel }) {
           <ShieldCheck aria-hidden="true" />
           <div>
             <h3>Participant waivers</h3>
-            <p>Payment and waiver completion are separate steps.</p>
+            <p>
+              {isMembershipBenefit
+                ? 'Credit setup and waiver completion are separate steps.'
+                : 'Payment and waiver completion are separate steps.'}
+            </p>
           </div>
         </div>
         <p>
@@ -395,8 +429,9 @@ export default function PrivateTrainingCheckoutForm({ offer, onCancel }) {
           <div>
             <h3>Purchaser</h3>
             <p>
-              Enter the person responsible for this purchase. The receipt and package
-              confirmation use this information.
+              {isMembershipBenefit
+                ? 'Enter the member responsible for this included lesson. The confirmation uses this information.'
+                : 'Enter the person responsible for this purchase. The receipt and package confirmation use this information.'}
             </p>
           </div>
         </div>
@@ -474,32 +509,45 @@ export default function PrivateTrainingCheckoutForm({ offer, onCancel }) {
         <div className="private-checkout__section-heading">
           <BadgePercent aria-hidden="true" />
           <div>
-            <h3>Pricing and discounts</h3>
-            <p>Active member pricing is applied automatically when you are signed in.</p>
+            <h3>{isMembershipBenefit ? 'Included membership credit' : 'Pricing and discounts'}</h3>
+            <p>
+              {isMembershipBenefit
+                ? 'This lesson is included with the current Integrate membership period.'
+                : 'Active member pricing is applied automatically when you are signed in.'}
+            </p>
           </div>
         </div>
-        <div className="discount-code-row">
-          <label>
-            Promotion code <span className="optional-label">optional</span>
-            <input
-              value={discountCode}
-              autoCapitalize="characters"
-              autoCorrect="off"
-              spellCheck="false"
-              onChange={(event) => setDiscountCode(event.target.value.toUpperCase())}
-              placeholder="ENTER CODE"
-            />
-          </label>
-          <button className="button button--dark-ghost" type="button" onClick={applyDiscount}>
-            Apply code
-          </button>
-        </div>
+        {!isMembershipBenefit && (
+          <div className="discount-code-row">
+            <label>
+              Promotion code <span className="optional-label">optional</span>
+              <input
+                value={discountCode}
+                autoCapitalize="characters"
+                autoCorrect="off"
+                spellCheck="false"
+                onChange={(event) => setDiscountCode(event.target.value.toUpperCase())}
+                placeholder="ENTER CODE"
+              />
+            </label>
+            <button className="button button--dark-ghost" type="button" onClick={applyDiscount}>
+              Apply code
+            </button>
+          </div>
+        )}
 
         {quoteLoading ? (
           <p className="quote-loading"><LoaderCircle className="spin" /> Calculating price…</p>
         ) : quote && (
           <div className="checkout-summary" aria-live="polite">
-            <div><span>Package subtotal</span><strong>{formatMoney(quote.subtotalCents, quote.currency)}</strong></div>
+            <div>
+              <span>{isMembershipBenefit ? 'Membership benefit' : 'Package subtotal'}</span>
+              <strong>
+                {isMembershipBenefit
+                  ? 'Included'
+                  : formatMoney(quote.subtotalCents, quote.currency)}
+              </strong>
+            </div>
             {quote.discountAmountCents > 0 && (
               <div className="checkout-summary__discount">
                 <span>{quote.discount?.label || 'Discount'}</span>
@@ -522,7 +570,9 @@ export default function PrivateTrainingCheckoutForm({ offer, onCancel }) {
           One package credit covers the selected group for each private session.
         </p>
         <button className="button" type="submit" disabled={busy || quoteLoading || !quote}>
-          {busy ? 'Opening secure checkout…' : 'Continue to secure checkout'}
+          {busy
+            ? isMembershipBenefit ? 'Setting up your credit…' : 'Opening secure checkout…'
+            : isMembershipBenefit ? 'Use included lesson credit' : 'Continue to secure checkout'}
         </button>
       </div>
     </form>

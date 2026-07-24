@@ -1,6 +1,10 @@
 const crypto = require('crypto');
 const admin = require('firebase-admin');
 const { HttpsError } = require('firebase-functions/v2/https');
+const {
+  LIVE_MEMBERSHIP_STATUSES,
+  getPlanDefinition,
+} = require('../config/membershipPlans');
 
 const db = admin.firestore();
 const INSTRUCTOR_ROLES = new Set(['instructor', 'admin']);
@@ -338,6 +342,201 @@ function purchaseExpiration(baseTimestamp, expirationDays) {
   );
 }
 
+function dateFromTimestamp(value) {
+  if (value?.toDate) return value.toDate();
+  const parsed = value ? new Date(value) : null;
+  return parsed && !Number.isNaN(parsed.valueOf()) ? parsed : null;
+}
+
+function membershipPrivateTrainingEntitlement(membership = {}) {
+  const plan = getPlanDefinition(membership.planKey);
+  const benefits = membership.benefits || {};
+  const entitlementCount = Math.max(
+    0,
+    Number(
+      benefits.privateTrainingCreditsPerPeriod
+      ?? plan?.benefits?.privateTrainingCreditsPerPeriod
+      ?? 0,
+    ),
+  );
+  const maxParticipants = integer(
+    benefits.privateTrainingMaxParticipants
+      ?? plan?.benefits?.privateTrainingMaxParticipants,
+    1,
+    MAX_PRIVATE_PARTICIPANTS,
+    MAX_PRIVATE_PARTICIPANTS,
+  );
+  const periodEnd = dateFromTimestamp(
+    membership.privateTrainingCredit?.periodEnd || membership.currentPeriodEnd,
+  );
+
+  return {
+    entitlementCount,
+    maxParticipants,
+    periodEnd,
+    plan,
+  };
+}
+
+function membershipCreditPurchaser(raw, request, membership) {
+  const name = clean(
+    raw?.name || request.auth?.token?.name || membership.displayName,
+    160,
+  );
+  const email = normalizeEmail(
+    raw?.email || request.auth?.token?.email || membership.email,
+  );
+  const phone = clean(raw?.phone, 40);
+  if (!name) throw new HttpsError('invalid-argument', 'Purchaser name is required.');
+  if (!email || !email.includes('@')) {
+    throw new HttpsError('invalid-argument', 'A valid purchaser email is required.');
+  }
+  return { name, email, phone: phone || null };
+}
+
+function membershipCreditPurchaseId(uid, periodEnd) {
+  return `membership-credit-${uid}-${periodEnd.valueOf()}`;
+}
+
+async function handleClaimMembershipPrivateTrainingCredit(request) {
+  const uid = requireAuthenticated(request);
+  const membershipRef = db.collection('memberships').doc(uid);
+  const membershipSnapshot = await membershipRef.get();
+  if (!membershipSnapshot.exists) {
+    throw new HttpsError(
+      'failed-precondition',
+      'An active Integrate membership is required for this credit.',
+    );
+  }
+
+  const membership = membershipSnapshot.data() || {};
+  const entitlement = membershipPrivateTrainingEntitlement(membership);
+  if (
+    !LIVE_MEMBERSHIP_STATUSES.has(membership.status)
+    || entitlement.entitlementCount < 1
+    || !entitlement.periodEnd
+    || entitlement.periodEnd.valueOf() <= Date.now()
+  ) {
+    throw new HttpsError(
+      'failed-precondition',
+      'An active Integrate membership with an available private lesson credit is required.',
+    );
+  }
+
+  const participantCount = integer(
+    request.data?.participantCount,
+    1,
+    entitlement.maxParticipants,
+    1,
+  );
+  const purchaser = membershipCreditPurchaser(
+    request.data?.purchaser,
+    request,
+    membership,
+  );
+  const participants = sanitizePrivateTrainingParticipants(
+    request.data?.participants,
+    participantCount,
+    purchaser,
+  );
+  const purchaseId = membershipCreditPurchaseId(uid, entitlement.periodEnd);
+  const purchaseRef = db.collection('privateTrainingPurchases').doc(purchaseId);
+  let alreadyClaimed = false;
+
+  await db.runTransaction(async (transaction) => {
+    const [currentMembershipSnapshot, existingPurchaseSnapshot] = await Promise.all([
+      transaction.get(membershipRef),
+      transaction.get(purchaseRef),
+    ]);
+    const currentMembership = currentMembershipSnapshot.data() || {};
+    const currentEntitlement = membershipPrivateTrainingEntitlement(currentMembership);
+    if (
+      !LIVE_MEMBERSHIP_STATUSES.has(currentMembership.status)
+      || currentEntitlement.entitlementCount < 1
+      || !currentEntitlement.periodEnd
+      || currentEntitlement.periodEnd.valueOf() !== entitlement.periodEnd.valueOf()
+    ) {
+      throw new HttpsError(
+        'failed-precondition',
+        'Your membership changed before the credit could be claimed. Refresh and try again.',
+      );
+    }
+
+    const priorCredit = currentMembership.privateTrainingCredit || {};
+    if (existingPurchaseSnapshot.exists || priorCredit.claimedPurchaseId) {
+      alreadyClaimed = true;
+      if (existingPurchaseSnapshot.exists && !priorCredit.claimedPurchaseId) {
+        transaction.set(membershipRef, {
+          privateTrainingCredit: {
+            entitlementCount: currentEntitlement.entitlementCount,
+            availableCount: Math.max(0, currentEntitlement.entitlementCount - 1),
+            maxParticipants: currentEntitlement.maxParticipants,
+            periodEnd: admin.firestore.Timestamp.fromDate(currentEntitlement.periodEnd),
+            claimedPurchaseId: purchaseId,
+            claimedAt: existingPurchaseSnapshot.data()?.grantedAt || null,
+          },
+          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        }, { merge: true });
+      }
+      return;
+    }
+
+    const timestamp = admin.firestore.FieldValue.serverTimestamp();
+    transaction.set(purchaseRef, {
+      id: purchaseId,
+      orderId: null,
+      uid,
+      source: 'membership_benefit',
+      membershipPlanKey: currentMembership.planKey || entitlement.plan?.key || 'integrate',
+      membershipPeriodEnd: admin.firestore.Timestamp.fromDate(entitlement.periodEnd),
+      purchaser,
+      participants,
+      participantCount,
+      offerId: 'integrate-membership-private-lesson',
+      offerName: 'Integrate included private lesson',
+      pricing: {
+        currency: 'usd',
+        subtotalCents: 0,
+        discountAmountCents: 0,
+        totalCents: 0,
+        source: 'membership_benefit',
+      },
+      purchasedSessions: 1,
+      adjustmentSessions: 0,
+      totalSessions: 1,
+      usedSessions: 0,
+      remainingSessions: 1,
+      reservedSessions: 0,
+      sessionDurationMinutes: 60,
+      maxParticipants: entitlement.maxParticipants,
+      expirationDays: 0,
+      expiresAt: admin.firestore.Timestamp.fromDate(entitlement.periodEnd),
+      status: 'active',
+      grantedAt: timestamp,
+      createdAt: timestamp,
+      updatedAt: timestamp,
+    });
+    transaction.set(membershipRef, {
+      privateTrainingCredit: {
+        entitlementCount: currentEntitlement.entitlementCount,
+        availableCount: Math.max(0, currentEntitlement.entitlementCount - 1),
+        maxParticipants: currentEntitlement.maxParticipants,
+        periodEnd: admin.firestore.Timestamp.fromDate(currentEntitlement.periodEnd),
+        claimedPurchaseId: purchaseId,
+        claimedAt: timestamp,
+      },
+      updatedAt: timestamp,
+    }, { merge: true });
+  });
+
+  if (!alreadyClaimed) {
+    const { ensurePrivateTrainingWaiversForPurchase } = require('../waivers/studioWaiverService');
+    await ensurePrivateTrainingWaiversForPurchase(purchaseId);
+  }
+
+  return { purchaseId, alreadyClaimed };
+}
+
 async function ensurePrivateTrainingPurchaseFromOrder(orderId) {
   const id = clean(orderId, 160);
   if (!id) return null;
@@ -636,6 +835,7 @@ module.exports = {
   sanitizePrivateTrainingParticipants,
   privateTrainingConfigFromOffer,
   assertPrivateTrainingParticipantLimit,
+  handleClaimMembershipPrivateTrainingCredit,
   ensurePrivateTrainingPurchaseFromOrder,
   handleListPrivateTrainingOffers,
   handleSavePrivateTrainingOffer,

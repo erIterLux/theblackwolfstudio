@@ -26,7 +26,11 @@ export default function MembershipPage() {
             <section className="section section--light" id="membership-options">
                 <div className="container">
                     {user && <div className="membership-current"><MembershipStatusCard /></div>}
-                    <SectionHeading eyebrow="Membership options" title="Choose your level of support." body="Begin builds consistency. Train opens the full group schedule and Wolf Guide. Integrate adds individual guidance." />
+                    <SectionHeading
+                        eyebrow="Membership options"
+                        title="Choose your level of support."
+                        body="Every membership includes progression and the training library. Train adds Wolf Guide, while Integrate also includes one private lesson credit for up to three participants."
+                    />
                     <div className="membership-grid">
                         {memberships.map((plan) => (
                             <article className={`membership-card membership-card--full ${plan.featured ? 'is-featured' : ''}`} key={plan.name}>

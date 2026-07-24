@@ -4,6 +4,12 @@ import { Link } from 'react-router-dom';
 import useMembership from '../../hooks/useMembership';
 import { openBillingPortal } from '../../services/membership';
 
+const PLAN_DISCOUNT_PERCENT = Object.freeze({
+    begin: 5,
+    train: 10,
+    integrate: 15,
+});
+
 function formatDate(value) {
     const date = value?.toDate?.() || (value ? new Date(value) : null);
     return date && !Number.isNaN(date.valueOf())
@@ -69,15 +75,23 @@ export default function MembershipStatusCard() {
         );
     }
 
+    const planDiscount = PLAN_DISCOUNT_PERCENT[
+        String(membership.planKey || '').toLowerCase()
+    ] || 0;
     const eventDiscount = Number(
         membership.eventDiscountPercent
         ?? membership.discounts?.eventPercent
-        ?? 0,
+        ?? planDiscount,
     );
     const privateDiscount = Number(
         membership.privateTrainingDiscountPercent
         ?? membership.discounts?.privateTrainingPercent
-        ?? 0,
+        ?? planDiscount,
+    );
+    const merchandiseDiscount = Number(
+        membership.merchandiseDiscountPercent
+        ?? membership.discounts?.merchandisePercent
+        ?? planDiscount,
     );
     const progressionAccess = Boolean(
         membership.progressionAccess
@@ -91,6 +105,16 @@ export default function MembershipStatusCard() {
         membership.wolfGuideAccess
         ?? membership.benefits?.wolfGuideAccess,
     );
+    const privateTrainingCredits = Number(
+        membership.benefits?.privateTrainingCreditsPerPeriod
+        ?? (String(membership.planKey || '').toLowerCase() === 'integrate' ? 1 : 0),
+    );
+    const claimedPrivateTrainingCredit = membership.privateTrainingCredit?.claimedPurchaseId || '';
+    const sharedDiscount = eventDiscount > 0
+        && eventDiscount === privateDiscount
+        && eventDiscount === merchandiseDiscount
+        ? eventDiscount
+        : 0;
     const periodEnd = formatDate(
         membership.currentPeriodEnd
         || membership.subscriptionEndDate,
@@ -126,11 +150,43 @@ export default function MembershipStatusCard() {
                     {progressionAccess && <span>Progression access</span>}
                     {curriculumAccess && <span>Training library</span>}
                     {wolfGuideAccess && <span>Wolf Guide</span>}
-                    {eventDiscount > 0 && <span>{eventDiscount}% off eligible events</span>}
-                    {privateDiscount > 0 && (
-                        <span>{privateDiscount}% off eligible private training</span>
+                    {sharedDiscount > 0 ? (
+                        <span>
+                            {sharedDiscount}% off eligible events, private training, and merchandise
+                        </span>
+                    ) : (
+                        <>
+                            {eventDiscount > 0 && <span>{eventDiscount}% off eligible events</span>}
+                            {privateDiscount > 0 && (
+                                <span>{privateDiscount}% off eligible private training</span>
+                            )}
+                            {merchandiseDiscount > 0 && (
+                                <span>{merchandiseDiscount}% off eligible merchandise</span>
+                            )}
+                        </>
+                    )}
+                    {privateTrainingCredits > 0 && (
+                        <span>
+                            {claimedPrivateTrainingCredit
+                                ? 'Included private lesson credit ready'
+                                : '1 private lesson credit for up to 3 participants'}
+                        </span>
                     )}
                 </div>
+            )}
+
+            {isActive && privateTrainingCredits > 0 && (
+                <Link
+                    className="text-link"
+                    to={claimedPrivateTrainingCredit
+                        ? '/member/private-training'
+                        : '/private-training#included-integrate-lesson'}
+                >
+                    <ShieldCheck size={17} aria-hidden="true" />
+                    {claimedPrivateTrainingCredit
+                        ? 'Manage included private lesson'
+                        : 'Set up included private lesson'}
+                </Link>
             )}
 
             {isActive && (

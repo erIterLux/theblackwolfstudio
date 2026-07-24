@@ -30,6 +30,56 @@
   margin-bottom: 2rem;
 }
 
+.membership-private-credit {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 1rem;
+  padding: clamp(1.2rem, 3vw, 1.7rem);
+  margin-bottom: 1.25rem;
+  color: #fff;
+  background:
+    linear-gradient(120deg, rgba(255, 255, 255, .06), transparent 55%),
+    #17191d;
+  border: 1px solid rgba(53, 73, 93, .35);
+  box-shadow: 0 16px 42px rgba(20, 23, 27, .13);
+}
+
+.membership-private-credit__icon {
+  display: grid;
+  width: 3rem;
+  height: 3rem;
+  place-items: center;
+  color: #17191d;
+  background: #e2c578;
+  border-radius: .85rem;
+}
+
+.membership-private-credit .eyebrow {
+  margin-bottom: .35rem;
+  color: #a9bfd2;
+}
+
+.membership-private-credit h2,
+.membership-private-credit p {
+  margin-bottom: 0;
+}
+
+.membership-private-credit h2 {
+  color: #fff;
+  font-size: clamp(1.8rem, 3vw, 2.8rem);
+}
+
+.membership-private-credit div > p:last-child {
+  max-width: 700px;
+  margin-top: .6rem;
+  color: rgba(255, 255, 255, .74);
+}
+
+.membership-private-credit .button {
+  justify-self: end;
+}
+
 .private-training-values > div {
   display: grid;
   grid-template-columns: auto 1fr;
@@ -794,6 +844,17 @@
 }
 
 @media (max-width: 700px) {
+  .membership-private-credit {
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: start;
+  }
+
+  .membership-private-credit .button {
+    grid-column: 1 / -1;
+    width: 100%;
+    justify-self: stretch;
+  }
+
   .private-offer-grid,
   .private-training-values,
   .participant-count,

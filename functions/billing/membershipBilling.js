@@ -39,6 +39,37 @@ function membershipRef(uid) {
     return admin.firestore().collection('memberships').doc(uid);
 }
 
+function timestampMillis(value) {
+    if (value?.toMillis) return value.toMillis();
+    const parsed = value ? new Date(value).valueOf() : 0;
+    return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function privateTrainingCreditState({ before, benefits, isLive, periodEnd }) {
+    const entitlementCount = isLive
+        ? Math.max(0, Number(benefits.privateTrainingCreditsPerPeriod || 0))
+        : 0;
+    const maxParticipants = entitlementCount > 0
+        ? Math.max(1, Number(benefits.privateTrainingMaxParticipants || 1))
+        : 0;
+    const periodEndMillis = periodEnd?.valueOf?.() || 0;
+    const previous = before.privateTrainingCredit || {};
+    const samePeriod = periodEndMillis > 0
+        && timestampMillis(previous.periodEnd) === periodEndMillis;
+    const claimedPurchaseId = samePeriod ? previous.claimedPurchaseId || null : null;
+
+    return {
+        entitlementCount,
+        availableCount: Math.max(0, entitlementCount - (claimedPurchaseId ? 1 : 0)),
+        maxParticipants,
+        periodEnd: periodEnd
+            ? admin.firestore.Timestamp.fromDate(periodEnd)
+            : null,
+        claimedPurchaseId,
+        claimedAt: claimedPurchaseId ? previous.claimedAt || null : null,
+    };
+}
+
 async function ensureStripeCustomer({ stripe, uid, email, displayName }) {
     const ref = membershipRef(uid);
     const snapshot = await ref.get();
@@ -179,7 +210,8 @@ async function syncSubscription({ stripe, subscription, eventType, priceMap }) {
     const beforeSnapshot = await ref.get();
     const before = beforeSnapshot.data() || {};
     const primaryPriceId = subscription?.items?.data?.[0]?.price?.id || '';
-    const plan = getPlanDefinition(subscription?.metadata?.planKey) || getPlanForPriceId(primaryPriceId, priceMap);
+    const plan = getPlanForPriceId(primaryPriceId, priceMap)
+        || getPlanDefinition(subscription?.metadata?.planKey);
     const status = String(subscription?.status || 'inactive');
     const isLive = LIVE_MEMBERSHIP_STATUSES.has(status);
     const periodEndUnix = subscriptionPeriodEnd(subscription);
@@ -196,6 +228,12 @@ async function syncSubscription({ stripe, subscription, eventType, priceMap }) {
 
     const benefits = plan?.benefits || {};
     const discounts = plan?.discounts || {};
+    const privateTrainingCredit = privateTrainingCreditState({
+        before,
+        benefits,
+        isLive,
+        periodEnd,
+    });
     const next = {
         uid,
         planKey: plan?.key || before.planKey || null,
@@ -208,13 +246,22 @@ async function syncSubscription({ stripe, subscription, eventType, priceMap }) {
             curriculumAccess: Boolean(isLive && benefits.curriculumAccess),
             instructorReviews: Boolean(isLive && benefits.instructorReviews),
             wolfGuideAccess: Boolean(isLive && (benefits.wolfGuideAccess ?? plan?.wolfGuide)),
+            privateTrainingCreditsPerPeriod: isLive
+                ? Number(benefits.privateTrainingCreditsPerPeriod || 0)
+                : 0,
+            privateTrainingMaxParticipants: isLive
+                ? Number(benefits.privateTrainingMaxParticipants || 0)
+                : 0,
         },
         discounts: {
             eventPercent: isLive ? Number(discounts.eventPercent || 0) : 0,
             privateTrainingPercent: isLive ? Number(discounts.privateTrainingPercent || 0) : 0,
+            merchandisePercent: isLive ? Number(discounts.merchandisePercent || 0) : 0,
         },
         eventDiscountPercent: isLive ? Number(discounts.eventPercent || 0) : 0,
         privateTrainingDiscountPercent: isLive ? Number(discounts.privateTrainingPercent || 0) : 0,
+        merchandiseDiscountPercent: isLive ? Number(discounts.merchandisePercent || 0) : 0,
+        privateTrainingCredit,
         cancelAtPeriodEnd: Boolean(subscription.cancel_at_period_end),
         currentPeriodEnd: periodEnd ? admin.firestore.Timestamp.fromDate(periodEnd) : null,
         stripeCustomerId: customerId || before.stripeCustomerId || null,

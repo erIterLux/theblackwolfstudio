@@ -54,8 +54,10 @@ async function sendPrivateTrainingPurchaseConfirmation({ ref, purchase }) {
     .doc(purchase.orderId || ref.id)
     .get();
   const managementToken = clean(accessSnapshot.data()?.token, 500);
-  const managementUrl = managementToken
-    ? appUrl(
+  const membershipBenefit = purchase.source === 'membership_benefit';
+  const managementUrl = membershipBenefit
+    ? appUrl('/member/private-training')
+    : managementToken ? appUrl(
       `/private-training/success?order_id=${encodeURIComponent(purchase.orderId || ref.id)}`
       + `&access_token=${encodeURIComponent(managementToken)}`,
     )
@@ -69,9 +71,11 @@ async function sendPrivateTrainingPurchaseConfirmation({ ref, purchase }) {
 
   await sendEmail({
     to: recipient,
-    subject: `Private training confirmed - ${title}`,
+    subject: `${membershipBenefit ? 'Included private lesson ready' : 'Private training confirmed'} - ${title}`,
     text: [
-      `Your ${title} purchase is confirmed.`,
+      membershipBenefit
+        ? `Your ${title} membership credit is ready.`
+        : `Your ${title} purchase is confirmed.`,
       `Session credits: ${sessions}`,
       `Registered participants: ${participantCount}`,
       `Package reference: ${ref.id}`,
@@ -79,10 +83,12 @@ async function sendPrivateTrainingPurchaseConfirmation({ ref, purchase }) {
       `Manage your package: ${managementUrl}`,
     ].join('\n'),
     html: emailShell({
-      eyebrow: 'Private training confirmed',
+      eyebrow: membershipBenefit ? 'Integrate membership benefit' : 'Private training confirmed',
       title,
       bodyHtml: `
-        <p>Your private-training package is confirmed.</p>
+        <p>${membershipBenefit
+    ? 'Your included Integrate private lesson credit is ready.'
+    : 'Your private-training package is confirmed.'}</p>
         <p><strong>Session credits</strong><br>${sessions}</p>
         <p><strong>Registered participants</strong><br>${participantCount}</p>
         <p><strong>Package reference</strong><br>${escapeHtml(ref.id)}</p>

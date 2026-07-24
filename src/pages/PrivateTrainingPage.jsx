@@ -2,6 +2,7 @@ import {
   ArrowRight,
   CalendarClock,
   Check,
+  Sparkles,
   ShieldCheck,
   Users,
 } from 'lucide-react';
@@ -9,7 +10,23 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import PrivateTrainingCheckoutForm from '../components/private-training/PrivateTrainingCheckoutForm';
 import SectionHeading from '../components/SectionHeading';
+import useMembership from '../hooks/useMembership';
 import { listPrivateTrainingOffers } from '../services/privateTraining';
+
+const INTEGRATE_CREDIT_OFFER = Object.freeze({
+  id: 'integrate-membership-private-lesson',
+  name: 'Integrate included private lesson',
+  membershipBenefit: true,
+  pricingModel: 'flat',
+  amountCents: 0,
+  currency: 'usd',
+  privateTraining: Object.freeze({
+    sessionCount: 1,
+    sessionDurationMinutes: 60,
+    maxParticipants: 3,
+    expirationDays: 0,
+  }),
+});
 
 function formatMoney(cents, currency = 'usd') {
   return new Intl.NumberFormat('en-US', {
@@ -31,6 +48,7 @@ function startingPrice(offer) {
 
 export default function PrivateTrainingPage() {
   const [searchParams] = useSearchParams();
+  const { membership, isActive: membershipActive } = useMembership();
   const [offers, setOffers] = useState([]);
   const [selectedOfferId, setSelectedOfferId] = useState('');
   const [loading, setLoading] = useState(true);
@@ -58,9 +76,16 @@ export default function PrivateTrainingPage() {
   }, []);
 
   const selectedOffer = useMemo(
-    () => offers.find((item) => item.id === selectedOfferId) || null,
+    () => (
+      selectedOfferId === INTEGRATE_CREDIT_OFFER.id
+        ? INTEGRATE_CREDIT_OFFER
+        : offers.find((item) => item.id === selectedOfferId) || null
+    ),
     [offers, selectedOfferId],
   );
+  const integrateMember = membershipActive
+    && String(membership?.planKey || '').toLowerCase() === 'integrate';
+  const claimedMembershipCreditId = membership?.privateTrainingCredit?.claimedPurchaseId || '';
 
   const canceled = searchParams.get('purchase') === 'canceled';
 
@@ -97,6 +122,39 @@ export default function PrivateTrainingPage() {
                 title="Choose the depth of support you need."
                 body="Each session credit covers the same registered group of up to three participants. Active members receive eligible member pricing automatically."
               />
+
+              {integrateMember && (
+                <article className="membership-private-credit" id="included-integrate-lesson">
+                  <span className="membership-private-credit__icon" aria-hidden="true">
+                    <Sparkles size={24} />
+                  </span>
+                  <div>
+                    <p className="eyebrow">Integrate membership benefit</p>
+                    <h2>One included private lesson</h2>
+                    <p>
+                      Register one to three participants. The credit is available through
+                      the current membership period, and every participant must have waiver
+                      coverage and an emergency contact before booking.
+                    </p>
+                  </div>
+                  {claimedMembershipCreditId ? (
+                    <Link className="button" to="/member/private-training">
+                      Manage included lesson <ArrowRight size={17} />
+                    </Link>
+                  ) : (
+                    <button
+                      className="button"
+                      type="button"
+                      onClick={() => {
+                        setSelectedOfferId(INTEGRATE_CREDIT_OFFER.id);
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                      }}
+                    >
+                      Set up included lesson <ArrowRight size={17} />
+                    </button>
+                  )}
+                </article>
+              )}
 
               <div className="private-training-values">
                 <div><Users /><strong>One to three participants</strong><span>Train alone or with up to two partners.</span></div>

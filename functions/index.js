@@ -243,6 +243,12 @@ exports.listMyPrivateTrainingPurchases = onCall({
     timeoutSeconds: 30,
 }, async (request) => loadPrivateTrainingService().handleListMyPrivateTrainingPurchases(request));
 
+exports.claimMembershipPrivateTrainingCredit = onCall({
+    invoker: 'public',
+    memory: '256MiB',
+    timeoutSeconds: 30,
+}, async (request) => loadPrivateTrainingService().handleClaimMembershipPrivateTrainingCredit(request));
+
 exports.listPrivateTrainingAdmin = onCall({
     invoker: 'public',
     memory: '512MiB',

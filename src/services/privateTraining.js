@@ -50,6 +50,16 @@ export async function listMyPrivateTrainingPurchases(options = {}) {
     return getWorkspaceData('memberPrivateTrainingPurchases', {}, options);
 }
 
+export async function claimMembershipPrivateTrainingCredit(payload) {
+    const response = await callable('claimMembershipPrivateTrainingCredit')(payload);
+    invalidateWorkspaceData(
+        'memberPrivateTrainingPurchases',
+        'memberDashboard',
+        'instructorPrivateTraining',
+    );
+    return response.data;
+}
+
 export async function getPrivateTrainingPurchase(purchaseId, accessToken = '') {
     if (!accessToken) {
         return getWorkspaceData('privateTrainingPurchase', { purchaseId });
