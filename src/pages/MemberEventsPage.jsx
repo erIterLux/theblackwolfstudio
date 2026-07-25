@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import SignedWaiverDocumentActions from '../components/waivers/SignedWaiverDocumentActions';
 import useEventRegistrations from '../hooks/useEventRegistrations';
 
 function formatDateTime(value) {
@@ -116,6 +117,14 @@ export default function MemberEventsPage() {
                                                             <Copy size={15} /> {copiedId === participant.id ? 'Copied' : 'Copy link'}
                                                         </button>
                                                     </>
+                                                )}
+                                                {['signed', 'covered'].includes(participant.waiverStatus) && (
+                                                    <SignedWaiverDocumentActions
+                                                        scope="event"
+                                                        waiverId={participant.waiverId || participant.id}
+                                                        participantName={participant.fullName}
+                                                        coverageSource={participant.coverageSource}
+                                                    />
                                                 )}
                                                 {participant.waiverStatus === 'setup_required' && (
                                                     <small>Waiver setup is still pending with the instructor.</small>

@@ -15,6 +15,7 @@ import {
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import SignedWaiverDocumentActions from '../components/waivers/SignedWaiverDocumentActions';
+import WaiverReminderButton from '../components/waivers/WaiverReminderButton';
 import useStudioRole from '../hooks/useStudioRole';
 import {
     adjustPrivateTrainingCredits,
@@ -486,6 +487,13 @@ export default function InstructorPrivateTrainingAdmin() {
                                                     waiverId={participant.waiverId || `${purchase.id}_${participant.id}`}
                                                     participantName={participant.fullName}
                                                     coverageSource={participant.coverageSource}
+                                                />
+                                            )}
+                                            {participant.waiverStatus === 'pending' && (
+                                                <WaiverReminderButton
+                                                    scope="private_training"
+                                                    waiverId={participant.waiverId || `${purchase.id}_${participant.id}`}
+                                                    participantName={participant.fullName}
                                                 />
                                             )}
                                             </div>

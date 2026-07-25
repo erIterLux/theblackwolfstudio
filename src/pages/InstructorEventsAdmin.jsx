@@ -15,6 +15,7 @@ import {
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import SignedWaiverDocumentActions from '../components/waivers/SignedWaiverDocumentActions';
+import WaiverReminderButton from '../components/waivers/WaiverReminderButton';
 import useStudioRole from '../hooks/useStudioRole';
 import { BLACK_WOLF_EVENT_WAIVER, standardBlackWolfWaiverFields } from '../config/blackWolfEventWaiver';
 import { listEventsAdmin, saveEvent } from '../services/events';
@@ -736,6 +737,13 @@ export default function InstructorEventsAdmin() {
                                                         waiverId={participant.waiverId || participant.id}
                                                         participantName={participant.fullName}
                                                         coverageSource={participant.coverageSource}
+                                                    />
+                                                )}
+                                                {participant.waiverStatus === 'pending' && (
+                                                    <WaiverReminderButton
+                                                        scope="event"
+                                                        waiverId={participant.waiverId || participant.id}
+                                                        participantName={participant.fullName}
                                                     />
                                                 )}
                                             </div>

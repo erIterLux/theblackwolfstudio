@@ -6,10 +6,13 @@ import {
     ExternalLink,
     ReceiptText,
     Search,
+    ShieldCheck,
     Users,
 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
+import SignedWaiverDocumentActions from '../components/waivers/SignedWaiverDocumentActions';
+import WaiverReminderButton from '../components/waivers/WaiverReminderButton';
 import useStudioRole from '../hooks/useStudioRole';
 import { listCommerceOrdersAdmin } from '../services/purchases';
 
@@ -100,6 +103,77 @@ export default function InstructorOrdersAdmin() {
                     <div><Dumbbell /><strong>{data.orders.filter((order) => order.purchaseType === 'private_training').length}</strong><span>private packages</span></div>
                     <div><Users /><strong>{data.memberships.filter((membership) => ['active', 'trialing'].includes(membership.status)).length}</strong><span>active memberships</span></div>
                 </div>
+
+                {!loading && !error && data.memberships.some(
+                    (membership) => ['active', 'trialing'].includes(membership.status),
+                ) && (
+                    <section className="membership-waiver-followup">
+                        <div className="purchase-section__heading">
+                            <div>
+                                <p className="eyebrow">Membership waivers</p>
+                                <h2>Active member follow-up</h2>
+                            </div>
+                            <span>
+                                {data.memberships.filter(
+                                    (membership) => (
+                                        ['active', 'trialing'].includes(membership.status)
+                                        && membership.waiverStatus !== 'signed'
+                                    ),
+                                ).length} need a waiver
+                            </span>
+                        </div>
+                        <div className="membership-waiver-followup__list">
+                            {data.memberships
+                                .filter((membership) => ['active', 'trialing'].includes(membership.status))
+                                .sort((left, right) => {
+                                    const statusOrder = Number(left.waiverStatus === 'signed')
+                                        - Number(right.waiverStatus === 'signed');
+                                    if (statusOrder) return statusOrder;
+                                    return String(left.displayName || left.email || '').localeCompare(
+                                        String(right.displayName || right.email || ''),
+                                    );
+                                })
+                                .map((membership) => (
+                                    <article key={membership.uid}>
+                                        <div>
+                                            <strong>{membership.displayName || membership.email || membership.uid}</strong>
+                                            <span>{membership.email || 'Email not available'}</span>
+                                        </div>
+                                        <span className={`event-check-in-status ${
+                                            membership.waiverStatus === 'signed' ? 'is-complete' : 'is-warning'
+                                        }`}>
+                                            <ShieldCheck size={16} />
+                                            {membership.waiverStatus === 'signed'
+                                                ? 'Waiver complete'
+                                                : 'Waiver required'}
+                                        </span>
+                                        {membership.waiverStatus === 'signed' ? (
+                                            <SignedWaiverDocumentActions
+                                                scope="membership"
+                                                waiverId={membership.uid}
+                                                participantName={
+                                                    membership.waiverParticipantName
+                                                    || membership.displayName
+                                                    || 'member'
+                                                }
+                                                coverageSource="membership"
+                                            />
+                                        ) : (
+                                            <WaiverReminderButton
+                                                scope="membership"
+                                                waiverId={membership.uid}
+                                                participantName={
+                                                    membership.displayName
+                                                    || membership.email
+                                                    || 'member'
+                                                }
+                                            />
+                                        )}
+                                    </article>
+                                ))}
+                        </div>
+                    </section>
+                )}
 
                 <div className="commerce-order-filters">
                     <label><span>Search</span><div><Search size={17} /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Name, email, order, member" /></div></label>

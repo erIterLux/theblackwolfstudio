@@ -14,6 +14,7 @@ import {
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import usePurchaseHistory from '../hooks/usePurchaseHistory';
+import { openBillingPortal } from '../services/membership';
 import { getPurchaseReceipt } from '../services/purchases';
 
 const FILTERS = [
@@ -89,6 +90,20 @@ function ReceiptAction({ order, onReceiptLoaded }) {
 }
 
 function MembershipPanel({ membership, payments }) {
+  const [portalLoading, setPortalLoading] = useState(false);
+  const [portalError, setPortalError] = useState('');
+
+  const manageBilling = async () => {
+    setPortalLoading(true);
+    setPortalError('');
+    try {
+      await openBillingPortal();
+    } catch (nextError) {
+      setPortalError(nextError?.message || 'Billing could not be opened.');
+      setPortalLoading(false);
+    }
+  };
+
   if (!membership && !payments.length) {
     return (
       <article className="purchase-empty-section">
@@ -109,10 +124,25 @@ function MembershipPanel({ membership, payments }) {
           <p className="eyebrow">Membership</p>
           <h2>{membership?.planName || 'Membership billing'}</h2>
         </div>
-        <span className={`purchase-status is-${membership?.status || 'inactive'}`}>
-          {readableStatus(membership?.status || 'inactive')}
-        </span>
+        <div className="purchase-section__heading-actions">
+          <span className={`purchase-status is-${membership?.status || 'inactive'}`}>
+            {readableStatus(membership?.status || 'inactive')}
+          </span>
+          {membership?.stripeCustomerId && (
+            <button
+              className="button button--small"
+              type="button"
+              onClick={manageBilling}
+              disabled={portalLoading}
+            >
+              <CreditCard size={16} />
+              {portalLoading ? 'Opening billing…' : 'Manage billing'}
+            </button>
+          )}
+        </div>
       </div>
+
+      {portalError && <p className="form-status form-status--error">{portalError}</p>}
 
       {membership && (
         <div className="membership-purchase-summary">

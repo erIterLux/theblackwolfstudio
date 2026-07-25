@@ -43,3 +43,8 @@ export async function getSignedWaiverPdf({ scope, waiverId }) {
   const response = await callable('getSignedWaiverPdf')({ scope, waiverId });
   return response.data;
 }
+
+export async function sendWaiverReminder({ scope, waiverId }) {
+  const response = await callable('sendWaiverReminder')({ scope, waiverId });
+  return response.data;
+}

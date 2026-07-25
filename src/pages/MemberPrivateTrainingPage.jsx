@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import SignedWaiverDocumentActions from '../components/waivers/SignedWaiverDocumentActions';
 import usePrivateTrainingBookings from '../hooks/usePrivateTrainingBookings';
 import usePrivateTrainingPurchases from '../hooks/usePrivateTrainingPurchases';
 import { updatePrivateTrainingBooking } from '../services/privateTraining';
@@ -276,7 +277,7 @@ export default function MemberPrivateTrainingPage() {
                                                     const complete = ['signed', 'covered', 'not_required']
                                                         .includes(participant.waiverStatus);
                                                     return (
-                                                        <span key={participant.id} className="private-participant-waiver">
+                                                        <div key={participant.id} className="private-participant-waiver">
                                                             <span>{participant.fullName}</span>
                                                             <small>
                                                                 <ShieldCheck size={14} />
@@ -292,7 +293,15 @@ export default function MemberPrivateTrainingPage() {
                                                                     Sign waiver
                                                                 </Link>
                                                             )}
-                                                        </span>
+                                                            {['signed', 'covered'].includes(participant.waiverStatus) && (
+                                                                <SignedWaiverDocumentActions
+                                                                    scope="private_training"
+                                                                    waiverId={participant.waiverId || `${purchase.id}_${participant.id}`}
+                                                                    participantName={participant.fullName}
+                                                                    coverageSource={participant.coverageSource}
+                                                                />
+                                                            )}
+                                                        </div>
                                                     );
                                                 })}
                                             </div>

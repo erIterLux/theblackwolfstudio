@@ -769,7 +769,8 @@ async function resolveSignedWaiver(scope, waiverId) {
   }
 
   let referenceId = snapshot.id;
-  let waiver = { id: snapshot.id, ...snapshot.data() };
+  const sourceWaiver = { id: snapshot.id, ...snapshot.data() };
+  let waiver = sourceWaiver;
   if (waiver.status === 'covered' && waiver.coveredByWaiverId) {
     const membershipSnapshot = await db.collection('studioWaivers')
       .doc(clean(waiver.coveredByWaiverId, 160))
@@ -790,21 +791,73 @@ async function resolveSignedWaiver(scope, waiverId) {
       'A signed PDF is available after the waiver has been completed.',
     );
   }
-  return { waiver, referenceId };
+  return { waiver, referenceId, sourceWaiver };
+}
+
+function waiverEmailsForAuthorization(waiver = {}) {
+  return new Set([
+    waiver.participantSnapshot?.email,
+    waiver.participantSnapshot?.guardianEmail,
+    waiver.signer?.email,
+  ].map(normalizeEmail).filter(Boolean));
+}
+
+async function canReadOwnSignedWaiver(request, scope, sourceWaiver, waiver) {
+  const uid = request.auth?.uid || '';
+  if (!uid) return false;
+  if (
+    sourceWaiver.id === uid
+    || sourceWaiver.uid === uid
+    || sourceWaiver.memberUid === uid
+    || waiver.uid === uid
+    || waiver.memberUid === uid
+  ) return true;
+
+  const authEmail = normalizeEmail(request.auth?.token?.email);
+  if (
+    authEmail
+    && (
+      waiverEmailsForAuthorization(sourceWaiver).has(authEmail)
+      || waiverEmailsForAuthorization(waiver).has(authEmail)
+    )
+  ) return true;
+
+  if (scope === 'event') {
+    const participantSnapshot = await db.collection('eventParticipants')
+      .doc(sourceWaiver.participantId || sourceWaiver.id)
+      .get();
+    const participant = participantSnapshot.data() || {};
+    return participant.memberUid === uid || participant.purchaserUid === uid;
+  }
+  if (scope === 'private_training' && sourceWaiver.purchaseId) {
+    const purchaseSnapshot = await db.collection('privateTrainingPurchases')
+      .doc(sourceWaiver.purchaseId)
+      .get();
+    return purchaseSnapshot.data()?.uid === uid;
+  }
+  return false;
 }
 
 async function handleGetSignedWaiverPdf(request) {
-  if (!isInstructor(request)) {
-    throw new HttpsError(
-      'permission-denied',
-      'Instructor access is required to view signed waiver PDFs.',
-    );
-  }
   const scope = clean(request.data?.scope, 40);
   const waiverId = clean(request.data?.waiverId, 260);
   if (!waiverId) throw new HttpsError('invalid-argument', 'Waiver ID is required.');
 
-  const { waiver, referenceId } = await resolveSignedWaiver(scope, waiverId);
+  const {
+    waiver,
+    referenceId,
+    sourceWaiver,
+  } = await resolveSignedWaiver(scope, waiverId);
+  if (
+    !isInstructor(request)
+    && !(await canReadOwnSignedWaiver(request, scope, sourceWaiver, waiver))
+  ) {
+    throw new HttpsError(
+      'permission-denied',
+      'You do not have access to this signed waiver PDF.',
+    );
+  }
+
   const content = await createSignedWaiverPdf(waiver, referenceId);
   return {
     filename: waiverPdfFilename(waiver, referenceId),
@@ -812,6 +865,153 @@ async function handleGetSignedWaiverPdf(request) {
     contentBase64: content.toString('base64'),
     participantName: clean(waiver.participantSnapshot?.fullName, 180),
     signedAt: serialize(waiver.signedAt || null),
+  };
+}
+
+async function reminderTarget(scope, waiverId) {
+  if (scope === 'membership') {
+    const membershipRef = db.collection('memberships').doc(waiverId);
+    const [membershipSnapshot, waiverSnapshot, userSnapshot] = await Promise.all([
+      membershipRef.get(),
+      db.collection('studioWaivers').doc(waiverId).get(),
+      db.collection('users').doc(waiverId).get(),
+    ]);
+    if (!membershipSnapshot.exists) {
+      throw new HttpsError('not-found', 'That membership was not found.');
+    }
+    const membership = membershipSnapshot.data() || {};
+    if (!LIVE_MEMBERSHIP_STATUSES.has(membership.status)) {
+      throw new HttpsError(
+        'failed-precondition',
+        'Waiver reminders are available for active memberships.',
+      );
+    }
+    const currentWaiver = waiverSnapshot.data() || {};
+    if (
+      currentWaiver.status === 'signed'
+      && currentWaiver.waiverSnapshot?.version === STUDIO_WAIVER_VERSION
+      && emergencyContactReady(currentWaiver.participantSnapshot)
+    ) {
+      throw new HttpsError('failed-precondition', 'This membership waiver is already complete.');
+    }
+    const user = userSnapshot.data() || {};
+    const email = normalizeEmail(membership.email || user.email);
+    if (!email) {
+      throw new HttpsError(
+        'failed-precondition',
+        'This member does not have an email address on file.',
+      );
+    }
+    return {
+      ref: membershipRef,
+      waiver: {
+        participantSnapshot: {
+          fullName: membership.displayName || user.displayName || 'Studio member',
+          email,
+          isMinor: false,
+        },
+      },
+      path: '/member/waiver',
+      label: 'Membership waiver ready to sign',
+      contextTitle: membership.planName || 'Black Wolf Studio membership',
+    };
+  }
+
+  const collection = waiverCollectionForScope(scope);
+  const ref = db.collection(collection).doc(waiverId);
+  const snapshot = await ref.get();
+  if (!snapshot.exists) throw new HttpsError('not-found', 'That waiver was not found.');
+  const waiver = { id: snapshot.id, ...snapshot.data() };
+  if (waiver.status !== 'pending') {
+    throw new HttpsError(
+      'failed-precondition',
+      waiver.status === 'signed' || waiver.status === 'covered'
+        ? 'This waiver is already complete.'
+        : 'This waiver is not ready for a reminder.',
+    );
+  }
+
+  const accessCollection = scope === 'event'
+    ? 'eventWaiverAccess'
+    : 'privateTrainingWaiverAccess';
+  const accessSnapshot = await db.collection(accessCollection).doc(waiverId).get();
+  const token = accessSnapshot.data()?.token;
+  if (!token) {
+    throw new HttpsError(
+      'failed-precondition',
+      'The secure waiver link is not ready yet.',
+    );
+  }
+  const path = scope === 'event'
+    ? `/events/waiver/${encodeURIComponent(waiverId)}?token=${encodeURIComponent(token)}`
+    : `/private-training/waiver/${encodeURIComponent(waiverId)}?token=${encodeURIComponent(token)}`;
+  return {
+    ref,
+    waiver,
+    path,
+    label: scope === 'event'
+      ? 'Event waiver ready to sign'
+      : 'Private-training waiver ready to sign',
+    contextTitle: scope === 'event'
+      ? waiver.eventSnapshot?.title || 'Black Wolf Studio event'
+      : waiver.privateTrainingSnapshot?.title || 'Private training',
+  };
+}
+
+async function claimWaiverReminder(ref) {
+  const now = Date.now();
+  return db.runTransaction(async (transaction) => {
+    const snapshot = await transaction.get(ref);
+    if (!snapshot.exists) {
+      throw new HttpsError('not-found', 'That waiver record was not found.');
+    }
+    const record = snapshot.data() || {};
+    const lastSent = record.waiverReminderSentAt?.toMillis?.() || 0;
+    const lastAttempt = record.waiverReminderAttemptedAt?.toMillis?.() || 0;
+    if (lastSent && now - lastSent < 5 * 60 * 1000) {
+      throw new HttpsError(
+        'failed-precondition',
+        'A reminder was sent less than five minutes ago.',
+      );
+    }
+    if (
+      record.waiverReminderEmailStatus === 'sending'
+      && lastAttempt
+      && now - lastAttempt < 2 * 60 * 1000
+    ) {
+      throw new HttpsError('aborted', 'A waiver reminder is already being sent.');
+    }
+    transaction.set(ref, {
+      waiverReminderEmailStatus: 'sending',
+      waiverReminderAttemptedAt: admin.firestore.FieldValue.serverTimestamp(),
+      waiverReminderEmailError: null,
+    }, { merge: true });
+    return true;
+  });
+}
+
+async function handleSendWaiverReminder(request, dependencies = {}) {
+  if (!isInstructor(request)) {
+    throw new HttpsError(
+      'permission-denied',
+      'Instructor access is required to send waiver reminders.',
+    );
+  }
+  const scope = clean(request.data?.scope, 40);
+  const waiverId = clean(request.data?.waiverId, 260);
+  if (!waiverId) throw new HttpsError('invalid-argument', 'Waiver ID is required.');
+
+  const target = await reminderTarget(scope, waiverId);
+  await claimWaiverReminder(target.ref);
+  const { sendWaiverReminderEmail } = require('../notifications/waiverEmails');
+  const result = await sendWaiverReminderEmail({
+    ...target,
+    dependencies,
+  });
+  return {
+    status: 'sent',
+    recipientCount: result.recipientCount,
+    participantName: clean(target.waiver.participantSnapshot?.fullName, 180),
   };
 }
 
@@ -825,4 +1025,5 @@ module.exports = {
   handleGetPrivateTrainingWaiver,
   handleSignPrivateTrainingWaiver,
   handleGetSignedWaiverPdf,
+  handleSendWaiverReminder,
 };

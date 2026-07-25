@@ -640,6 +640,16 @@ exports.getSignedWaiverPdf = onCall({
     timeoutSeconds: 60,
 }, async (request) => loadStudioWaiverService().handleGetSignedWaiverPdf(request));
 
+exports.sendWaiverReminder = onCall({
+    invoker: 'public',
+    secrets: [gmailEmail, gmailAppPassword],
+    memory: '256MiB',
+    timeoutSeconds: 60,
+}, async (request) => loadStudioWaiverService().handleSendWaiverReminder(
+    request,
+    waiverEmailDependencies(),
+));
+
 function waiverEmailDependencies() {
     return {
         gmailEmail,

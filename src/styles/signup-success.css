@@ -314,6 +314,44 @@
   gap: 0.4rem;
 }
 
+.waiver-reminder-action {
+  display: grid;
+  justify-items: end;
+  gap: 0.3rem;
+}
+
+.waiver-reminder-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  min-height: 36px;
+  padding: 0.48rem 0.68rem;
+  border: 1px solid rgba(34, 44, 54, 0.2);
+  border-radius: 9px;
+  background: #fff;
+  color: #253543;
+  font-size: 0.78rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.waiver-reminder-button:disabled {
+  cursor: default;
+  opacity: 0.72;
+}
+
+.waiver-reminder-error {
+  max-width: 20rem;
+  color: #9f2f2f;
+  text-align: right;
+}
+
+.waiver-complete-card .signed-waiver-document-actions {
+  justify-content: flex-start;
+  margin-top: 0.8rem;
+}
+
 .waiver-document-button,
 .waiver-document-modal__icon-button {
   display: inline-flex;
@@ -424,6 +462,11 @@
 
 .private-session-participant-row .signed-waiver-document-actions {
   justify-content: flex-start;
+  padding-left: 1.75rem;
+}
+
+.private-session-participant-row .waiver-reminder-action {
+  justify-items: start;
   padding-left: 1.75rem;
 }
 

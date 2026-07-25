@@ -14,6 +14,7 @@ import {
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import SignedWaiverDocumentActions from '../components/waivers/SignedWaiverDocumentActions';
+import WaiverReminderButton from '../components/waivers/WaiverReminderButton';
 import useStudioRole from '../hooks/useStudioRole';
 import {
   getEventCheckIn,
@@ -450,6 +451,13 @@ export default function InstructorEventCheckIn() {
                       waiverId={participant.waiverId || participant.id}
                       participantName={participant.fullName}
                       coverageSource={participant.coverageSource}
+                    />
+                  )}
+                  {participant.waiverStatus === 'pending' && (
+                    <WaiverReminderButton
+                      scope="event"
+                      waiverId={participant.waiverId || participant.id}
+                      participantName={participant.fullName}
                     />
                   )}
 

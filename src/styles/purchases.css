@@ -104,6 +104,14 @@
   margin-bottom: 1rem;
 }
 
+.purchase-section__heading-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.55rem;
+}
+
 .purchase-section__heading h2,
 .purchase-order-card h3,
 .order-details-heading h1 {
@@ -505,6 +513,44 @@
   padding: 1rem;
 }
 
+.membership-waiver-followup {
+  margin: 1rem 0;
+  padding: clamp(1rem, 2.5vw, 1.4rem);
+  border-radius: 1rem;
+  background: var(--bone, #f0e7d8);
+  color: #171411;
+}
+
+.membership-waiver-followup__list {
+  display: grid;
+  gap: 0.65rem;
+  max-height: 26rem;
+  overflow-y: auto;
+}
+
+.membership-waiver-followup__list > article {
+  display: grid;
+  grid-template-columns: minmax(12rem, 1fr) auto minmax(12rem, auto);
+  align-items: center;
+  gap: 0.8rem;
+  padding: 0.85rem;
+  border: 1px solid rgba(23, 20, 17, 0.13);
+  border-radius: 0.8rem;
+  background: rgba(255, 255, 255, 0.58);
+}
+
+.membership-waiver-followup__list > article > div:first-child {
+  display: grid;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.membership-waiver-followup__list > article > div:first-child span {
+  overflow-wrap: anywhere;
+  color: #6f675e;
+  font-size: 0.82rem;
+}
+
 @media (max-width: 900px) {
   .dashboard-card--purchases {
     grid-column: auto;
@@ -519,6 +565,17 @@
 
   .commerce-order-filters {
     grid-template-columns: 1fr;
+  }
+
+  .membership-waiver-followup__list > article {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .membership-waiver-followup__list .signed-waiver-document-actions,
+  .membership-waiver-followup__list .waiver-reminder-action {
+    grid-column: 1 / -1;
+    justify-content: flex-start;
+    justify-items: start;
   }
 }
 
@@ -548,5 +605,23 @@
   .purchase-empty-section {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .purchase-section__heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .purchase-section__heading-actions {
+    justify-content: flex-start;
+  }
+
+  .membership-waiver-followup__list > article {
+    grid-template-columns: 1fr;
+  }
+
+  .membership-waiver-followup__list .signed-waiver-document-actions,
+  .membership-waiver-followup__list .waiver-reminder-action {
+    grid-column: auto;
   }
 }

@@ -1,4 +1,5 @@
 const { logger } = require('firebase-functions');
+const { FieldValue } = require('firebase-admin/firestore');
 const {
   appUrl,
   configureEmail,
@@ -31,6 +32,13 @@ function recipientsFor(waiver) {
     participant.isMinor ? participant.guardianEmail : null,
     signer.email,
   ]);
+}
+
+function reminderRecipientsFor(waiver) {
+  const participant = waiver.participantSnapshot || {};
+  return participant.isMinor === true
+    ? uniqueEmails([participant.guardianEmail || participant.email])
+    : uniqueEmails([participant.email]);
 }
 
 function formatSignedAt(value) {
@@ -191,6 +199,63 @@ async function sendInvitation({ waiver, ref, path, label, contextTitle }) {
   }
 }
 
+async function sendWaiverReminderEmail({
+  waiver,
+  ref,
+  path,
+  label,
+  contextTitle,
+  dependencies = {},
+}) {
+  configureEmail(dependencies);
+  const participant = waiver.participantSnapshot || {};
+  const recipients = reminderRecipientsFor(waiver);
+  if (!recipients.length) {
+    await ref.set({
+      waiverReminderEmailStatus: 'skipped',
+      waiverReminderEmailUpdatedAt: new Date(),
+      waiverReminderEmailError: 'No recipient email.',
+    }, { merge: true });
+    throw new Error('No participant or guardian email is available for this waiver.');
+  }
+
+  try {
+    await sendEmail({
+      to: recipients,
+      subject: `Reminder: ${label} for ${participant.fullName || 'participant'}`,
+      text: [
+        `${participant.fullName || 'The participant'} still needs a signed waiver before participation.`,
+        contextTitle,
+        `Review and sign the secure waiver: ${appUrl(path)}`,
+      ].filter(Boolean).join('\n'),
+      html: emailShell({
+        eyebrow: 'Waiver reminder',
+        title: label,
+        bodyHtml: `
+          <p>This is a reminder that <strong>${escapeHtml(participant.fullName || 'the registered participant')}</strong> still needs a completed waiver before participation.</p>
+          <p>${escapeHtml(contextTitle || '')}</p>
+          <p>Adult participants sign for themselves. A parent or legal guardian must sign for a minor.</p>`,
+        buttonLabel: 'Review and sign waiver',
+        buttonUrl: appUrl(path),
+      }),
+    });
+    await ref.set({
+      waiverReminderEmailStatus: 'sent',
+      waiverReminderSentAt: new Date(),
+      waiverReminderEmailError: null,
+      waiverReminderCount: FieldValue.increment(1),
+    }, { merge: true });
+    return { recipientCount: recipients.length };
+  } catch (error) {
+    await ref.set({
+      waiverReminderEmailStatus: 'failed',
+      waiverReminderEmailUpdatedAt: new Date(),
+      waiverReminderEmailError: clean(error?.message, 800),
+    }, { merge: true });
+    throw error;
+  }
+}
+
 async function sendCoverageConfirmation({ waiver, ref, contextTitle }) {
   const participant = waiver.participantSnapshot || {};
   const recipients = recipientsFor(waiver);
@@ -338,4 +403,5 @@ module.exports = {
   handleStudioWaiverWritten: (event, dependencies) => (
     safeWaiverEmail(handleStudioWaiverWritten, event, dependencies)
   ),
+  sendWaiverReminderEmail,
 };

@@ -7,6 +7,7 @@ import {
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import SignaturePad from '../components/events/SignaturePad';
+import SignedWaiverDocumentActions from '../components/waivers/SignedWaiverDocumentActions';
 import { useAuth } from '../context/AuthContext';
 import {
   getMyMembershipWaiver,
@@ -183,6 +184,12 @@ export default function MemberWaiverPage() {
                 Emergency contact: {waiver?.participant?.emergencyContactName} ·{' '}
                 {waiver?.participant?.emergencyContactPhone}
               </p>
+              <SignedWaiverDocumentActions
+                scope="membership"
+                waiverId={waiver?.id}
+                participantName={waiver?.participant?.fullName}
+                coverageSource="membership"
+              />
             </div>
           </article>
         )}

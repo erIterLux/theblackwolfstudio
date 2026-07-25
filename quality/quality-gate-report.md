@@ -1,6 +1,6 @@
 # Black Wolf Studio quality gate
 
-Generated: 2026-07-25T12:02:22.313Z
+Generated: 2026-07-25T12:25:05.080Z
 
 Result: PASS
 
@@ -12,9 +12,9 @@ Result: PASS
 
 ## Notes
 - Route audit found 38 explicit route patterns.
-- JSX audit: 85 files, 0 missing alt, 0 unsafe blank links, 0 implicit buttons.
+- JSX audit: 86 files, 0 missing alt, 0 unsafe blank links, 0 implicit buttons.
 - CSS audit: 20 files, 0 very-small text rules, 36 !important rules.
 - Norwester font verified at public/fonts/norwester.otf.
 - Public asset audit checked 6 files.
-- Build audit: 67 JS chunks, 1 CSS chunks, total JS gzip 401.0 KB, total CSS gzip 35.7 KB.
+- Build audit: 69 JS chunks, 1 CSS chunks, total JS gzip 402.7 KB, total CSS gzip 35.9 KB.
 - Largest JS chunk: dist/assets/firebase-vendor-Dx1OEw-G.js (584.2 KB, 170.9 KB gzip).

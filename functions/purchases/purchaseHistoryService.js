@@ -2,6 +2,7 @@ const crypto = require('crypto');
 const admin = require('firebase-admin');
 const { HttpsError } = require('firebase-functions/v2/https');
 const { logger } = require('firebase-functions');
+const { STUDIO_WAIVER_VERSION } = require('../config/studioWaiver');
 
 const db = admin.firestore();
 const INSTRUCTOR_ROLES = new Set(['instructor', 'admin']);
@@ -383,17 +384,39 @@ async function handleListCommerceOrdersAdmin(request) {
     .map((doc) => serialize({ id: doc.id, ...doc.data() }))
     .sort((left, right) => String(right.attemptedAt || '').localeCompare(String(left.attemptedAt || '')));
 
-  const memberships = membershipsSnapshot.docs.map((doc) => serialize({
-    id: doc.id,
-    uid: doc.id,
-    planKey: doc.data()?.planKey || null,
-    planName: doc.data()?.planName || null,
-    status: doc.data()?.status || 'inactive',
-    email: doc.data()?.email || null,
-    displayName: doc.data()?.displayName || null,
-    currentPeriodEnd: doc.data()?.currentPeriodEnd || null,
-    cancelAtPeriodEnd: Boolean(doc.data()?.cancelAtPeriodEnd),
-  }));
+  const waiverSnapshots = membershipsSnapshot.empty
+    ? []
+    : await db.getAll(...membershipsSnapshot.docs.map(
+      (doc) => db.collection('studioWaivers').doc(doc.id),
+    ));
+  const waiverByUid = new Map(
+    waiverSnapshots.map((snapshot) => [snapshot.id, snapshot.data() || {}]),
+  );
+  const memberships = membershipsSnapshot.docs.map((doc) => {
+    const data = doc.data() || {};
+    const waiver = waiverByUid.get(doc.id) || {};
+    const emergencyReady = clean(waiver.participantSnapshot?.emergencyContactName, 180).length >= 2
+      && clean(waiver.participantSnapshot?.emergencyContactPhone, 40)
+        .replace(/\D/g, '').length >= 7;
+    const waiverCurrent = waiver.status === 'signed'
+      && waiver.waiverSnapshot?.version === STUDIO_WAIVER_VERSION
+      && emergencyReady;
+    return serialize({
+      id: doc.id,
+      uid: doc.id,
+      planKey: data.planKey || null,
+      planName: data.planName || null,
+      status: data.status || 'inactive',
+      email: data.email || null,
+      displayName: data.displayName || null,
+      currentPeriodEnd: data.currentPeriodEnd || null,
+      cancelAtPeriodEnd: Boolean(data.cancelAtPeriodEnd),
+      waiverStatus: waiverCurrent ? 'signed' : 'pending',
+      waiverSignedAt: waiverCurrent ? waiver.signedAt || null : null,
+      waiverParticipantName: waiver.participantSnapshot?.fullName || data.displayName || null,
+      waiverReminderSentAt: data.waiverReminderSentAt || null,
+    });
+  });
 
   return { orders, membershipPayments, memberships };
 }
