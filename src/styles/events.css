@@ -1,8 +1,11 @@
 .events-page,
 .event-success-page,
 .member-events-page,
-.events-admin-page {
+.events-admin-page,
+.waiver-page,
+.waiver-workspace-page {
     --event-border: rgba(21, 18, 16, 0.14);
+    --event-text: #151210;
     --event-muted: rgba(21, 18, 16, 0.68);
 }
 
@@ -637,12 +640,18 @@
 
 .waiver-scope-card {
     padding: 1rem 1.15rem;
+    color: var(--event-text);
     border-left: 4px solid #35495d;
     background: #f4f7f8;
 }
 
+.waiver-scope-card .eyebrow {
+    color: #526d86;
+}
+
 .waiver-scope-card p:last-child {
     margin: 0.35rem 0 0;
+    color: var(--event-muted);
     line-height: 1.65;
 }
 
