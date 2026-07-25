@@ -4,11 +4,13 @@ import MembershipCheckoutButton from '../components/membership/MembershipCheckou
 import MembershipStatusCard from '../components/membership/MembershipStatusCard';
 import { memberships } from '../data/siteContent';
 import { useAuth } from '../context/AuthContext';
+import useMembership from '../hooks/useMembership';
 
 const PLAN_KEYS = { Begin: 'begin', Train: 'train', Integrate: 'integrate' };
 
 export default function MembershipPage() {
     const { user } = useAuth();
+    const { membership, loading: membershipLoading } = useMembership();
 
     return (
         <>
@@ -25,7 +27,11 @@ export default function MembershipPage() {
 
             <section className="section section--light" id="membership-options">
                 <div className="container">
-                    {user && <div className="membership-current"><MembershipStatusCard /></div>}
+                    {user && !membershipLoading && membership && (
+                        <div className="membership-current">
+                            <MembershipStatusCard />
+                        </div>
+                    )}
                     <SectionHeading
                         eyebrow="Membership options"
                         title="Choose your level of support."
