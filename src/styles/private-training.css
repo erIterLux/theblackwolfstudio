@@ -3,6 +3,11 @@
   min-height: 640px;
 }
 
+.private-training-page .section-heading h2 {
+  font-size: clamp(2.25rem, 3vw, 3rem);
+  line-height: 1.02;
+}
+
 .commerce-notice,
 .empty-state-card {
   margin-bottom: 2rem;
@@ -123,7 +128,14 @@
 
 .private-offer-card h2 {
   margin-bottom: .65rem;
-  font-size: clamp(2rem, 3vw, 3rem);
+  font-size: clamp(1.75rem, 2vw, 2.25rem);
+  line-height: 1.04;
+  overflow-wrap: break-word;
+  text-wrap: balance;
+}
+
+.private-offer-grid.is-single .private-offer-card h2 {
+  font-size: clamp(2rem, 3vw, 2.75rem);
 }
 
 .private-offer-card > .button {
@@ -170,8 +182,28 @@
 }
 
 .private-checkout__heading {
-  align-items: end;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
   margin-bottom: .5rem;
+}
+
+.private-checkout__heading > div {
+  min-width: 0;
+}
+
+.private-checkout__heading h2 {
+  max-width: 18ch;
+  font-size: clamp(2.65rem, 3.1vw, 3.125rem);
+  line-height: 1.02;
+  overflow-wrap: break-word;
+  text-wrap: balance;
+}
+
+.private-checkout__heading > .text-link {
+  flex: 0 0 auto;
+  align-self: start;
+  white-space: nowrap;
 }
 
 .private-checkout__heading h2,
@@ -844,6 +876,28 @@
 }
 
 @media (max-width: 700px) {
+  .private-training-page .section-heading h2 {
+    font-size: clamp(2rem, 8vw, 2.25rem);
+  }
+
+  .private-offer-card h2,
+  .private-offer-grid.is-single .private-offer-card h2 {
+    font-size: clamp(1.75rem, 7.5vw, 2rem);
+  }
+
+  .private-checkout__heading {
+    display: flex;
+  }
+
+  .private-checkout__heading h2 {
+    max-width: none;
+    font-size: clamp(2rem, 8.5vw, 2.3rem);
+  }
+
+  .private-checkout__heading > .text-link {
+    white-space: normal;
+  }
+
   .membership-private-credit {
     grid-template-columns: auto minmax(0, 1fr);
     align-items: start;

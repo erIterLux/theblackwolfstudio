@@ -37,12 +37,24 @@
     border-radius: 24px;
 }
 
+    .events-page .section-heading h2 {
+        font-size: clamp(2.25rem, 3vw, 3rem);
+        line-height: 1.02;
+    }
+
     .event-card h2,
     .event-checkout h2,
     .member-event-card h2,
     .events-admin-page h2,
     .events-admin-page h3 {
         margin: 0;
+    }
+
+    .event-card h2 {
+        font-size: clamp(2rem, 2.4vw, 2.5rem);
+        line-height: 1.02;
+        overflow-wrap: break-word;
+        text-wrap: balance;
     }
 
 .event-card__status-row,
@@ -142,9 +154,29 @@
 }
 
 .event-checkout__heading {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
     align-items: flex-start;
     margin-bottom: 1.5rem;
 }
+
+    .event-checkout__heading > div {
+        min-width: 0;
+    }
+
+    .event-checkout__heading h2 {
+        max-width: 18ch;
+        font-size: clamp(2.75rem, 3.25vw, 3.25rem);
+        line-height: 1.01;
+        overflow-wrap: break-word;
+        text-wrap: balance;
+    }
+
+    .event-checkout__heading > .text-link {
+        flex: 0 0 auto;
+        align-self: start;
+        white-space: nowrap;
+    }
 
 .event-registration-explainer,
 .event-waiver-preview {
@@ -501,6 +533,27 @@
 }
 
 @media (max-width: 680px) {
+    .events-page .section-heading h2 {
+        font-size: clamp(2rem, 8vw, 2.25rem);
+    }
+
+    .event-card h2 {
+        font-size: clamp(1.8rem, 7.5vw, 2.1rem);
+    }
+
+    .event-checkout__heading {
+        display: flex;
+    }
+
+    .event-checkout__heading h2 {
+        max-width: none;
+        font-size: clamp(2.05rem, 9vw, 2.35rem);
+    }
+
+    .event-checkout__heading > .text-link {
+        white-space: normal;
+    }
+
     .event-card__footer,
     .event-checkout__heading,
     .event-confirmed-participants article,
