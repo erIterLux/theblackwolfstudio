@@ -92,6 +92,15 @@
     var(--ui-canvas);
 }
 
+.portal-main > :where(.events-admin-page, .event-check-in-page) {
+  min-height: calc(100vh - var(--portal-topbar-height));
+  padding: clamp(2.75rem, 5vw, 4.5rem) 0 clamp(4rem, 7vw, 6.5rem);
+  color: var(--portal-page-text);
+  background:
+    radial-gradient(circle at 86% 4%, rgba(93, 115, 139, .13), transparent 27rem),
+    var(--ui-canvas);
+}
+
 .portal-main .member-page {
   min-height: calc(100vh - var(--portal-topbar-height));
   padding: clamp(2.75rem, 5vw, 4.5rem) 0 clamp(4rem, 7vw, 6.5rem);
@@ -784,6 +793,10 @@
     padding-top: 2.5rem;
   }
 
+  .portal-main > :where(.events-admin-page, .event-check-in-page) {
+    padding-top: 2.5rem;
+  }
+
   .portal-main h1,
   .portal-main .member-header h1 {
     font-size: clamp(2.15rem, 8.5vw, 3.1rem);
@@ -800,6 +813,11 @@
   }
 
   .portal-main .member-page {
+    padding-top: 2rem;
+    padding-bottom: 4rem;
+  }
+
+  .portal-main > :where(.events-admin-page, .event-check-in-page) {
     padding-top: 2rem;
     padding-bottom: 4rem;
   }

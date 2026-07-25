@@ -133,13 +133,25 @@ export default function InstructorEventCheckIn() {
       waiverCompleteCount,
       checkedInCount,
       waitingCount: Math.max(0, participants.length - checkedInCount),
-      blockedCount: participants.filter(
+      attentionCount: participants.filter(
         (participant) => (
           participant.checkInStatus !== 'checked_in'
           && (
             !waiverComplete(participant, waiverRequired)
             || !emergencyContactComplete(participant)
           )
+        ),
+      ).length,
+      waiverBlockedCount: participants.filter(
+        (participant) => (
+          participant.checkInStatus !== 'checked_in'
+          && !waiverComplete(participant, waiverRequired)
+        ),
+      ).length,
+      emergencyBlockedCount: participants.filter(
+        (participant) => (
+          participant.checkInStatus !== 'checked_in'
+          && !emergencyContactComplete(participant)
         ),
       ).length,
     };
@@ -155,9 +167,11 @@ export default function InstructorEventCheckIn() {
       if (filter === 'ready') {
         return !isCheckedIn && isWaiverComplete && isEmergencyContactComplete;
       }
-      if (filter === 'blocked') {
+      if (filter === 'attention') {
         return !isCheckedIn && (!isWaiverComplete || !isEmergencyContactComplete);
       }
+      if (filter === 'waiver') return !isCheckedIn && !isWaiverComplete;
+      if (filter === 'emergency') return !isCheckedIn && !isEmergencyContactComplete;
       if (filter === 'checked_in') return isCheckedIn;
       return true;
     })
@@ -322,10 +336,12 @@ export default function InstructorEventCheckIn() {
                   0,
                   summary.registeredCount
                     - summary.checkedInCount
-                    - summary.blockedCount,
+                    - summary.attentionCount,
                 )})`,
               ],
-              ['blocked', `Waiver needed (${summary.blockedCount})`],
+              ['attention', `Needs attention (${summary.attentionCount})`],
+              ['waiver', `Waiver (${summary.waiverBlockedCount})`],
+              ['emergency', `Emergency contact (${summary.emergencyBlockedCount})`],
               ['checked_in', `Checked in (${summary.checkedInCount})`],
             ].map(([value, label]) => (
               <button

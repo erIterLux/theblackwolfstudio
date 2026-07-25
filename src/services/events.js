@@ -68,6 +68,11 @@ export async function listEventsAdmin(options = {}) {
     return getWorkspaceData('instructorEvents', {}, options);
 }
 
+export async function getEventAdminDetail(eventId) {
+    const response = await callable('getEventAdminDetail')({ eventId });
+    return response.data;
+}
+
 export async function getEventWaiver(participantId, accessToken = '') {
     const response = await callable('getEventWaiver')({
         participantId,

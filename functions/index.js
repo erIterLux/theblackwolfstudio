@@ -578,6 +578,12 @@ exports.listEventsAdmin = onCall({
     timeoutSeconds: 60,
 }, async (request) => loadEventService().handleListEventsAdmin(request));
 
+exports.getEventAdminDetail = onCall({
+    invoker: 'public',
+    memory: '512MiB',
+    timeoutSeconds: 60,
+}, async (request) => loadEventService().handleGetEventAdminDetail(request));
+
 exports.getEventCheckIn = onCall({
     invoker: 'public',
     memory: '512MiB',

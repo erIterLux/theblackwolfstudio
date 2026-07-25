@@ -732,16 +732,40 @@ async function handleListMyEventRegistrations(request) {
 
 async function handleListEventsAdmin(request) {
     requireInstructor(request);
-    const [eventsSnapshot, registrationsSnapshot, participantsSnapshot] = await Promise.all([
-        db.collection('events').limit(300).get(),
-        db.collection('eventRegistrations').limit(500).get(),
-        db.collection('eventParticipants').limit(1000).get(),
-    ]);
+    const eventsSnapshot = await db.collection('events').limit(300).get();
 
     const events = eventsSnapshot.docs
         .map((item) => serialize({ id: item.id, ...item.data(), registrationState: registrationWindowState(item.data() || {}) }))
         .sort((left, right) => new Date(left.startsAt || 0) - new Date(right.startsAt || 0));
-    const participants = participantsSnapshot.docs.map((item) => serialize({ id: item.id, ...item.data() }));
+
+    return { events };
+}
+
+async function handleGetEventAdminDetail(request) {
+    requireInstructor(request);
+    const eventId = clean(request.data?.eventId, 160);
+    if (!eventId) throw new HttpsError('invalid-argument', 'Event ID is required.');
+
+    const [eventSnapshot, registrationsSnapshot] = await Promise.all([
+        db.collection('events').doc(eventId).get(),
+        db.collection('eventRegistrations').where('eventId', '==', eventId).limit(500).get(),
+    ]);
+    if (!eventSnapshot.exists) {
+        throw new HttpsError('not-found', 'That event was not found.');
+    }
+
+    const { ensureWaiversForRegistration } = require('./waiverService');
+    await Promise.all(
+        registrationsSnapshot.docs.map((item) => ensureWaiversForRegistration(item.id)),
+    );
+    const participantsSnapshot = await db.collection('eventParticipants')
+        .where('eventId', '==', eventId)
+        .limit(2000)
+        .get();
+
+    const participants = participantsSnapshot.docs.map(
+        (item) => serialize({ id: item.id, ...item.data() }),
+    );
     const participantsByRegistration = participants.reduce((map, participant) => {
         const key = participant.registrationId;
         if (!map[key]) map[key] = [];
@@ -755,7 +779,29 @@ async function handleListEventsAdmin(request) {
         }))
         .sort((left, right) => new Date(right.paidAt || right.createdAt || 0) - new Date(left.paidAt || left.createdAt || 0));
 
-    return { events, registrations };
+    return {
+        event: serialize({
+            id: eventSnapshot.id,
+            ...eventSnapshot.data(),
+            registrationState: registrationWindowState(eventSnapshot.data() || {}),
+        }),
+        registrations,
+        summary: {
+            registrationCount: registrations.length,
+            participantCount: participants.length,
+            waiverPendingCount: participants.filter(
+                (participant) => participant.waiverStatus === 'pending',
+            ).length,
+            waiverCompleteCount: participants.filter(
+                (participant) => ['signed', 'covered', 'not_required'].includes(
+                    participant.waiverStatus,
+                ),
+            ).length,
+            checkedInCount: participants.filter(
+                (participant) => participant.checkInStatus === 'checked_in',
+            ).length,
+        },
+    };
 }
 
 
@@ -1087,6 +1133,7 @@ module.exports = {
     handleGetEventRegistration,
     handleListMyEventRegistrations,
     handleListEventsAdmin,
+    handleGetEventAdminDetail,
     handleGetEventCheckIn,
     handleSetEventParticipantCheckIn,
 };
