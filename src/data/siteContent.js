@@ -4,7 +4,6 @@ import {
     Hand,
     HeartPulse,
     Shield,
-    Sparkles,
     Target,
     Users,
 } from 'lucide-react';
@@ -113,7 +112,7 @@ export const memberships = [
 ];
 
 export const wolfGuidePrompts = [
-    { icon: Sparkles, label: 'Help me settle before class' },
+    { icon: Activity, label: 'Recommend a full body exercise for training' },
     { icon: Brain, label: 'Explain a nervous system response' },
     { icon: Shield, label: 'Review a self-defense principle' },
 ];

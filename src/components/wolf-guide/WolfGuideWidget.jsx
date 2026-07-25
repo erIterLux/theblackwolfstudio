@@ -1,6 +1,6 @@
 import {
+    Activity,
     Brain,
-    HeartPulse,
     LockKeyhole,
     Maximize2,
     Minimize2,
@@ -29,7 +29,7 @@ import {
 import WolfGuideMark from './WolfGuideMark';
 
 const prompts = [
-    { icon: HeartPulse, label: 'Help me settle before class' },
+    { icon: Activity, label: 'Recommend a full body exercise for training' },
     { icon: Brain, label: 'Explain a nervous-system response' },
     { icon: Shield, label: 'Review a self-defense principle' },
 ];
@@ -233,40 +233,6 @@ function WolfGuideConversation({ memberState, storageKey }) {
                 </button>
             </div>
 
-            <div
-                className={`wolf-guide-usage${limitReached ? ' is-exhausted' : ''}`}
-                aria-live="polite"
-            >
-                {usageLoading && <span>Checking message availability…</span>}
-                {!usageLoading && usage?.accessType === 'preview' && (
-                    <>
-                        <strong>
-                            {usage.remaining} of {usage.limit} preview messages remaining
-                        </strong>
-                        <span>
-                            The Begin preview does not renew. Upgrade for weekly messages.
-                        </span>
-                    </>
-                )}
-                {!usageLoading && usage?.accessType === 'weekly' && (
-                    <>
-                        <strong>
-                            {usage.remaining} of {usage.limit} messages remaining this week
-                        </strong>
-                        <span>
-                            Resets Monday{resetLabel(usage.resetAt) ? `, ${resetLabel(usage.resetAt)}` : ''}.
-                            Only successful AI responses use a message.
-                        </span>
-                    </>
-                )}
-                {!usageLoading && usage?.accessType === 'locked' && (
-                    <span>Wolf Guide is not included with this membership.</span>
-                )}
-                {!usageLoading && limitReached && usage?.accessType === 'preview' && (
-                    <Link to="/membership">Compare weekly Wolf Guide plans</Link>
-                )}
-            </div>
-
             <div className="wolf-guide-prompts" aria-label="Suggested Wolf Guide prompts">
                 {prompts.map(({ icon: Icon, label }) => (
                     <button
@@ -279,6 +245,33 @@ function WolfGuideConversation({ memberState, storageKey }) {
                         {label}
                     </button>
                 ))}
+            </div>
+
+            <div
+                className={`wolf-guide-usage${limitReached ? ' is-exhausted' : ''}`}
+                aria-live="polite"
+            >
+                {usageLoading && <span>Checking message availability…</span>}
+                {!usageLoading && usage?.accessType === 'preview' && (
+                    <>
+                        <strong>{usage.remaining} of {usage.limit} preview messages left</strong>
+                        <span>One-time Begin preview.</span>
+                    </>
+                )}
+                {!usageLoading && usage?.accessType === 'weekly' && (
+                    <>
+                        <strong>{usage.remaining} of {usage.limit} messages left this week</strong>
+                        <span>
+                            Resets Monday{resetLabel(usage.resetAt) ? `, ${resetLabel(usage.resetAt)}` : ''}.
+                        </span>
+                    </>
+                )}
+                {!usageLoading && usage?.accessType === 'locked' && (
+                    <span>Wolf Guide is not included with this membership.</span>
+                )}
+                {!usageLoading && limitReached && usage?.accessType === 'preview' && (
+                    <Link to="/membership">Compare weekly plans</Link>
+                )}
             </div>
 
             <div className="wolf-guide-messages" aria-live="polite" ref={messagesRef}>

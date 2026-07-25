@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-25T14:15:19.761Z",
+  "generatedAt": "2026-07-25T14:32:53.855Z",
   "passed": true,
   "failures": [],
   "warnings": [],
@@ -9,24 +9,24 @@
     "CSS audit: 20 files, 0 very-small text rules, 36 !important rules.",
     "Norwester font verified at public/fonts/norwester.otf.",
     "Public asset audit checked 6 files.",
-    "Build audit: 69 JS chunks, 1 CSS chunks, total JS gzip 409.2 KB, total CSS gzip 37.9 KB.",
+    "Build audit: 69 JS chunks, 1 CSS chunks, total JS gzip 409.3 KB, total CSS gzip 37.9 KB.",
     "Largest JS chunk: dist/assets/firebase-vendor-Dx1OEw-G.js (584.2 KB, 170.9 KB gzip)."
   ],
   "buildEntries": [
     {
-      "file": "dist/assets/appSession-Dm-2VMZL.js",
+      "file": "dist/assets/appSession-DJNwKKAA.js",
       "bytes": 131,
-      "gzipBytes": 131
+      "gzipBytes": 129
     },
     {
-      "file": "dist/assets/AuthContext-CvStW3o0.js",
+      "file": "dist/assets/AuthContext-Cn0sREFz.js",
       "bytes": 2407,
-      "gzipBytes": 1073
+      "gzipBytes": 1075
     },
     {
-      "file": "dist/assets/ContactPage-3p2jzyOx.js",
+      "file": "dist/assets/ContactPage-C7A2tllC.js",
       "bytes": 4328,
-      "gzipBytes": 1760
+      "gzipBytes": 1761
     },
     {
       "file": "dist/assets/DeviceRecorder-CLwKvWVm.js",
@@ -34,24 +34,24 @@
       "gzipBytes": 1725
     },
     {
-      "file": "dist/assets/events-CPWTkoCq.js",
+      "file": "dist/assets/events-CfA9GNYb.js",
       "bytes": 1544,
-      "gzipBytes": 601
+      "gzipBytes": 598
     },
     {
-      "file": "dist/assets/EventsPage-pl0Kivu0.js",
+      "file": "dist/assets/EventsPage-DAK5_CzK.js",
       "bytes": 17947,
       "gzipBytes": 5026
     },
     {
-      "file": "dist/assets/EventSuccessPage-C-tSXQCW.js",
+      "file": "dist/assets/EventSuccessPage-CvN7m3bF.js",
       "bytes": 7919,
       "gzipBytes": 2657
     },
     {
-      "file": "dist/assets/EventWaiverPage-C2E8GIkH.js",
+      "file": "dist/assets/EventWaiverPage-CPj6LHZ7.js",
       "bytes": 9873,
-      "gzipBytes": 3062
+      "gzipBytes": 3064
     },
     {
       "file": "dist/assets/firebase-vendor-Dx1OEw-G.js",
@@ -59,9 +59,9 @@
       "gzipBytes": 174978
     },
     {
-      "file": "dist/assets/firebaseAuth-CrTrfvFZ.js",
+      "file": "dist/assets/firebaseAuth-DIui2iHE.js",
       "bytes": 199,
-      "gzipBytes": 167
+      "gzipBytes": 168
     },
     {
       "file": "dist/assets/firebaseConfig-B-GqucZx.js",
@@ -69,9 +69,9 @@
       "gzipBytes": 283
     },
     {
-      "file": "dist/assets/HomePage-BA5TE2l7.js",
+      "file": "dist/assets/HomePage-CutyziYC.js",
       "bytes": 8719,
-      "gzipBytes": 2579
+      "gzipBytes": 2577
     },
     {
       "file": "dist/assets/icons-vendor-BTcx742k.js",
@@ -79,124 +79,124 @@
       "gzipBytes": 11467
     },
     {
-      "file": "dist/assets/index-DN0ol0_u.css",
-      "bytes": 217515,
-      "gzipBytes": 38824
+      "file": "dist/assets/index-BGHrPFLR.js",
+      "bytes": 51724,
+      "gzipBytes": 14587
     },
     {
-      "file": "dist/assets/index-DynSH1Ka.js",
-      "bytes": 51812,
-      "gzipBytes": 14598
+      "file": "dist/assets/index-Bnq3kf9m.css",
+      "bytes": 217568,
+      "gzipBytes": 38841
     },
     {
-      "file": "dist/assets/InstructorAnnouncementsAdmin-BP1uLTo4.js",
+      "file": "dist/assets/InstructorAnnouncementsAdmin-HSk4H6CR.js",
       "bytes": 8174,
-      "gzipBytes": 2329
+      "gzipBytes": 2331
     },
     {
-      "file": "dist/assets/InstructorAvailabilityAdmin-DCgZcwov.js",
+      "file": "dist/assets/InstructorAvailabilityAdmin-CwxYcMda.js",
       "bytes": 18919,
-      "gzipBytes": 5318
+      "gzipBytes": 5322
     },
     {
-      "file": "dist/assets/InstructorContentAdmin-9WJOPbz_.js",
+      "file": "dist/assets/InstructorContentAdmin-BFZ70bHM.js",
       "bytes": 14408,
-      "gzipBytes": 4328
+      "gzipBytes": 4325
     },
     {
-      "file": "dist/assets/InstructorDiscountsAdmin-DWFEcL4-.js",
+      "file": "dist/assets/InstructorDiscountsAdmin-C7KVSNUv.js",
       "bytes": 15429,
       "gzipBytes": 4517
     },
     {
-      "file": "dist/assets/InstructorEventCheckIn-BtjZy8Xm.js",
+      "file": "dist/assets/InstructorEventCheckIn-X9BSOiMG.js",
       "bytes": 9416,
-      "gzipBytes": 3065
+      "gzipBytes": 3066
     },
     {
-      "file": "dist/assets/InstructorEventsAdmin-O-sJLddB.js",
+      "file": "dist/assets/InstructorEventsAdmin-jwJU9s6Q.js",
       "bytes": 41611,
-      "gzipBytes": 11695
+      "gzipBytes": 11696
     },
     {
-      "file": "dist/assets/InstructorHome-DXzLuCn6.js",
+      "file": "dist/assets/InstructorHome-hDJz_7Ys.js",
       "bytes": 8560,
-      "gzipBytes": 2601
+      "gzipBytes": 2602
     },
     {
-      "file": "dist/assets/InstructorOrdersAdmin-ChPpCoS7.js",
+      "file": "dist/assets/InstructorOrdersAdmin-DHzmc3DT.js",
       "bytes": 8356,
-      "gzipBytes": 2558
+      "gzipBytes": 2556
     },
     {
-      "file": "dist/assets/InstructorPrivateTrainingAdmin-ozCmg0V6.js",
+      "file": "dist/assets/InstructorPrivateTrainingAdmin-BCxHzr7I.js",
       "bytes": 15097,
-      "gzipBytes": 4129
+      "gzipBytes": 4131
     },
     {
-      "file": "dist/assets/InstructorPrivateTrainingCalendar-CeqmmgUd.js",
+      "file": "dist/assets/InstructorPrivateTrainingCalendar-lwoAK3v6.js",
       "bytes": 8164,
-      "gzipBytes": 2674
+      "gzipBytes": 2676
     },
     {
-      "file": "dist/assets/InstructorProgressionAdmin-phDXOZXy.js",
+      "file": "dist/assets/InstructorProgressionAdmin-CsFqzJUz.js",
       "bytes": 12750,
       "gzipBytes": 3796
     },
     {
-      "file": "dist/assets/InstructorReportsPage-D2NWisz3.js",
+      "file": "dist/assets/InstructorReportsPage-qbB5vW2F.js",
       "bytes": 33496,
-      "gzipBytes": 8046
+      "gzipBytes": 8047
     },
     {
-      "file": "dist/assets/LoginPage-D8FDJRoO.js",
+      "file": "dist/assets/LoginPage-DTM_fN4W.js",
       "bytes": 3253,
       "gzipBytes": 1383
     },
     {
-      "file": "dist/assets/MemberDashboard-DvBiH3CI.js",
+      "file": "dist/assets/MemberDashboard-fjozpvWd.js",
       "bytes": 24617,
-      "gzipBytes": 6437
+      "gzipBytes": 6440
     },
     {
-      "file": "dist/assets/MemberEventsPage-CUQvF4r6.js",
+      "file": "dist/assets/MemberEventsPage-CYNd4Z0t.js",
       "bytes": 4797,
-      "gzipBytes": 1670
+      "gzipBytes": 1668
     },
     {
-      "file": "dist/assets/MemberLibraryPage-WdkofW1s.js",
+      "file": "dist/assets/MemberLibraryPage-DQ8FbNWb.js",
       "bytes": 3994,
-      "gzipBytes": 1403
+      "gzipBytes": 1404
     },
     {
-      "file": "dist/assets/MemberPrivateTrainingPage-D0TR1s78.js",
+      "file": "dist/assets/MemberPrivateTrainingPage-mOpQNcFb.js",
       "bytes": 9457,
-      "gzipBytes": 2821
+      "gzipBytes": 2824
     },
     {
-      "file": "dist/assets/MemberPurchasesPage-BMar31dQ.js",
+      "file": "dist/assets/MemberPurchasesPage-DTQPokuI.js",
       "bytes": 9401,
-      "gzipBytes": 2760
+      "gzipBytes": 2759
     },
     {
-      "file": "dist/assets/membership-DIE0WKGl.js",
+      "file": "dist/assets/membership-528_KycF.js",
       "bytes": 531,
       "gzipBytes": 305
     },
     {
-      "file": "dist/assets/MembershipPage-BmM-xiE_.js",
+      "file": "dist/assets/MembershipPage-Cy3bW17s.js",
       "bytes": 3931,
-      "gzipBytes": 1637
+      "gzipBytes": 1634
     },
     {
-      "file": "dist/assets/MembershipStatusCard-blhvbZ2K.js",
+      "file": "dist/assets/MembershipStatusCard-C5TbiITz.js",
       "bytes": 4647,
-      "gzipBytes": 1682
+      "gzipBytes": 1685
     },
     {
-      "file": "dist/assets/MemberWaiverPage-CxgM4Dxt.js",
+      "file": "dist/assets/MemberWaiverPage-C0ojbE4L.js",
       "bytes": 8279,
-      "gzipBytes": 2538
+      "gzipBytes": 2539
     },
     {
       "file": "dist/assets/NotFoundPage-07k_NOKb.js",
@@ -204,79 +204,79 @@
       "gzipBytes": 420
     },
     {
-      "file": "dist/assets/notifications-aw0CXO7h.js",
+      "file": "dist/assets/notifications-C2-c5bLf.js",
       "bytes": 1196,
-      "gzipBytes": 461
+      "gzipBytes": 463
     },
     {
-      "file": "dist/assets/NotificationsPage-DKnkA54e.js",
+      "file": "dist/assets/NotificationsPage-BB0M7oeR.js",
       "bytes": 10384,
       "gzipBytes": 3433
     },
     {
-      "file": "dist/assets/OrderDetailsPage-DXg7WSf6.js",
+      "file": "dist/assets/OrderDetailsPage-CZT4BLRc.js",
       "bytes": 6835,
-      "gzipBytes": 2224
+      "gzipBytes": 2223
     },
     {
-      "file": "dist/assets/privateTraining-Dz-eaOvl.js",
+      "file": "dist/assets/privateTraining-5ER90pjS.js",
       "bytes": 2788,
-      "gzipBytes": 766
+      "gzipBytes": 764
     },
     {
-      "file": "dist/assets/PrivateTrainingBookingPage-DGXQU_gg.js",
+      "file": "dist/assets/PrivateTrainingBookingPage-D_EwTG17.js",
       "bytes": 17663,
-      "gzipBytes": 5062
+      "gzipBytes": 5067
     },
     {
-      "file": "dist/assets/PrivateTrainingPage-B7JN7KGY.js",
+      "file": "dist/assets/PrivateTrainingPage-DnhIuXw6.js",
       "bytes": 17966,
-      "gzipBytes": 5217
+      "gzipBytes": 5220
     },
     {
-      "file": "dist/assets/PrivateTrainingSuccessPage-Cev8myAE.js",
+      "file": "dist/assets/PrivateTrainingSuccessPage-3-i5GTYP.js",
       "bytes": 7619,
-      "gzipBytes": 2554
+      "gzipBytes": 2555
     },
     {
-      "file": "dist/assets/PrivateTrainingWaiverPage-3qXiCwqN.js",
+      "file": "dist/assets/PrivateTrainingWaiverPage-B4OQ_vPL.js",
       "bytes": 8724,
-      "gzipBytes": 2800
+      "gzipBytes": 2803
     },
     {
-      "file": "dist/assets/ProgramsPage-BQEQ8pLU.js",
+      "file": "dist/assets/ProgramsPage-D7UpUVHo.js",
       "bytes": 3086,
-      "gzipBytes": 1246
+      "gzipBytes": 1243
     },
     {
-      "file": "dist/assets/progression-mR5lhSCF.js",
+      "file": "dist/assets/progression-Drf2YbH9.js",
       "bytes": 1100,
-      "gzipBytes": 382
+      "gzipBytes": 383
     },
     {
-      "file": "dist/assets/progressionContent-pEB8HvS6.js",
+      "file": "dist/assets/progressionContent-BgNsisso.js",
       "bytes": 554,
-      "gzipBytes": 306
+      "gzipBytes": 308
     },
     {
-      "file": "dist/assets/ProgressionContentDetail-7HTj9Cay.js",
+      "file": "dist/assets/ProgressionContentDetail-Re9fB8Tz.js",
       "bytes": 3804,
-      "gzipBytes": 1456
+      "gzipBytes": 1455
     },
     {
-      "file": "dist/assets/ProgressionEvidenceUploader-DEbZWhGg.js",
+      "file": "dist/assets/ProgressionEvidenceUploader-DYj5wh8q.js",
       "bytes": 5429,
       "gzipBytes": 1973
     },
     {
-      "file": "dist/assets/progressionMedia-_5JK5SMs.js",
+      "file": "dist/assets/progressionMedia-FTNVach8.js",
       "bytes": 2246,
-      "gzipBytes": 1021
+      "gzipBytes": 1022
     },
     {
-      "file": "dist/assets/ProgressionPage-BuzqduiK.js",
+      "file": "dist/assets/ProgressionPage-DdeAiVwB.js",
       "bytes": 8767,
-      "gzipBytes": 2876
+      "gzipBytes": 2877
     },
     {
       "file": "dist/assets/progressionSystem-Bn_i2fdK.js",
@@ -284,9 +284,9 @@
       "gzipBytes": 7345
     },
     {
-      "file": "dist/assets/purchases-DWiECbgj.js",
+      "file": "dist/assets/purchases-CDouU3yU.js",
       "bytes": 460,
-      "gzipBytes": 294
+      "gzipBytes": 295
     },
     {
       "file": "dist/assets/react-vendor-R1Gnq_AU.js",
@@ -309,57 +309,57 @@
       "gzipBytes": 1037
     },
     {
-      "file": "dist/assets/SignedWaiverDocumentActions-BbC7GcFP.js",
+      "file": "dist/assets/SignedWaiverDocumentActions-CwKnsNTl.js",
       "bytes": 3533,
-      "gzipBytes": 1383
+      "gzipBytes": 1384
     },
     {
-      "file": "dist/assets/siteContent-D6ZXfKPE.js",
-      "bytes": 2685,
-      "gzipBytes": 1187
+      "file": "dist/assets/siteContent-D9na5Ees.js",
+      "bytes": 2694,
+      "gzipBytes": 1189
     },
     {
-      "file": "dist/assets/studioCommerce-DGEgXZF5.js",
+      "file": "dist/assets/studioCommerce-B2VQiB0R.js",
       "bytes": 747,
-      "gzipBytes": 398
+      "gzipBytes": 400
     },
     {
-      "file": "dist/assets/useEventRegistrations-DijIlIp0.js",
+      "file": "dist/assets/useEventRegistrations-CYscNsqk.js",
       "bytes": 1382,
-      "gzipBytes": 666
+      "gzipBytes": 667
     },
     {
-      "file": "dist/assets/usePrivateTrainingPurchases-DEWuPriP.js",
+      "file": "dist/assets/usePrivateTrainingPurchases-DS9YiLFb.js",
       "bytes": 2517,
-      "gzipBytes": 910
+      "gzipBytes": 911
     },
     {
-      "file": "dist/assets/useProgression-C0GBjw43.js",
+      "file": "dist/assets/useProgression-DVOUZ5h4.js",
       "bytes": 1215,
-      "gzipBytes": 663
+      "gzipBytes": 664
     },
     {
-      "file": "dist/assets/useProgressionContent-CopoRzEa.js",
+      "file": "dist/assets/useProgressionContent-CLM-j986.js",
       "bytes": 808,
-      "gzipBytes": 484
+      "gzipBytes": 483
     },
     {
-      "file": "dist/assets/usePurchaseHistory-Bi2KBg4u.js",
+      "file": "dist/assets/usePurchaseHistory-BN8M_8x0.js",
       "bytes": 1089,
       "gzipBytes": 616
     },
     {
-      "file": "dist/assets/WaiverReminderButton-BZC3o7Je.js",
+      "file": "dist/assets/WaiverReminderButton-C9tCY_uJ.js",
       "bytes": 1060,
-      "gzipBytes": 562
+      "gzipBytes": 564
     },
     {
-      "file": "dist/assets/waivers-hsZsYjbr.js",
+      "file": "dist/assets/waivers-sTYx4HH8.js",
       "bytes": 949,
-      "gzipBytes": 417
+      "gzipBytes": 419
     },
     {
-      "file": "dist/assets/workspaceData-DCCJPQLr.js",
+      "file": "dist/assets/workspaceData-CxCjx9rW.js",
       "bytes": 2963,
       "gzipBytes": 1124
     },
@@ -396,7 +396,7 @@
     {
       "file": "dist/index.html",
       "bytes": 1148,
-      "gzipBytes": 516
+      "gzipBytes": 518
     }
   ]
 }
