@@ -11,6 +11,11 @@ export async function sendWolfGuideMessage({ message, conversationId, memberStat
   return response.data;
 }
 
+export async function getWolfGuideUsageStatus() {
+  const response = await callable('getWolfGuideUsageStatus')({});
+  return response.data;
+}
+
 export async function getWolfGuideRoutingSettings() {
   const response = await callable('getWolfGuideRoutingSettings')({});
   return response.data;

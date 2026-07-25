@@ -239,6 +239,35 @@
   line-height: 1.45;
 }
 
+.wolf-guide-usage {
+  display: grid;
+  gap: .15rem;
+  padding: .62rem .72rem;
+  color: rgba(255, 255, 255, .78);
+  background: rgba(226, 197, 120, .1);
+  border: 1px solid rgba(226, 197, 120, .3);
+  border-radius: .55rem;
+  font-size: .75rem;
+  line-height: 1.4;
+}
+
+.wolf-guide-usage strong {
+  color: #fff;
+  font-size: .8rem;
+}
+
+.wolf-guide-usage.is-exhausted {
+  background: rgba(255, 255, 255, .07);
+  border-color: rgba(255, 255, 255, .18);
+}
+
+.wolf-guide-usage a {
+  width: fit-content;
+  margin-top: .2rem;
+  color: #f2d892;
+  font-weight: 800;
+}
+
 .wolf-guide-reset,
 .wolf-guide-retry {
   display: inline-flex;

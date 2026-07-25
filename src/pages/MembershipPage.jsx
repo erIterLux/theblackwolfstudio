@@ -29,7 +29,7 @@ export default function MembershipPage() {
                     <SectionHeading
                         eyebrow="Membership options"
                         title="Choose your level of support."
-                        body="Every membership includes progression and the training library. Train adds Wolf Guide, while Integrate also includes one private lesson credit for up to three participants."
+                        body="Every membership includes progression and the training library. Begin includes a 3-message Wolf Guide preview, Train includes 15 Wolf Guide messages each week, and Integrate includes 30 each week plus one private lesson credit for up to three participants."
                     />
                     <div className="membership-grid">
                         {memberships.map((plan) => (
@@ -54,7 +54,13 @@ export default function MembershipPage() {
                         <div><p className="eyebrow">Included progression</p><h2>White Wolf to Black Wolf</h2></div>
                         <p>Active members receive structured progression across striking, movement, situational awareness, breath control, grappling, ground, and weapons. Each level is validated by an instructor.</p>
                     </div>
-                    <p className="membership-fine-print">Membership access is granted only after Stripe confirms the subscription through the secure webhook. Plans renew automatically until canceled through the billing portal.</p>
+                    <p className="membership-fine-print">
+                        Membership access is granted only after Stripe confirms the subscription
+                        through the secure webhook. Wolf Guide weekly allowances reset Monday at
+                        midnight Eastern, do not roll over, and count successful AI responses only;
+                        the Begin preview is one-time. Plans renew automatically until canceled
+                        through the billing portal.
+                    </p>
                 </div>
             </section>
         </>

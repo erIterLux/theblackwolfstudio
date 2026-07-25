@@ -75,9 +75,8 @@ export default function MembershipStatusCard() {
         );
     }
 
-    const planDiscount = PLAN_DISCOUNT_PERCENT[
-        String(membership.planKey || '').toLowerCase()
-    ] || 0;
+    const planKey = String(membership.planKey || '').toLowerCase();
+    const planDiscount = PLAN_DISCOUNT_PERCENT[planKey] || 0;
     const eventDiscount = Number(
         membership.eventDiscountPercent
         ?? membership.discounts?.eventPercent
@@ -105,9 +104,17 @@ export default function MembershipStatusCard() {
         membership.wolfGuideAccess
         ?? membership.benefits?.wolfGuideAccess,
     );
+    const wolfGuideMessagesPerWeek = Number(
+        membership.benefits?.wolfGuideMessagesPerWeek
+        ?? (planKey === 'train' ? 15 : planKey === 'integrate' ? 30 : 0),
+    );
+    const wolfGuidePreviewMessages = Number(
+        membership.benefits?.wolfGuidePreviewMessages
+        ?? (planKey === 'begin' ? 3 : 0),
+    );
     const privateTrainingCredits = Number(
         membership.benefits?.privateTrainingCreditsPerPeriod
-        ?? (String(membership.planKey || '').toLowerCase() === 'integrate' ? 1 : 0),
+        ?? (planKey === 'integrate' ? 1 : 0),
     );
     const claimedPrivateTrainingCredit = membership.privateTrainingCredit?.claimedPurchaseId || '';
     const sharedDiscount = eventDiscount > 0
@@ -149,7 +156,12 @@ export default function MembershipStatusCard() {
                 <div className="membership-benefit-summary" aria-label="Membership benefits">
                     {progressionAccess && <span>Progression access</span>}
                     {curriculumAccess && <span>Training library</span>}
-                    {wolfGuideAccess && <span>Wolf Guide</span>}
+                    {wolfGuideAccess && wolfGuideMessagesPerWeek > 0 && (
+                        <span>{wolfGuideMessagesPerWeek} Wolf Guide messages each week</span>
+                    )}
+                    {!wolfGuideAccess && wolfGuidePreviewMessages > 0 && (
+                        <span>{wolfGuidePreviewMessages}-message Wolf Guide preview</span>
+                    )}
                     {sharedDiscount > 0 ? (
                         <span>
                             {sharedDiscount}% off eligible events, private training, and merchandise

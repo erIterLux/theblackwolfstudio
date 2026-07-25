@@ -21,6 +21,7 @@ function toDraft(settings) {
   return {
     mode: settings?.mode || 'free',
     freeTimeoutSeconds: Math.round(Number(settings?.freeTimeoutMs || 8000) / 1000),
+    monthlySpendLimitDollars: Number(settings?.monthlySpendLimitCents || 2500) / 100,
   };
 }
 
@@ -63,6 +64,7 @@ export default function WolfGuideRoutingSettings() {
       const result = await saveWolfGuideRoutingSettings({
         mode: draft.mode,
         freeTimeoutMs: Number(draft.freeTimeoutSeconds) * 1000,
+        monthlySpendLimitCents: Math.round(Number(draft.monthlySpendLimitDollars) * 100),
       });
       const nextSettings = result?.settings || null;
       setSettings(nextSettings);
@@ -91,8 +93,8 @@ export default function WolfGuideRoutingSettings() {
           <p className="eyebrow">AI operations</p>
           <h3>Wolf Guide routing</h3>
           <p>
-            Start with the free Gemini key, then use the prepaid key when the free
-            request exceeds your deadline or encounters a quota or provider error.
+            Prepaid routing is the privacy-safe production default. Automatic routing
+            starts with the free key and switches to prepaid when needed.
           </p>
         </div>
         <Gauge size={26} aria-hidden="true" />
@@ -119,9 +121,11 @@ export default function WolfGuideRoutingSettings() {
               mode: event.target.value,
             }))}
           >
-            <option value="auto">Automatic (recommended)</option>
+            <option value="paid" disabled={!settings?.paidConfigured}>
+              Prepaid only (recommended)
+            </option>
+            <option value="auto">Automatic free-to-prepaid</option>
             <option value="free" disabled={!settings?.freeConfigured}>Free only</option>
-            <option value="paid" disabled={!settings?.paidConfigured}>Prepaid only</option>
           </select>
         </label>
 
@@ -144,20 +148,57 @@ export default function WolfGuideRoutingSettings() {
             <span>seconds</span>
           </span>
         </label>
+
+        <label>
+          Estimated monthly limit (USD)
+          <span className="wolf-guide-timeout-input">
+            <input
+              type="number"
+              min="5"
+              max="1000"
+              step="1"
+              required
+              value={draft.monthlySpendLimitDollars}
+              disabled={!settings?.paidConfigured}
+              onChange={(event) => setDraft((current) => ({
+                ...current,
+                monthlySpendLimitDollars: event.target.value,
+              }))}
+            />
+            <span>dollars</span>
+          </span>
+        </label>
       </div>
 
       <div className="wolf-guide-routing-summary">
         <ShieldCheck size={18} aria-hidden="true" />
         <p>
           <strong>Currently: {MODE_LABELS[settings?.effectiveMode] || 'Not configured'}.</strong>{' '}
-          Automatic routing is sequential: the same request is never sent to both keys
-          at the same time.
+          Prepaid-only requests may use the member’s saved progression context.
+          Free and Automatic modes strip saved profile, check-in, and instructor-feedback
+          context before the request is sent.
         </p>
       </div>
+
+      {settings?.paidConfigured && (
+        <p className="wolf-guide-spend-status">
+          Estimated prepaid usage this month: <strong>
+            ${(Number(settings?.estimatedMonthlySpendCents || 0) / 100).toFixed(2)}
+          </strong>{' '}
+          of ${(Number(settings?.monthlySpendLimitCents || 2500) / 100).toFixed(2)}.
+        </p>
+      )}
 
       {draft.mode === 'auto' && !settings?.paidConfigured && (
         <p className="form-status">
           Automatic mode will behave as Free only until the prepaid Firebase secret is configured.
+        </p>
+      )}
+      {(draft.mode === 'auto' || draft.mode === 'free') && settings?.freeConfigured && (
+        <p className="form-status">
+          Free-tier prompts may be handled under the provider’s free-tier data terms.
+          Stored member records are excluded, but members should still avoid entering
+          sensitive personal information.
         </p>
       )}
       {draft.mode === 'auto' && !settings?.freeConfigured && settings?.paidConfigured && (
@@ -177,7 +218,10 @@ export default function WolfGuideRoutingSettings() {
       {error && <p className="form-status form-status--error" role="alert">{error}</p>}
 
       <div className="wolf-guide-routing-card__footer">
-        <p>API keys remain encrypted Firebase secrets and are never sent to the browser.</p>
+        <p>
+          API keys remain encrypted Firebase secrets. The monthly control uses an
+          estimated token cost and is a safety limit, not a replacement for provider billing alerts.
+        </p>
         <button className="button button--small" type="submit" disabled={saving}>
           {saving
             ? <LoaderCircle className="is-spinning" size={16} aria-hidden="true" />

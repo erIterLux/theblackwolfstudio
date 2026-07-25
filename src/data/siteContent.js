@@ -80,6 +80,7 @@ export const memberships = [
         features: [
             'Studio progression system',
             'Member training library',
+            '3-message Wolf Guide preview',
             '5% off eligible events, private training, and future merchandise',
         ],
     },
@@ -91,7 +92,7 @@ export const memberships = [
         features: [
             'Studio progression system',
             'Member training library',
-            'Wolf Guide access',
+            '15 Wolf Guide messages each week',
             '10% off eligible events, private training, and future merchandise',
         ],
         featured: true,
@@ -104,7 +105,7 @@ export const memberships = [
         features: [
             'Studio progression system',
             'Member training library',
-            'Wolf Guide access',
+            '30 Wolf Guide messages each week',
             '15% off eligible events, private training, and future merchandise',
             '1 private lesson credit for up to 3 participants',
         ],

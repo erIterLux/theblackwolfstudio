@@ -2,20 +2,26 @@ const admin = require('firebase-admin');
 const { HttpsError } = require('firebase-functions/v2/https');
 const { logger } = require('firebase-functions');
 const { buildProgressionAiContext, getLevel, CATEGORIES } = require('../config/progressionSystem');
+const { getPlanDefinition } = require('../config/membershipPlans');
 
 const LIVE_STATUSES = new Set(['active', 'trialing']);
 const INSTRUCTOR_ROLES = new Set(['admin', 'instructor']);
 const AI_ROUTING_MODES = new Set(['auto', 'free', 'paid']);
 const MAX_MESSAGE_LENGTH = 1800;
-const MAX_TURNS_PER_HOUR = 40;
-const MAX_TURNS_PER_DAY = 120;
+const BURST_MESSAGE_LIMIT = 5;
+const BURST_WINDOW_MS = 10 * 60 * 1000;
 const GEMINI_REQUEST_TIMEOUT_MS = 18000;
 const GEMINI_FALLBACK_TIMEOUT_MS = 12000;
 const GEMINI_FALLBACK_MODEL = 'gemini-3.1-flash-lite';
 const DEFAULT_FREE_KEY_TIMEOUT_MS = 8000;
 const MIN_FREE_KEY_TIMEOUT_MS = 3000;
 const MAX_FREE_KEY_TIMEOUT_MS = 20000;
+const DEFAULT_MONTHLY_SPEND_LIMIT_CENTS = 2500;
+const MIN_MONTHLY_SPEND_LIMIT_CENTS = 500;
+const MAX_MONTHLY_SPEND_LIMIT_CENTS = 100000;
 const AI_ROUTING_SETTINGS_PATH = 'studioSettings/wolfGuideAiRouting';
+const AI_MONTHLY_USAGE_PATH = 'studioUsage/wolfGuideAi';
+const WOLF_GUIDE_TIME_ZONE = 'America/New_York';
 const CURRICULUM_QUERY_LIMIT = 100;
 const CURRICULUM_SOURCE_LIMIT = 3;
 const CURRICULUM_TEXT_LIMIT = 2600;
@@ -93,6 +99,15 @@ function normalizeFreeTimeout(value) {
     );
 }
 
+function normalizeMonthlySpendLimit(value) {
+    const cents = Math.round(Number(value || DEFAULT_MONTHLY_SPEND_LIMIT_CENTS));
+    if (!Number.isFinite(cents)) return DEFAULT_MONTHLY_SPEND_LIMIT_CENTS;
+    return Math.min(
+        MAX_MONTHLY_SPEND_LIMIT_CENTS,
+        Math.max(MIN_MONTHLY_SPEND_LIMIT_CENTS, cents),
+    );
+}
+
 async function getAiRoutingSettings(dependencies = {}) {
     const freeApiKey = secretValue(
         dependencies.geminiFreeApiKey || dependencies.geminiApiKey,
@@ -100,11 +115,18 @@ async function getAiRoutingSettings(dependencies = {}) {
     const paidApiKey = secretValue(dependencies.geminiPaidApiKey);
     const freeConfigured = Boolean(freeApiKey);
     const paidConfigured = Boolean(paidApiKey);
-    const snapshot = await admin.firestore().doc(AI_ROUTING_SETTINGS_PATH).get();
+    const [snapshot, monthlyUsageSnapshot] = await Promise.all([
+        admin.firestore().doc(AI_ROUTING_SETTINGS_PATH).get(),
+        admin.firestore().doc(AI_MONTHLY_USAGE_PATH).get(),
+    ]);
     const stored = snapshot.data() || {};
-    const defaultMode = paidConfigured ? 'auto' : 'free';
+    const monthlyUsage = monthlyUsageSnapshot.data() || {};
+    const defaultMode = paidConfigured ? 'paid' : 'free';
     const mode = AI_ROUTING_MODES.has(stored.mode) ? stored.mode : defaultMode;
     const freeTimeoutMs = normalizeFreeTimeout(stored.freeTimeoutMs);
+    const monthlySpendLimitCents = normalizeMonthlySpendLimit(
+        stored.monthlySpendLimitCents,
+    );
     let effectiveMode = mode;
     if (mode === 'auto') {
         if (freeConfigured && paidConfigured) effectiveMode = 'auto';
@@ -116,6 +138,10 @@ async function getAiRoutingSettings(dependencies = {}) {
         mode,
         effectiveMode,
         freeTimeoutMs,
+        monthlySpendLimitCents,
+        estimatedMonthlySpendCents: monthlyUsage.monthKey === currentEasternMonthKey()
+            ? Math.ceil(numberOrFallback(monthlyUsage.estimatedSpendMicros) / 10000)
+            : 0,
         freeConfigured,
         paidConfigured,
         keysAreDistinct: !freeConfigured
@@ -140,6 +166,9 @@ async function handleSaveWolfGuideRoutingSettings(request, dependencies = {}) {
     }
 
     const freeTimeoutMs = normalizeFreeTimeout(request.data?.freeTimeoutMs);
+    const monthlySpendLimitCents = normalizeMonthlySpendLimit(
+        request.data?.monthlySpendLimitCents,
+    );
     const current = await getAiRoutingSettings(dependencies);
     if (mode === 'free' && !current.freeConfigured) {
         throw new HttpsError('failed-precondition', 'The free Gemini API key is not configured.');
@@ -157,6 +186,7 @@ async function handleSaveWolfGuideRoutingSettings(request, dependencies = {}) {
     await admin.firestore().doc(AI_ROUTING_SETTINGS_PATH).set({
         mode,
         freeTimeoutMs,
+        monthlySpendLimitCents,
         updatedBy: actorUid,
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     }, { merge: true });
@@ -164,38 +194,289 @@ async function handleSaveWolfGuideRoutingSettings(request, dependencies = {}) {
     return { settings: await getAiRoutingSettings(dependencies) };
 }
 
-async function assertWolfGuideAccess(uid) {
-    const snap = await admin.firestore().collection('memberships').doc(uid).get();
-    const membership = snap.data() || {};
-    if (!LIVE_STATUSES.has(membership.status) || membership.wolfGuideAccess !== true) {
-        throw new HttpsError('permission-denied', 'Wolf Guide is available with an active Train or Integrate membership.');
-    }
-    return membership;
+function numberOrFallback(value, fallback = 0) {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? Math.max(0, Math.floor(parsed)) : fallback;
 }
 
-async function enforceRateLimit(uid) {
+async function getWolfGuideEntitlement(uid, { allowLocked = false } = {}) {
+    const snap = await admin.firestore().collection('memberships').doc(uid).get();
+    const membership = snap.data() || {};
+    const active = LIVE_STATUSES.has(membership.status);
+    const plan = getPlanDefinition(membership.planKey);
+    const weeklyAllowance = numberOrFallback(
+        membership.benefits?.wolfGuideMessagesPerWeek,
+        numberOrFallback(plan?.benefits?.wolfGuideMessagesPerWeek),
+    );
+    const previewAllowance = numberOrFallback(
+        membership.benefits?.wolfGuidePreviewMessages,
+        numberOrFallback(plan?.benefits?.wolfGuidePreviewMessages),
+    );
+    const hasWeeklyAccess = Boolean(
+        membership.wolfGuideAccess
+        ?? membership.benefits?.wolfGuideAccess
+        ?? plan?.benefits?.wolfGuideAccess,
+    ) && weeklyAllowance > 0;
+    const accessType = active && hasWeeklyAccess
+        ? 'weekly'
+        : active && previewAllowance > 0
+            ? 'preview'
+            : 'locked';
+
+    if (!allowLocked && accessType === 'locked') {
+        throw new HttpsError(
+            'permission-denied',
+            'Wolf Guide includes a 3-message preview with Begin and weekly messages with Train or Integrate.',
+        );
+    }
+
+    return {
+        membership,
+        planKey: plan?.key || String(membership.planKey || '').toLowerCase(),
+        planName: plan?.name || membership.planName || 'Membership',
+        accessType,
+        weeklyAllowance,
+        previewAllowance,
+    };
+}
+
+function easternDateParts(date = new Date()) {
+    const parts = new Intl.DateTimeFormat('en-US', {
+        timeZone: WOLF_GUIDE_TIME_ZONE,
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        weekday: 'short',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hourCycle: 'h23',
+    }).formatToParts(date);
+    return Object.fromEntries(
+        parts.filter((part) => part.type !== 'literal')
+            .map((part) => [part.type, part.value]),
+    );
+}
+
+function shiftCalendarDate(year, month, day, days) {
+    const shifted = new Date(Date.UTC(year, month - 1, day + days));
+    return {
+        year: shifted.getUTCFullYear(),
+        month: shifted.getUTCMonth() + 1,
+        day: shifted.getUTCDate(),
+    };
+}
+
+function localMidnightToUtc({ year, month, day }) {
+    const targetUtc = Date.UTC(year, month - 1, day);
+    let guess = targetUtc;
+    for (let pass = 0; pass < 2; pass += 1) {
+        const parts = easternDateParts(new Date(guess));
+        const representedAsUtc = Date.UTC(
+            Number(parts.year),
+            Number(parts.month) - 1,
+            Number(parts.day),
+            Number(parts.hour),
+            Number(parts.minute),
+            Number(parts.second),
+        );
+        guess = targetUtc - (representedAsUtc - guess);
+    }
+    return new Date(guess);
+}
+
+function getWeeklyWindow(now = new Date()) {
+    const parts = easternDateParts(now);
+    const weekdayIndex = {
+        Mon: 0,
+        Tue: 1,
+        Wed: 2,
+        Thu: 3,
+        Fri: 4,
+        Sat: 5,
+        Sun: 6,
+    }[parts.weekday] ?? 0;
+    const localDate = {
+        year: Number(parts.year),
+        month: Number(parts.month),
+        day: Number(parts.day),
+    };
+    const start = shiftCalendarDate(
+        localDate.year,
+        localDate.month,
+        localDate.day,
+        -weekdayIndex,
+    );
+    const reset = shiftCalendarDate(start.year, start.month, start.day, 7);
+    const pad = (value) => String(value).padStart(2, '0');
+    return {
+        weekKey: `${start.year}-${pad(start.month)}-${pad(start.day)}`,
+        resetAt: localMidnightToUtc(reset).toISOString(),
+    };
+}
+
+function usageFromData(entitlement, data = {}, now = new Date()) {
+    const window = getWeeklyWindow(now);
+    const weeklyUsed = data.weekKey === window.weekKey
+        ? numberOrFallback(data.weeklyUsed)
+        : 0;
+    const previewUsed = numberOrFallback(data.previewUsed);
+    const isWeekly = entitlement.accessType === 'weekly';
+    const limit = isWeekly
+        ? entitlement.weeklyAllowance
+        : entitlement.accessType === 'preview'
+            ? entitlement.previewAllowance
+            : 0;
+    const used = isWeekly ? weeklyUsed : previewUsed;
+
+    return {
+        eligible: entitlement.accessType !== 'locked',
+        accessType: entitlement.accessType,
+        planKey: entitlement.planKey,
+        planName: entitlement.planName,
+        limit,
+        used,
+        remaining: Math.max(0, limit - used),
+        exhausted: limit > 0 && used >= limit,
+        resetAt: isWeekly ? window.resetAt : null,
+        weekKey: isWeekly ? window.weekKey : null,
+    };
+}
+
+async function getWolfGuideUsage(uid, entitlement) {
+    const snapshot = await admin.firestore().collection('wolfGuideUsage').doc(uid).get();
+    return usageFromData(entitlement, snapshot.data() || {});
+}
+
+async function assertUsageAvailable(uid, entitlement) {
+    const usage = await getWolfGuideUsage(uid, entitlement);
+    if (!usage.eligible) {
+        throw new HttpsError('permission-denied', 'Wolf Guide is not included with this membership.');
+    }
+    if (usage.exhausted || usage.remaining <= 0) {
+        const message = usage.accessType === 'preview'
+            ? 'Your 3-message Wolf Guide preview is complete. Upgrade to Train or Integrate for weekly messages.'
+            : 'You have used this week’s Wolf Guide messages. Your allowance resets Monday.';
+        throw new HttpsError('resource-exhausted', message, { usage });
+    }
+    return usage;
+}
+
+async function recordSuccessfulUsage(uid, entitlement) {
+    const ref = admin.firestore().collection('wolfGuideUsage').doc(uid);
+    return admin.firestore().runTransaction(async (transaction) => {
+        const snap = await transaction.get(ref);
+        const data = snap.data() || {};
+        const before = usageFromData(entitlement, data);
+        const update = {
+            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        };
+        if (entitlement.accessType === 'weekly') {
+            update.weekKey = before.weekKey;
+            update.weeklyUsed = before.used + 1;
+        } else {
+            update.previewUsed = before.used + 1;
+        }
+        transaction.set(ref, update, { merge: true });
+        return {
+            ...before,
+            used: before.used + 1,
+            remaining: Math.max(0, before.limit - before.used - 1),
+            exhausted: before.used + 1 >= before.limit,
+        };
+    });
+}
+
+async function enforceBurstLimit(uid) {
     const ref = admin.firestore().collection('wolfGuideUsage').doc(uid);
     await admin.firestore().runTransaction(async (transaction) => {
         const snap = await transaction.get(ref);
         const data = snap.data() || {};
         const now = Date.now();
-        const hourStart = Number(data.hourStartMs || now);
-        const dayStart = Number(data.dayStartMs || now);
-        const currentHourCount = now - hourStart < 60 * 60 * 1000 ? Number(data.hourCount || 0) : 0;
-        const currentDayCount = now - dayStart < 24 * 60 * 60 * 1000 ? Number(data.dayCount || 0) : 0;
-
-        if (currentHourCount >= MAX_TURNS_PER_HOUR || currentDayCount >= MAX_TURNS_PER_DAY) {
-            throw new HttpsError('resource-exhausted', 'Wolf Guide has reached the conversation limit for now. Please return later.');
+        const burstWindowStartMs = Number(data.burstWindowStartMs || now);
+        const inWindow = now - burstWindowStartMs < BURST_WINDOW_MS;
+        const burstCount = inWindow ? numberOrFallback(data.burstCount) : 0;
+        if (burstCount >= BURST_MESSAGE_LIMIT) {
+            throw new HttpsError(
+                'resource-exhausted',
+                'Please wait a few minutes before sending another Wolf Guide message.',
+            );
         }
-
         transaction.set(ref, {
-            hourStartMs: now - hourStart < 60 * 60 * 1000 ? hourStart : now,
-            hourCount: currentHourCount + 1,
-            dayStartMs: now - dayStart < 24 * 60 * 60 * 1000 ? dayStart : now,
-            dayCount: currentDayCount + 1,
+            burstWindowStartMs: inWindow ? burstWindowStartMs : now,
+            burstCount: burstCount + 1,
             updatedAt: admin.firestore.FieldValue.serverTimestamp(),
         }, { merge: true });
     });
+}
+
+async function handleGetWolfGuideUsageStatus(request) {
+    const uid = request.auth?.uid;
+    if (!uid) throw new HttpsError('unauthenticated', 'Sign in to view Wolf Guide access.');
+    const entitlement = await getWolfGuideEntitlement(uid, { allowLocked: true });
+    return { usage: await getWolfGuideUsage(uid, entitlement) };
+}
+
+function currentEasternMonthKey(now = new Date()) {
+    const parts = easternDateParts(now);
+    return `${parts.year}-${parts.month}`;
+}
+
+async function assertMonthlySpendAvailable(routing) {
+    if (!routing.paidConfigured || routing.effectiveMode === 'free') return;
+    const snapshot = await admin.firestore().doc(AI_MONTHLY_USAGE_PATH).get();
+    const data = snapshot.data() || {};
+    const monthKey = currentEasternMonthKey();
+    const estimatedSpendMicros = data.monthKey === monthKey
+        ? numberOrFallback(data.estimatedSpendMicros)
+        : 0;
+    const limitMicros = routing.monthlySpendLimitCents * 10000;
+    if (estimatedSpendMicros >= limitMicros) {
+        throw new HttpsError(
+            'resource-exhausted',
+            'Wolf Guide has reached its monthly operating limit. Please contact the studio.',
+        );
+    }
+}
+
+function estimatePaidUsageMicros(interaction, model) {
+    const usage = interaction?.usage || {};
+    const inputTokens = numberOrFallback(usage.total_input_tokens);
+    const outputTokens = numberOrFallback(usage.total_output_tokens)
+        + numberOrFallback(usage.total_thought_tokens);
+    const normalizedModel = String(model || '').toLowerCase();
+    let inputDollarsPerMillion = 1.5;
+    let outputDollarsPerMillion = 9;
+    if (normalizedModel.includes('flash-lite')) {
+        inputDollarsPerMillion = 0.3;
+        outputDollarsPerMillion = 2.5;
+    } else if (normalizedModel.includes('3.6-flash')) {
+        outputDollarsPerMillion = 7.5;
+    }
+    const estimatedDollars = (
+        (inputTokens * inputDollarsPerMillion)
+        + (outputTokens * outputDollarsPerMillion)
+    ) / 1000000;
+    return Math.max(1, Math.ceil(estimatedDollars * 1000000));
+}
+
+async function recordPaidUsage(interaction, model) {
+    const estimatedCostMicros = estimatePaidUsageMicros(interaction, model);
+    const monthKey = currentEasternMonthKey();
+    const ref = admin.firestore().doc(AI_MONTHLY_USAGE_PATH);
+    await admin.firestore().runTransaction(async (transaction) => {
+        const snapshot = await transaction.get(ref);
+        const data = snapshot.data() || {};
+        const existing = data.monthKey === monthKey
+            ? numberOrFallback(data.estimatedSpendMicros)
+            : 0;
+        transaction.set(ref, {
+            monthKey,
+            estimatedSpendMicros: existing + estimatedCostMicros,
+            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        }, { merge: true });
+    });
+    return estimatedCostMicros;
 }
 
 async function getConversation(uid, conversationId) {
@@ -627,32 +908,46 @@ async function callGeminiWithRouting({
 async function handleWolfGuideChat(request, dependencies = {}) {
     const uid = request.auth?.uid;
     if (!uid) throw new HttpsError('unauthenticated', 'Sign in to use Wolf Guide.');
-    await assertWolfGuideAccess(uid);
+    const entitlement = await getWolfGuideEntitlement(uid);
 
     const message = cleanText(request.data?.message);
     if (!message) throw new HttpsError('invalid-argument', 'Enter a message for Wolf Guide.');
-    await enforceRateLimit(uid);
+    const fixed = fixedSafetyResponse(message);
+    if (!fixed) await enforceBurstLimit(uid);
 
     const conversationId = cleanText(request.data?.conversationId, 120);
     const memberState = cleanText(request.data?.memberState, 120);
-    const { ref: conversationRef, data: conversation } = await getConversation(uid, conversationId);
-    await logMessage(conversationRef, 'member', message, { memberState: memberState || null });
-
-    const fixed = fixedSafetyResponse(message);
     if (fixed) {
+        const { ref: conversationRef } = await getConversation(uid, conversationId);
+        await logMessage(conversationRef, 'member', message, { memberState: null });
         await logMessage(conversationRef, 'assistant', fixed.answer, { category: fixed.category, modelUsed: false });
         await conversationRef.set({ updatedAt: admin.firestore.FieldValue.serverTimestamp(), lastCategory: fixed.category }, { merge: true });
-        return { conversationId: conversationRef.id, answer: fixed.answer, category: fixed.category };
+        return {
+            conversationId: conversationRef.id,
+            answer: fixed.answer,
+            category: fixed.category,
+            usage: await getWolfGuideUsage(uid, entitlement),
+        };
     }
 
-    const [progressionState, routing] = await Promise.all([
-        getMemberProgressionContext(uid),
-        getAiRoutingSettings(dependencies),
-    ]);
+    await assertUsageAvailable(uid, entitlement);
+    const routing = await getAiRoutingSettings(dependencies);
     if (!routing.freeConfigured && !routing.paidConfigured) {
         throw new HttpsError('failed-precondition', 'A Gemini API key is not configured.');
     }
+    await assertMonthlySpendAvailable(routing);
+
+    // Paid routing may use stored member context. Free/automatic routing receives
+    // only the member-entered prompt and published curriculum references.
+    const personalized = routing.effectiveMode === 'paid';
+    const progressionState = personalized
+        ? await getMemberProgressionContext(uid)
+        : { text: '', currentLevelKey: 'white', categoryKeys: [] };
     const curriculum = await getRelevantCurriculumContext(message, progressionState);
+    const { ref: conversationRef, data: conversation } = await getConversation(uid, conversationId);
+    await logMessage(conversationRef, 'member', message, {
+        memberState: personalized && memberState ? memberState : null,
+    });
 
     try {
         const {
@@ -664,9 +959,9 @@ async function handleWolfGuideChat(request, dependencies = {}) {
         } = await callGeminiWithRouting({
             dependencies,
             routing,
-            model: dependencies.geminiModel || 'gemini-3.5-flash',
+            model: dependencies.geminiModel || 'gemini-3.5-flash-lite',
             message,
-            memberState,
+            memberState: personalized ? memberState : '',
             progressionContext: progressionState.text,
             curriculumContext: curriculum.context,
             previousInteractionIds: conversation.previousInteractionIds || {},
@@ -676,8 +971,25 @@ async function handleWolfGuideChat(request, dependencies = {}) {
                 ? conversation.previousInteractionId || null
                 : null,
         });
-        const answer = cleanText(interaction.output_text || '', 4500)
-            || 'I could not form a useful response. Please ask your instructor or try a more specific question.';
+        const answer = cleanText(interaction.output_text || '', 4500);
+        if (!answer) {
+            throw new HttpsError(
+                'unavailable',
+                'Wolf Guide did not return a response. Please try again; this attempt was not counted.',
+            );
+        }
+        const usage = await recordSuccessfulUsage(uid, entitlement);
+        let estimatedCostMicros = 0;
+        if (credentialTier === 'paid') {
+            try {
+                estimatedCostMicros = await recordPaidUsage(interaction, modelUsed);
+            } catch (usageError) {
+                logger.warn('Wolf Guide paid usage estimate could not be recorded.', {
+                    error: getGeminiMessage(usageError),
+                    modelUsed,
+                });
+            }
+        }
 
         await logMessage(conversationRef, 'assistant', answer, {
             category: 'education',
@@ -685,6 +997,7 @@ async function handleWolfGuideChat(request, dependencies = {}) {
             latencyMs,
             credentialTier,
             fallbackReason,
+            estimatedCostMicros,
             sourceIds: curriculum.sources.map((source) => source.id),
         });
         const nextPreviousInteractionIds = {
@@ -707,6 +1020,7 @@ async function handleWolfGuideChat(request, dependencies = {}) {
             answer,
             category: 'education',
             sources: curriculum.sources,
+            usage,
         };
     } catch (error) {
         const status = getGeminiStatus(error);
@@ -716,7 +1030,7 @@ async function handleWolfGuideChat(request, dependencies = {}) {
             error: errorMessage,
             name: error?.name || 'Error',
             hasPreviousInteractionId: Boolean(conversation.previousInteractionId),
-            configuredModel: dependencies.geminiModel || 'gemini-3.5-flash',
+            configuredModel: dependencies.geminiModel || 'gemini-3.5-flash-lite',
             routingMode: routing.mode,
             effectiveRoutingMode: routing.effectiveMode,
             stack: cleanText(error?.stack, 1800),
@@ -739,6 +1053,7 @@ async function handleWolfGuideChat(request, dependencies = {}) {
 
 module.exports = {
     handleWolfGuideChat,
+    handleGetWolfGuideUsageStatus,
     handleGetWolfGuideRoutingSettings,
     handleSaveWolfGuideRoutingSettings,
 };

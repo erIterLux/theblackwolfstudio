@@ -18,7 +18,7 @@ const studioNotificationEmail = defineString('STUDIO_NOTIFICATION_EMAIL', { defa
 const stripePriceBegin = defineString('STRIPE_PRICE_BEGIN', { default: '' });
 const stripePriceTrain = defineString('STRIPE_PRICE_TRAIN', { default: '' });
 const stripePriceIntegrate = defineString('STRIPE_PRICE_INTEGRATE', { default: '' });
-const geminiModel = defineString('GEMINI_MODEL', { default: 'gemini-3.5-flash' });
+const geminiModel = defineString('GEMINI_MODEL', { default: 'gemini-3.5-flash-lite' });
 const instructorEmails = defineString('INSTRUCTOR_EMAILS', { default: '' });
 
 function sharedConfig() {
@@ -705,6 +705,15 @@ exports.wolfGuideChat = onCall({
         geminiPaidApiKey,
         geminiModel: geminiModel.value(),
     });
+});
+
+exports.getWolfGuideUsageStatus = onCall({
+    invoker: 'public',
+    memory: '256MiB',
+    timeoutSeconds: 30,
+}, async (request) => {
+    const { handleGetWolfGuideUsageStatus } = require('./ai/wolfGuide');
+    return handleGetWolfGuideUsageStatus(request);
 });
 
 exports.getWolfGuideRoutingSettings = onCall({

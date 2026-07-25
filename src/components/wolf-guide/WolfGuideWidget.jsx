@@ -22,7 +22,10 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useWolfGuideState } from '../../context/WolfGuideContext';
 import useMembership from '../../hooks/useMembership';
-import { sendWolfGuideMessage } from '../../services/wolfGuide';
+import {
+    getWolfGuideUsageStatus,
+    sendWolfGuideMessage,
+} from '../../services/wolfGuide';
 import WolfGuideMark from './WolfGuideMark';
 
 const prompts = [
@@ -81,6 +84,17 @@ function initialConversation(storageKey) {
     return { conversationId: '', messages: [INTRO_MESSAGE] };
 }
 
+function resetLabel(resetAt) {
+    if (!resetAt) return '';
+    const date = new Date(resetAt);
+    if (Number.isNaN(date.getTime())) return '';
+    return new Intl.DateTimeFormat('en-US', {
+        weekday: 'short',
+        month: 'short',
+        day: 'numeric',
+    }).format(date);
+}
+
 function WolfGuideConversation({ memberState, storageKey }) {
     const inputId = useId();
     const [storedConversation] = useState(() => initialConversation(storageKey));
@@ -89,10 +103,35 @@ function WolfGuideConversation({ memberState, storageKey }) {
     const [input, setInput] = useState('');
     const [sending, setSending] = useState(false);
     const [error, setError] = useState('');
+    const [usage, setUsage] = useState(null);
+    const [usageLoading, setUsageLoading] = useState(true);
     const messagesRef = useRef(null);
     const requestRef = useRef(0);
 
-    const disabled = useMemo(() => sending || !input.trim(), [sending, input]);
+    const limitReached = Boolean(usage?.exhausted || usage?.remaining <= 0);
+    const disabled = useMemo(
+        () => sending || usageLoading || limitReached || !input.trim(),
+        [sending, usageLoading, limitReached, input],
+    );
+
+    useEffect(() => {
+        let cancelled = false;
+        getWolfGuideUsageStatus()
+            .then((result) => {
+                if (!cancelled) setUsage(result?.usage || null);
+            })
+            .catch((nextError) => {
+                if (!cancelled) {
+                    setError(nextError?.message || 'Wolf Guide message availability could not be checked.');
+                }
+            })
+            .finally(() => {
+                if (!cancelled) setUsageLoading(false);
+            });
+        return () => {
+            cancelled = true;
+        };
+    }, []);
 
     useEffect(() => {
         if (!storageKey) return;
@@ -128,7 +167,7 @@ function WolfGuideConversation({ memberState, storageKey }) {
 
     const send = async (override, options = {}) => {
         const message = String(override || input).trim();
-        if (!message || sending) return;
+        if (!message || sending || usageLoading || limitReached) return;
 
         const requestId = requestRef.current + 1;
         requestRef.current = requestId;
@@ -155,12 +194,15 @@ function WolfGuideConversation({ memberState, storageKey }) {
             });
             if (requestRef.current !== requestId) return;
             if (result.conversationId) setConversationId(result.conversationId);
+            if (result.usage) setUsage(result.usage);
             setMessages((current) => [...current, createMessage('assistant', result.answer, {
                 sources: result.sources || [],
             })]);
         } catch (nextError) {
             console.error(nextError);
             if (requestRef.current !== requestId) return;
+            const nextUsage = nextError?.details?.usage || nextError?.customData?.details?.usage;
+            if (nextUsage) setUsage(nextUsage);
             const failedId = retryId || memberMessage?.id;
             setMessages((current) => current.map((item) => (
                 item.id === failedId ? { ...item, failed: true } : item
@@ -177,7 +219,8 @@ function WolfGuideConversation({ memberState, storageKey }) {
             <div className="wolf-guide-heading-row">
                 <p className="wolf-guide-boundary">
                     Educational support only. Do not use this chat for emergencies,
-                    diagnosis, treatment, or high-risk technique instruction.
+                    diagnosis, treatment, or high-risk technique instruction. Do not
+                    enter medical, financial, or other sensitive personal details.
                 </p>
                 <button
                     type="button"
@@ -190,13 +233,47 @@ function WolfGuideConversation({ memberState, storageKey }) {
                 </button>
             </div>
 
+            <div
+                className={`wolf-guide-usage${limitReached ? ' is-exhausted' : ''}`}
+                aria-live="polite"
+            >
+                {usageLoading && <span>Checking message availability…</span>}
+                {!usageLoading && usage?.accessType === 'preview' && (
+                    <>
+                        <strong>
+                            {usage.remaining} of {usage.limit} preview messages remaining
+                        </strong>
+                        <span>
+                            The Begin preview does not renew. Upgrade for weekly messages.
+                        </span>
+                    </>
+                )}
+                {!usageLoading && usage?.accessType === 'weekly' && (
+                    <>
+                        <strong>
+                            {usage.remaining} of {usage.limit} messages remaining this week
+                        </strong>
+                        <span>
+                            Resets Monday{resetLabel(usage.resetAt) ? `, ${resetLabel(usage.resetAt)}` : ''}.
+                            Only successful AI responses use a message.
+                        </span>
+                    </>
+                )}
+                {!usageLoading && usage?.accessType === 'locked' && (
+                    <span>Wolf Guide is not included with this membership.</span>
+                )}
+                {!usageLoading && limitReached && usage?.accessType === 'preview' && (
+                    <Link to="/membership">Compare weekly Wolf Guide plans</Link>
+                )}
+            </div>
+
             <div className="wolf-guide-prompts" aria-label="Suggested Wolf Guide prompts">
                 {prompts.map(({ icon: Icon, label }) => (
                     <button
                         type="button"
                         key={label}
                         onClick={() => send(label)}
-                        disabled={sending}
+                        disabled={sending || usageLoading || limitReached}
                     >
                         <Icon size={16} aria-hidden="true" />
                         {label}
@@ -221,7 +298,7 @@ function WolfGuideConversation({ memberState, storageKey }) {
                                 type="button"
                                 className="wolf-guide-retry"
                                 onClick={() => send(message.content, { retryId: message.id })}
-                                disabled={sending}
+                                disabled={sending || usageLoading || limitReached}
                             >
                                 <RotateCcw size={15} aria-hidden="true" />
                                 Retry this message
@@ -258,7 +335,7 @@ function WolfGuideConversation({ memberState, storageKey }) {
                         }}
                         placeholder="Ask about preparation, regulation, or a training principle…"
                         maxLength={1800}
-                        disabled={sending}
+                        disabled={sending || usageLoading || limitReached}
                     />
                     <small>{input.length}/1800 · Ctrl/⌘ + Enter to send</small>
                 </div>
@@ -286,9 +363,8 @@ function WolfGuideUpgrade() {
                 <h3>Unlock your practice companion.</h3>
             </div>
             <p>
-                Wolf Guide is included with active Train and Integrate memberships.
-                It can help you prepare for class, review studio principles, and choose
-                short regulation practices between sessions.
+                Begin includes a 3-message preview. Train includes 15 Wolf Guide
+                messages each week, while Integrate includes 30 each week.
             </p>
             <ul>
                 <li>Training-principle review</li>
@@ -296,7 +372,7 @@ function WolfGuideUpgrade() {
                 <li>Published studio-reference context</li>
             </ul>
             <Link className="button button--light" to="/membership">
-                Compare Train and Integrate
+                Compare Wolf Guide plans
             </Link>
             <small>Your current member access and records remain unchanged.</small>
         </div>
@@ -465,7 +541,7 @@ export default function WolfGuideWidget({ suspended = false }) {
                             ? 'Checking access…'
                             : canUseWolfGuide
                                 ? 'Open practice companion'
-                                : 'Available with Train or Integrate'}
+                                : 'Preview with Begin · weekly on higher plans'}
                     </small>
                 </span>
             </button>

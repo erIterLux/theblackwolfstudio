@@ -614,6 +614,12 @@
   margin: 0;
 }
 
+.wolf-guide-spend-status {
+  margin: 0;
+  color: #4f5963;
+  font-size: .88rem;
+}
+
 .wolf-guide-routing-card > .form-status:not(.form-status--success):not(.form-status--error) {
   color: #7a5200;
   background: #fff4d6;

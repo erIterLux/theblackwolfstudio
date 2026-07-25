@@ -69,7 +69,8 @@ export default function LoginPage() {
                 <p className="eyebrow eyebrow--light">Member space</p>
                 <h1>Continue your practice between classes.</h1>
                 <p>
-                    Training notes, class resources, progression, bookings, and Wolf Guide are available here.
+                    Training notes, class resources, progression, bookings, and your
+                    membership’s Wolf Guide access are available here.
                 </p>
             </div>
 

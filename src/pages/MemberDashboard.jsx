@@ -283,8 +283,9 @@ export default function MemberDashboard() {
                                 ))}
                             </div>
                             <p className="dashboard-hint">
-                                This gives the Wolf Guide widget optional context during this
-                                visit. It is separate from event attendance check-in.
+                                Wolf Guide can use this as optional context during this visit
+                                when personalized routing is available. It is separate from
+                                event attendance check-in.
                             </p>
                         </article>
                     </div>

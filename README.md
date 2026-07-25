@@ -11,7 +11,7 @@ A responsive Vite/React/Firebase starter for a martial arts, practical self-defe
 - Firestore-ready inquiry form with local-storage fallback before Firebase is configured
 - Starter Firestore and Storage security rules
 - Firebase Hosting configuration with single-page app rewrites
-- Member dashboard concept and a safely scoped placeholder for the future **Wolf Guide** AI companion
+- Safely scoped **Wolf Guide** AI companion with membership allowances, privacy-aware routing, and spend controls
 - Original Black Wolf Studio logo assets supplied for the project
 
 ## Run locally
@@ -57,19 +57,29 @@ reservations/{reservationId}
 memberships/{membershipId}
 ```
 
-## Wolf Guide architecture direction
+## Wolf Guide architecture
 
-Do not call a model directly from the browser with a private provider key. Add the AI feature behind a callable Cloud Function or HTTPS endpoint with:
+Wolf Guide runs behind authenticated callable Cloud Functions; provider keys are
+never sent to the browser. Membership entitlements are enforced on the server:
 
-- Firebase Authentication and App Check
+- **Begin:** one-time 3-message preview
+- **Train:** 15 successful AI responses per week
+- **Integrate:** 30 successful AI responses per week
+
+Weekly allowances reset Monday at midnight Eastern and do not roll over. Fixed
+safety responses, provider errors, and timeouts do not consume an allowance.
+
+The implementation also includes:
+
+- Firebase Authentication
 - server-side system instructions and content boundaries
 - member-context retrieval limited to the signed-in user
-- rate limits and abuse controls
+- server-authoritative allowances plus a 5-message-per-10-minute burst limit
 - crisis and medical escalation language
 - explicit statement that it is educational support, not therapy, diagnosis, emergency care, or a replacement for an instructor
 - curated technique and regulation content reviewed by qualified humans
-
-The current member page is UI scaffolding only; no AI request is sent.
+- free/prepaid Gemini routing, with stored member context excluded from free-tier requests
+- an instructor-managed estimated monthly prepaid spend limit
 
 ## Brand palette
 

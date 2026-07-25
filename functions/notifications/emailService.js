@@ -95,6 +95,14 @@ function appUrl(path = '/') {
   return `${configuredAppOrigin}${suffix}`;
 }
 
+function membershipWolfGuideBenefit(planName) {
+  const key = String(planName || '').trim().toLowerCase();
+  if (key === 'begin') return 'Your plan includes a one-time 3-message Wolf Guide preview.';
+  if (key === 'train') return 'Your plan includes 15 Wolf Guide messages each week, resetting Monday at midnight Eastern.';
+  if (key === 'integrate') return 'Your plan includes 30 Wolf Guide messages each week, resetting Monday at midnight Eastern.';
+  return '';
+}
+
 async function sendMembershipLifecycleEmail({ type, to, displayName, planName, periodEnd }) {
   if (!to) {
     logger.warn('Skipping membership email because no member email was available.', { type });
@@ -103,6 +111,7 @@ async function sendMembershipLifecycleEmail({ type, to, displayName, planName, p
 
   const firstName = String(displayName || '').trim().split(/\s+/)[0] || 'there';
   const plan = planName || 'membership';
+  const wolfGuideBenefit = membershipWolfGuideBenefit(plan);
   const dateText = periodEnd instanceof Date && !Number.isNaN(periodEnd.valueOf())
     ? periodEnd.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
     : '';
@@ -111,8 +120,8 @@ async function sendMembershipLifecycleEmail({ type, to, displayName, planName, p
     activated: {
       subject: `Welcome to The Black Wolf Studio — ${plan}`,
       title: 'Your membership is active',
-      text: `Hi ${firstName}, your ${plan} membership is active. Review and sign the current membership waiver before participating: ${appUrl('/member/waiver')}`,
-      body: `<p>Hi ${escapeHtml(firstName)},</p><p>Your <strong>${escapeHtml(plan)}</strong> membership is active. Before participating, review and sign the current membership waiver. Once complete, eligible events and private training can use that verified coverage.</p>`,
+      text: `Hi ${firstName}, your ${plan} membership is active. ${wolfGuideBenefit} Review and sign the current membership waiver before participating: ${appUrl('/member/waiver')}`,
+      body: `<p>Hi ${escapeHtml(firstName)},</p><p>Your <strong>${escapeHtml(plan)}</strong> membership is active. ${escapeHtml(wolfGuideBenefit)}</p><p>Before participating, review and sign the current membership waiver. Once complete, eligible events and private training can use that verified coverage.</p>`,
       buttonLabel: 'Review membership waiver',
       buttonUrl: appUrl('/member/waiver'),
     },

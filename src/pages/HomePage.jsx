@@ -158,6 +158,10 @@ export default function HomePage() {
                         <p>
                             Wolf Guide helps members review techniques, choose a short regulation practice, prepare for class, and reflect after training. It stays within educational and wellness support boundaries and directs urgent or clinical concerns to qualified human help.
                         </p>
+                        <p>
+                            Begin includes a 3-message preview. Train includes 15 messages
+                            each week, and Integrate includes 30 each week.
+                        </p>
                         <div className="feature-pills">
                             <span>Technique review</span><span>Regulation prompts</span><span>Practice planning</span><span>Member context</span>
                         </div>
