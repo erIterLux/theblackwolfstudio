@@ -120,7 +120,7 @@
     color: var(--event-muted);
 }
 
-    .event-card__details span,
+    .event-card__details > span,
     .dashboard-event-meta span,
     .member-event-card__meta span,
     .member-event-participants > div > div:last-child span,
@@ -128,6 +128,19 @@
         display: flex;
         align-items: center;
         gap: 0.5rem;
+    }
+
+.event-location-copy {
+    min-width: 0;
+    display: grid;
+    gap: .16rem;
+}
+
+    .event-location-copy small {
+        color: var(--event-muted);
+        font-size: .82rem;
+        line-height: 1.4;
+        overflow-wrap: anywhere;
     }
 
 .event-card__footer {
@@ -159,7 +172,7 @@
 
 .event-registration-page {
     min-height: 70vh;
-    padding-block: clamp(2rem, 5vw, 4rem) 6rem;
+    padding-block: clamp(1rem, 2.5vw, 2rem) 4rem;
 }
 
 .event-registration-page__inner {
@@ -168,7 +181,7 @@
 
 .event-registration-page__back {
     display: inline-flex;
-    margin-bottom: 1.25rem;
+    margin-bottom: .75rem;
 }
 
 .event-registration-page__state {

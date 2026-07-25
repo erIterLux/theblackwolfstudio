@@ -60,13 +60,20 @@ function foldCalendarLine(value) {
   return lines.join('\r\n');
 }
 
-function locationText(event = {}) {
+function locationParts(event = {}) {
   const location = event.location || {};
-  return [
+  const values = [
     location.name,
     location.address,
     location.onlineUrl,
-  ].map((value) => clean(value, 1000)).filter(Boolean).join(' - ');
+  ].map((value) => clean(value, 1000)).filter(Boolean);
+  return values.filter((value, index) => (
+    values.findIndex((candidate) => candidate.toLowerCase() === value.toLowerCase()) === index
+  ));
+}
+
+function locationText(event = {}) {
+  return locationParts(event).join(', ');
 }
 
 function eventDateLabel(event = {}) {
@@ -110,6 +117,13 @@ function calendarFilename(title) {
   return `${slug || 'black-wolf-studio-event'}.ics`;
 }
 
+function publicEventUrl(registration = {}) {
+  const eventId = clean(registration.eventId, 160);
+  return appUrl(eventId
+    ? `/events/${encodeURIComponent(eventId)}/register`
+    : '/events');
+}
+
 function createEventCalendar(registration = {}, registrationId = '', createdAt = new Date()) {
   const event = registration.eventSnapshot || {};
   const startsAt = utcCalendarDate(event.startsAt);
@@ -120,13 +134,17 @@ function createEventCalendar(registration = {}, registrationId = '', createdAt =
 
   const title = clean(event.title, 240) || 'The Black Wolf Studio event';
   const participantCount = Math.max(1, Number(registration.participantCount || 1));
+  const location = event.location || {};
   const description = [
     'Your event registration is confirmed.',
     `Registration reference: ${registrationId}`,
     `Registered participants: ${participantCount}`,
+    location.name ? `Venue: ${clean(location.name, 1000)}` : '',
+    location.address ? `Address: ${clean(location.address, 1000)}` : '',
+    location.onlineUrl ? `Online access: ${clean(location.onlineUrl, 1000)}` : '',
     'Complete any required participant waivers before event check-in.',
-    `Event information: ${appUrl('/events')}`,
-  ].join('\n');
+    `Event information: ${publicEventUrl(registration)}`,
+  ].filter(Boolean).join('\n');
   const calendarLines = [
     'BEGIN:VCALENDAR',
     'PRODID:-//The Black Wolf Studio//Event Registration//EN',
@@ -141,7 +159,7 @@ function createEventCalendar(registration = {}, registrationId = '', createdAt =
     `SUMMARY:${escapeCalendarText(title)}`,
     `DESCRIPTION:${escapeCalendarText(description)}`,
     `LOCATION:${escapeCalendarText(locationText(event))}`,
-    `URL:${escapeCalendarText(appUrl('/events'))}`,
+    `URL:${escapeCalendarText(publicEventUrl(registration))}`,
     'STATUS:CONFIRMED',
     'TRANSP:OPAQUE',
     'SEQUENCE:0',
@@ -212,6 +230,8 @@ async function sendEventRegistrationConfirmation({ ref, registration }) {
   const title = clean(event.title, 240) || 'The Black Wolf Studio event';
   const dateLabel = eventDateLabel(event);
   const location = locationText(event) || 'Location information will be provided by the Studio.';
+  const eventLocationParts = locationParts(event);
+  const eventUrl = publicEventUrl(registration);
   const participantCount = Math.max(1, Number(registration.participantCount || 1));
   const calendar = createEventCalendar(registration, ref.id);
   const calendarAttachment = {
@@ -242,7 +262,9 @@ async function sendEventRegistrationConfirmation({ ref, registration }) {
   const commonBody = `
     <p>Your registration is confirmed.</p>
     <p><strong>When</strong><br>${escapeHtml(dateLabel)}</p>
-    <p><strong>Where</strong><br>${escapeHtml(location)}</p>
+    <p><strong>Where</strong><br>${eventLocationParts.length
+      ? eventLocationParts.map(escapeHtml).join('<br>')
+      : escapeHtml(location)}</p>
     <p><strong>Registered participants</strong><br>${participantCount}</p>
     <p><strong>Registration reference</strong><br>${escapeHtml(ref.id)}</p>
     <p>A calendar file is attached. Complete any required participant waivers before event check-in.</p>`;
@@ -276,14 +298,14 @@ async function sendEventRegistrationConfirmation({ ref, registration }) {
       subject: `Event registration confirmed - ${title}`,
       text: [
         ...commonText,
-        `Event information: ${appUrl('/events')}`,
+        `Event information: ${eventUrl}`,
       ].join('\n'),
       html: emailShell({
         eyebrow: 'Event registration confirmed',
         title,
         bodyHtml: commonBody,
         buttonLabel: 'View upcoming events',
-        buttonUrl: appUrl('/events'),
+        buttonUrl: eventUrl,
       }),
       attachments: [calendarAttachment],
     });

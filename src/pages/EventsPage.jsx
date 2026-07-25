@@ -10,6 +10,7 @@ import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import SectionHeading from '../components/SectionHeading';
 import { listPublishedEvents } from '../services/events';
+import { eventLocationParts } from '../utils/eventLocation';
 
 function formatEventDate(value) {
     const date = value ? new Date(value) : null;
@@ -126,6 +127,7 @@ export default function EventsPage() {
                             <div className="event-card-grid">
                                 {events.map((event) => {
                                     const canRegister = event.registrationState === 'open';
+                                    const locationParts = eventLocationParts(event.location);
                                     return (
                                         <article className="event-card" key={event.id}>
                                             <div className="event-card__status-row">
@@ -145,7 +147,13 @@ export default function EventsPage() {
 
                                             <div className="event-card__details">
                                                 <span><Clock3 size={17} /> {formatEventTime(event.startsAt)}–{formatEventTime(event.endsAt)}</span>
-                                                <span><MapPin size={17} /> {event.location?.name || event.location?.address || 'Location announced soon'}</span>
+                                                <span>
+                                                    <MapPin size={17} />
+                                                    <span className="event-location-copy">
+                                                        <strong>{locationParts[0] || 'Location announced soon'}</strong>
+                                                        {locationParts.slice(1).map((part) => <small key={part}>{part}</small>)}
+                                                    </span>
+                                                </span>
                                                 <span><Users size={17} /> Up to {event.maxParticipantsPerOrder} people per registration</span>
                                                 <span><ShieldCheck size={17} /> Member coverage or participant event waiver</span>
                                             </div>

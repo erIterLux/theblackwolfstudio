@@ -14,6 +14,7 @@ import {
     quoteEventCheckout,
     startEventCheckout,
 } from '../../services/events';
+import { eventLocationParts } from '../../utils/eventLocation';
 
 function blankParticipant(index) {
     return {
@@ -154,6 +155,7 @@ export default function EventCheckoutForm({ event, onCancel }) {
         : purchaserFromParticipant(visibleParticipants[selectedPurchaserIndex]);
     const isAlwaysFree = Number(event.pricePerParticipantCents || 0) === 0;
     const isFreeRegistration = quote?.totalCents === 0;
+    const locationParts = eventLocationParts(event.location);
 
     useEffect(() => {
         if (selectedPurchaserIndex < participantCount) return;
@@ -247,12 +249,9 @@ export default function EventCheckoutForm({ event, onCancel }) {
                 </div>
                 <div>
                     <MapPin aria-hidden="true" />
-                    <span>
-                        <strong>
-                            {event.location?.name
-                                || event.location?.address
-                                || 'Location announced separately'}
-                        </strong>
+                    <span className="event-location-copy">
+                        <strong>{locationParts[0] || 'Location announced separately'}</strong>
+                        {locationParts.slice(1).map((part) => <small key={part}>{part}</small>)}
                     </span>
                 </div>
                 <p><strong>Membership:</strong> Not required. An account is optional.</p>
