@@ -505,6 +505,7 @@
     max-width: none;
     max-height: none;
     border-radius: .85rem;
+    transform: none;
   }
 
   .wolf-guide-dialog__body {
