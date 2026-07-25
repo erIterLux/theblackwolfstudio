@@ -36,6 +36,14 @@ export async function getProgressionReview(reviewId, options = {}) {
     return getWorkspaceData('progressionReview', { reviewId }, options);
 }
 
+export async function listInstructorMembers(filters = {}, options = {}) {
+    return getWorkspaceData('instructorMembers', filters, options);
+}
+
+export async function getInstructorMemberDetail(memberUid, options = {}) {
+    return getWorkspaceData('instructorMemberDetail', { memberUid }, options);
+}
+
 export async function saveProgressionFeedback(payload) {
     const response = await callable('saveProgressionFeedback')(payload);
     invalidateWorkspaceData('memberProgression', 'progressionReviews');

@@ -459,6 +459,410 @@
     align-items: start;
 }
 
+.progression-admin-tabs {
+    display: flex;
+    gap: .5rem;
+    margin-bottom: 1rem;
+    padding: .35rem;
+    background: rgba(20, 23, 27, .07);
+    border: 1px solid rgba(20, 23, 27, .08);
+}
+
+    .progression-admin-tabs button {
+        min-height: 46px;
+        display: inline-flex;
+        align-items: center;
+        gap: .55rem;
+        padding: .7rem 1rem;
+        color: var(--gray-600);
+        background: transparent;
+        border: 0;
+        cursor: pointer;
+        font: 800 .85rem/1 var(--body);
+    }
+
+        .progression-admin-tabs button:hover,
+        .progression-admin-tabs button.is-active {
+            color: var(--white);
+            background: var(--charcoal);
+        }
+
+        .progression-admin-tabs button span {
+            min-width: 24px;
+            padding: .22rem .4rem;
+            color: inherit;
+            background: rgba(255, 255, 255, .12);
+            border-radius: 999px;
+            font-size: .68rem;
+            text-align: center;
+        }
+
+.instructor-members-grid {
+    display: grid;
+    grid-template-columns: minmax(290px, 360px) minmax(0, 1fr);
+    gap: 1rem;
+    align-items: start;
+}
+
+.instructor-member-directory,
+.instructor-member-detail {
+    min-width: 0;
+    background: var(--white);
+    border: 1px solid rgba(20, 23, 27, .12);
+}
+
+.instructor-member-directory {
+    position: sticky;
+    top: 110px;
+    overflow: hidden;
+}
+
+    .instructor-member-directory .progression-review-queue__heading > div {
+        display: grid;
+        gap: .15rem;
+    }
+
+    .instructor-member-directory .progression-review-queue__heading small {
+        color: rgba(255, 255, 255, .62);
+        font-size: .7rem;
+    }
+
+.instructor-member-search {
+    display: flex;
+    align-items: center;
+    gap: .55rem;
+    margin: .85rem;
+    padding: 0 .75rem;
+    border: 1px solid rgba(20, 23, 27, .18);
+}
+
+    .instructor-member-search:focus-within {
+        border-color: var(--blue-dark);
+        box-shadow: 0 0 0 2px rgba(63, 91, 116, .12);
+    }
+
+    .instructor-member-search input {
+        min-width: 0;
+        width: 100%;
+        min-height: 42px;
+        padding: 0;
+        background: transparent;
+        border: 0;
+        outline: 0;
+        font: 500 .86rem/1.2 var(--body);
+    }
+
+.instructor-member-filters {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: .6rem;
+    padding: 0 .85rem .75rem;
+}
+
+    .instructor-member-filters label {
+        min-width: 0;
+        display: grid;
+        gap: .3rem;
+    }
+
+    .instructor-member-filters span,
+    .instructor-member-review-filter {
+        color: var(--gray-600);
+        font-size: .68rem;
+        font-weight: 850;
+        letter-spacing: .06em;
+        text-transform: uppercase;
+    }
+
+    .instructor-member-filters select {
+        min-width: 0;
+        min-height: 38px;
+        padding: .45rem .55rem;
+        background: var(--white);
+        border: 1px solid rgba(20, 23, 27, .16);
+        font: 650 .78rem/1.2 var(--body);
+    }
+
+.instructor-member-review-filter {
+    display: flex;
+    align-items: center;
+    gap: .45rem;
+    padding: 0 .85rem .85rem;
+    cursor: pointer;
+}
+
+.instructor-member-list {
+    max-height: min(60vh, 680px);
+    overflow-y: auto;
+    border-top: 1px solid rgba(20, 23, 27, .1);
+}
+
+    .instructor-member-list > button {
+        width: 100%;
+        display: grid;
+        gap: .65rem;
+        padding: .9rem 1rem;
+        color: var(--charcoal);
+        text-align: left;
+        background: transparent;
+        border: 0;
+        border-bottom: 1px solid rgba(20, 23, 27, .09);
+        cursor: pointer;
+    }
+
+        .instructor-member-list > button:hover,
+        .instructor-member-list > button.is-selected {
+            background: #f0ece4;
+            box-shadow: inset 4px 0 var(--blue-dark);
+        }
+
+.instructor-member-list__identity,
+.instructor-member-list__summary {
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: .45rem;
+}
+
+.instructor-member-list__identity {
+    display: grid;
+    gap: .15rem;
+}
+
+    .instructor-member-list__identity strong,
+    .instructor-member-list__identity small {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .instructor-member-list__identity small,
+    .instructor-member-list__summary small {
+        color: var(--gray-600);
+        font-size: .73rem;
+    }
+
+.instructor-member-list__summary {
+    flex-wrap: wrap;
+}
+
+    .instructor-member-list__summary b {
+        margin-left: auto;
+        color: #7a5310;
+        font-size: .68rem;
+    }
+
+.instructor-member-load-more {
+    width: calc(100% - 1.7rem);
+    margin: .85rem;
+}
+
+.membership-state {
+    display: inline-flex;
+    align-items: center;
+    width: fit-content;
+    max-width: 100%;
+    padding: .3rem .55rem;
+    color: #3f4852;
+    background: #e8e8e6;
+    border-radius: 999px;
+    font-size: .65rem;
+    font-style: normal;
+    font-weight: 900;
+    letter-spacing: .045em;
+    line-height: 1.1;
+    text-transform: uppercase;
+}
+
+    .membership-state.is-active,
+    .membership-state.is-trialing {
+        color: #195a3d;
+        background: #dff2e8;
+    }
+
+    .membership-state.is-past_due {
+        color: #7d510c;
+        background: #f8eccd;
+    }
+
+    .membership-state.is-canceling {
+        color: #6a4f16;
+        background: #f4e7bf;
+    }
+
+    .membership-state.is-canceled,
+    .membership-state.is-unpaid {
+        color: #813333;
+        background: #f5dede;
+    }
+
+.instructor-member-detail {
+    display: grid;
+    gap: 1rem;
+    padding: clamp(1rem, 2.5vw, 1.75rem);
+}
+
+.instructor-member-detail__heading,
+.instructor-member-section__heading {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+    .instructor-member-detail__heading h2,
+    .instructor-member-section__heading h3,
+    .instructor-member-benefits h3 {
+        margin: .1rem 0;
+    }
+
+    .instructor-member-detail__heading h2 {
+        font-size: clamp(1.7rem, 3vw, 2.5rem);
+    }
+
+    .instructor-member-detail__heading a,
+    .instructor-member-detail__missing-email,
+    .instructor-member-section__heading p {
+        color: var(--gray-600);
+    }
+
+.instructor-member-detail__badges {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: .45rem;
+}
+
+.instructor-member-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: .7rem;
+}
+
+    .instructor-member-summary-grid article {
+        min-width: 0;
+        display: flex;
+        gap: .75rem;
+        padding: 1rem;
+        background: #f5f2ec;
+        border-left: 3px solid var(--blue-dark);
+    }
+
+    .instructor-member-summary-grid article > svg {
+        flex: 0 0 auto;
+        color: var(--blue-dark);
+    }
+
+    .instructor-member-summary-grid article div {
+        min-width: 0;
+        display: grid;
+        gap: .2rem;
+    }
+
+    .instructor-member-summary-grid span,
+    .instructor-member-summary-grid small {
+        color: var(--gray-600);
+        font-size: .72rem;
+    }
+
+    .instructor-member-summary-grid span {
+        font-weight: 850;
+        letter-spacing: .05em;
+        text-transform: uppercase;
+    }
+
+.instructor-member-benefits,
+.instructor-member-section {
+    padding: 1rem;
+    background: #f7f4ee;
+    border: 1px solid rgba(20, 23, 27, .1);
+}
+
+.instructor-member-benefits {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.instructor-member-benefit-pills {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: .4rem;
+}
+
+    .instructor-member-benefit-pills span {
+        padding: .35rem .55rem;
+        color: #2f506b;
+        background: #e2ebf2;
+        font-size: .68rem;
+        font-weight: 800;
+    }
+
+.instructor-member-category-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: .55rem;
+    margin-top: 1rem;
+}
+
+    .instructor-member-category-grid article {
+        min-width: 0;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: .3rem .7rem;
+        align-items: center;
+        padding: .75rem;
+        background: var(--white);
+        border: 1px solid rgba(20, 23, 27, .1);
+    }
+
+    .instructor-member-category-grid .progression-status {
+        grid-column: 2;
+        grid-row: 1 / span 2;
+    }
+
+    .instructor-member-category-grid strong,
+    .instructor-member-category-grid small {
+        min-width: 0;
+        grid-column: 1;
+    }
+
+    .instructor-member-category-grid small {
+        color: var(--gray-600);
+        font-size: .7rem;
+    }
+
+.instructor-member-waiver-actions,
+.instructor-member-review-history {
+    display: grid;
+    gap: .55rem;
+}
+
+.instructor-member-review-history {
+    margin-top: 1rem;
+}
+
+    .instructor-member-review-history article {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto auto;
+        gap: .7rem;
+        align-items: center;
+        padding: .75rem;
+        background: var(--white);
+        border: 1px solid rgba(20, 23, 27, .1);
+    }
+
+    .instructor-member-review-history article > div {
+        min-width: 0;
+        display: grid;
+    }
+
+    .instructor-member-review-history small {
+        color: var(--gray-600);
+    }
+
 .progression-review-queue {
     position: sticky;
     top: 110px;
@@ -602,8 +1006,13 @@
         grid-template-columns: 1fr;
     }
 
-    .progression-review-queue {
+    .progression-review-queue,
+    .instructor-member-directory {
         position: static;
+    }
+
+    .instructor-members-grid {
+        grid-template-columns: minmax(260px, .8fr) minmax(0, 1.4fr);
     }
 }
 
@@ -633,6 +1042,36 @@
         grid-template-columns: 1fr;
         gap: .75rem;
     }
+
+    .instructor-members-grid,
+    .instructor-member-summary-grid,
+    .instructor-member-category-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .instructor-member-detail__heading,
+    .instructor-member-section__heading,
+    .instructor-member-benefits {
+        flex-direction: column;
+    }
+
+    .instructor-member-detail__badges,
+    .instructor-member-benefit-pills {
+        justify-content: flex-start;
+    }
+
+    .instructor-member-list {
+        max-height: 420px;
+    }
+
+    .instructor-member-review-history article {
+        grid-template-columns: minmax(0, 1fr) auto;
+    }
+
+        .instructor-member-review-history .text-link {
+            grid-column: 1 / -1;
+            justify-self: start;
+        }
 }
 
 @media (max-width: 520px) {
@@ -649,6 +1088,21 @@
         .progression-approval-bar .button {
             width: 100%;
         }
+
+    .progression-admin-tabs {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+        .progression-admin-tabs button {
+            min-width: 0;
+            justify-content: center;
+            padding-inline: .55rem;
+        }
+
+    .instructor-member-filters {
+        grid-template-columns: 1fr;
+    }
 }
 
 .progression-page__links {

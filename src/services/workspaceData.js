@@ -8,6 +8,7 @@ const CACHE_TTL_MS = 60_000;
 const CACHEABLE_ACTIONS = new Set([
   'memberProgression',
   'progressionReviews',
+  'instructorMembers',
   'progressionContent',
   'memberEventRegistrations',
   'instructorEvents',

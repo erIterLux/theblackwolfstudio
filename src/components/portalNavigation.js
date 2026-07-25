@@ -44,7 +44,7 @@ export const instructorNavigation = [
     label: 'Training',
     items: [
       { label: 'Events', to: '/instructor/events', icon: Users },
-      { label: 'Progression reviews', to: '/instructor/progression', icon: ShieldCheck },
+      { label: 'Members & progression', to: '/instructor/progression', icon: ShieldCheck },
       { label: 'Curriculum', to: '/instructor/content', icon: BookOpen },
     ],
   },

@@ -36,6 +36,12 @@ const CURRENT_LEVEL_STATUSES = new Set([
     'needs_work',
     'ready_for_approval',
 ]);
+const ACTIVE_REVIEW_STATUSES = new Set([
+    'submitted',
+    'in_review',
+    'needs_work',
+    'ready_for_approval',
+]);
 
 function now() {
     return admin.firestore.FieldValue.serverTimestamp();
@@ -737,6 +743,337 @@ async function handleListProgressionReviews(request) {
     return { reviews };
 }
 
+function safeMembershipSummary(membership = {}) {
+    return {
+        planKey: clean(membership.planKey, 60) || null,
+        planName: clean(membership.planName, 120) || null,
+        status: clean(membership.status, 60) || 'none',
+        active: membership.active === true || LIVE_MEMBERSHIP_STATUSES.has(membership.status),
+        cancelAtPeriodEnd: membership.cancelAtPeriodEnd === true,
+        currentPeriodEnd: serialize(membership.currentPeriodEnd || null),
+        benefits: {
+            progressionAccess: membership.benefits?.progressionAccess === true,
+            curriculumAccess: membership.benefits?.curriculumAccess === true,
+            instructorReviews: membership.benefits?.instructorReviews === true,
+            wolfGuideAccess: membership.benefits?.wolfGuideAccess === true,
+            privateTrainingCreditsPerPeriod: Math.max(
+                0,
+                Number(membership.benefits?.privateTrainingCreditsPerPeriod || 0),
+            ),
+            privateTrainingMaxParticipants: Math.max(
+                0,
+                Number(membership.benefits?.privateTrainingMaxParticipants || 0),
+            ),
+        },
+        discounts: {
+            eventPercent: Math.max(0, Number(membership.discounts?.eventPercent || 0)),
+            privateTrainingPercent: Math.max(
+                0,
+                Number(membership.discounts?.privateTrainingPercent || 0),
+            ),
+            merchandisePercent: Math.max(
+                0,
+                Number(membership.discounts?.merchandisePercent || 0),
+            ),
+        },
+        privateTrainingCredit: membership.privateTrainingCredit
+            ? serialize({
+                total: Number(membership.privateTrainingCredit.total || 0),
+                remaining: Number(membership.privateTrainingCredit.remaining || 0),
+                used: Number(membership.privateTrainingCredit.used || 0),
+                periodEnd: membership.privateTrainingCredit.periodEnd || null,
+            })
+            : null,
+        updatedAt: serialize(membership.updatedAt || null),
+    };
+}
+
+function progressionState(profile, reviews = []) {
+    const activeReview = reviews.find((review) => ACTIVE_REVIEW_STATUSES.has(review.status));
+    if (activeReview) return activeReview.status;
+    if (!profile) return 'not_started';
+    if (profile.programComplete === true) return 'complete';
+    return 'in_progress';
+}
+
+function safeProgressionSummary(profile, reviews = []) {
+    const currentLevelKey = canonicalLegacyLevelKey(
+        profile?.currentLevel || profile?.currentLevelKey || 'white',
+    );
+    const earnedLevelKey = profile?.earnedLevel
+        ? canonicalLegacyLevelKey(profile.earnedLevel)
+        : null;
+    const currentLevel = getLevel(currentLevelKey) || LEVELS[0];
+    const earnedLevel = earnedLevelKey ? getLevel(earnedLevelKey) : null;
+    const completedLevels = cleanArray(profile?.completedLevels, LEVELS.length, 40)
+        .map(canonicalLegacyLevelKey);
+
+    return {
+        initialized: Boolean(profile),
+        currentLevelKey: currentLevel.key,
+        currentLevelLabel: currentLevel.label,
+        earnedLevelKey: earnedLevel?.key || null,
+        earnedLevelLabel: earnedLevel?.label || null,
+        completedLevelCount: completedLevels.length,
+        programComplete: profile?.programComplete === true,
+        state: progressionState(profile, reviews),
+        updatedAt: serialize(profile?.updatedAt || profile?.createdAt || null),
+    };
+}
+
+function safeReviewSummary(review = {}) {
+    const level = getLevel(review.levelKey);
+    return serialize({
+        id: review.id,
+        memberUid: review.memberUid,
+        levelKey: level?.key || review.levelKey,
+        levelLabel: level?.label || review.levelLabel,
+        status: review.status,
+        submittedAt: review.submittedAt || null,
+        updatedAt: review.updatedAt || null,
+    });
+}
+
+async function getDocumentsByIds(collectionName, ids) {
+    if (!ids.length) return new Map();
+    const snapshots = [];
+    for (let index = 0; index < ids.length; index += 250) {
+        snapshots.push(...await db.getAll(
+            ...ids.slice(index, index + 250)
+                .map((id) => db.collection(collectionName).doc(id)),
+        ));
+    }
+    return new Map(snapshots
+        .filter((snapshot) => snapshot.exists)
+        .map((snapshot) => [snapshot.id, snapshot.data() || {}]));
+}
+
+async function handleListInstructorMembers(request) {
+    await assertInstructor(request);
+    const requestedPageSize = Number(request.data?.pageSize || 50);
+    const requestedOffset = Number(request.data?.offset || 0);
+    const pageSize = Number.isFinite(requestedPageSize)
+        ? Math.min(100, Math.max(10, Math.floor(requestedPageSize)))
+        : 50;
+    const offset = Number.isFinite(requestedOffset)
+        ? Math.max(0, Math.floor(requestedOffset))
+        : 0;
+    const search = clean(request.data?.search, 160).toLowerCase();
+    const membershipStatus = clean(request.data?.membershipStatus, 60).toLowerCase();
+    const planKey = clean(request.data?.planKey, 60).toLowerCase();
+    const levelKey = clean(request.data?.levelKey, 40).toLowerCase();
+
+    const [membershipSnapshot, profileSnapshot, reviewSnapshot, userSnapshot] = await Promise.all([
+        db.collection('memberships').limit(500).get(),
+        db.collection('progressionProfiles').limit(500).get(),
+        db.collection('progressionReviews')
+            .where('status', 'in', [...ACTIVE_REVIEW_STATUSES])
+            .limit(500)
+            .get(),
+        db.collection('users').limit(500).get(),
+    ]);
+
+    const memberships = new Map(membershipSnapshot.docs.map((item) => [
+        item.id,
+        item.data() || {},
+    ]));
+    const profiles = new Map(profileSnapshot.docs.map((item) => [
+        item.id,
+        item.data() || {},
+    ]));
+    const users = new Map(userSnapshot.docs
+        .filter((item) => !INSTRUCTOR_ROLES.has(String(item.data()?.role || 'member').toLowerCase()))
+        .map((item) => [item.id, item.data() || {}]));
+    const reviewsByMember = new Map();
+    reviewSnapshot.docs.forEach((item) => {
+        const review = { id: item.id, ...item.data() };
+        if (!review.memberUid) return;
+        const current = reviewsByMember.get(review.memberUid) || [];
+        current.push(review);
+        reviewsByMember.set(review.memberUid, current);
+    });
+
+    const memberIds = [...new Set([
+        ...memberships.keys(),
+        ...profiles.keys(),
+        ...reviewsByMember.keys(),
+        ...users.keys(),
+    ])].slice(0, 1000);
+    const waivers = await getDocumentsByIds('studioWaivers', memberIds);
+
+    const members = memberIds.map((uid) => {
+        const membership = memberships.get(uid);
+        const profile = profiles.get(uid);
+        const reviews = reviewsByMember.get(uid) || [];
+        const user = users.get(uid) || {};
+        const waiver = waivers.get(uid) || {};
+        const displayName = clean(
+            membership?.displayName || profile?.memberDisplayName || user.displayName,
+            160,
+        );
+        const email = normalizeEmail(
+            membership?.email || profile?.memberEmail || user.email,
+        );
+        const membershipSummary = safeMembershipSummary(membership);
+        const progressionSummary = safeProgressionSummary(profile, reviews);
+        return {
+            uid,
+            displayName: displayName || email || 'Member',
+            email,
+            membership: membershipSummary,
+            progression: progressionSummary,
+            pendingReviewCount: reviews.length,
+            waiver: {
+                waiverId: uid,
+                status: clean(waiver.status, 40) || 'not_signed',
+                signedAt: serialize(waiver.signedAt || null),
+            },
+        };
+    }).filter((member) => {
+        if (
+            search
+            && !`${member.displayName} ${member.email}`.toLowerCase().includes(search)
+        ) return false;
+        if (
+            membershipStatus
+            && membershipStatus !== 'all'
+        ) {
+            if (
+                membershipStatus === 'canceling'
+                && !(member.membership.active && member.membership.cancelAtPeriodEnd)
+            ) return false;
+            if (
+                membershipStatus !== 'canceling'
+                && member.membership.status !== membershipStatus
+            ) return false;
+        }
+        if (
+            planKey
+            && planKey !== 'all'
+            && member.membership.planKey !== planKey
+        ) return false;
+        if (
+            levelKey
+            && levelKey !== 'all'
+            && member.progression.currentLevelKey !== levelKey
+        ) return false;
+        if (request.data?.needsReview === true && member.pendingReviewCount === 0) return false;
+        return true;
+    }).sort((left, right) => (
+        left.displayName.localeCompare(right.displayName, undefined, { sensitivity: 'base' })
+    ));
+
+    const page = members.slice(offset, offset + pageSize);
+    return {
+        members: serialize(page),
+        total: members.length,
+        nextOffset: offset + page.length < members.length ? offset + page.length : null,
+    };
+}
+
+async function handleGetInstructorMemberDetail(request) {
+    await assertInstructor(request);
+    const memberUid = clean(request.data?.memberUid, 180);
+    if (!memberUid) throw new HttpsError('invalid-argument', 'A member ID is required.');
+
+    const {
+        profileRef,
+    } = progressionRefs(memberUid);
+    const [membershipSnapshot, profileSnapshot, userSnapshot, waiverSnapshot, reviewSnapshot] =
+        await Promise.all([
+            db.collection('memberships').doc(memberUid).get(),
+            profileRef.get(),
+            db.collection('users').doc(memberUid).get(),
+            db.collection('studioWaivers').doc(memberUid).get(),
+            db.collection('progressionReviews')
+                .where('memberUid', '==', memberUid)
+                .limit(50)
+                .get(),
+        ]);
+
+    if (
+        !membershipSnapshot.exists
+        && !profileSnapshot.exists
+        && !userSnapshot.exists
+        && reviewSnapshot.empty
+    ) {
+        throw new HttpsError('not-found', 'That member record was not found.');
+    }
+
+    const membership = membershipSnapshot.data() || {};
+    const profile = profileSnapshot.data() || null;
+    const user = userSnapshot.data() || {};
+    const waiver = waiverSnapshot.data() || {};
+    const reviews = reviewSnapshot.docs
+        .map((item) => ({ id: item.id, ...item.data() }))
+        .sort((left, right) => (
+            String(right.submittedAt || right.updatedAt || '')
+                .localeCompare(String(left.submittedAt || left.updatedAt || ''))
+        ));
+    const displayName = clean(
+        membership.displayName || profile?.memberDisplayName || user.displayName,
+        160,
+    );
+    const email = normalizeEmail(
+        membership.email || profile?.memberEmail || user.email,
+    );
+
+    let levels = [];
+    let categories = {};
+    if (profileSnapshot.exists) {
+        const currentLevelKey = canonicalLegacyLevelKey(
+            profile.currentLevel || profile.currentLevelKey || 'white',
+        );
+        const levelRef = profileRef.collection('levels').doc(currentLevelKey);
+        const [levelsSnapshot, categorySnapshot] = await Promise.all([
+            profileRef.collection('levels').orderBy('order').get(),
+            levelRef.collection('categories').get(),
+        ]);
+        levels = levelsSnapshot.docs.map((item) => serialize({
+            id: item.id,
+            levelKey: item.data()?.levelKey || item.id,
+            levelLabel: item.data()?.levelLabel || getLevel(item.id)?.label || item.id,
+            status: item.data()?.status || 'locked',
+            order: item.data()?.order ?? getLevel(item.id)?.order ?? 0,
+            approvedAt: item.data()?.approvedAt || null,
+            updatedAt: item.data()?.updatedAt || null,
+        }));
+        categories = Object.fromEntries(categorySnapshot.docs.map((item) => [
+            item.id,
+            serialize({
+                id: item.id,
+                categoryKey: item.id,
+                categoryLabel: item.data()?.categoryLabel || getCategory(item.id)?.label || item.id,
+                status: item.data()?.status || 'not_started',
+                evidenceCount: Number(item.data()?.evidenceCount || 0),
+                feedbackCount: Number(item.data()?.feedbackCount || 0),
+                updatedAt: item.data()?.updatedAt || null,
+            }),
+        ]));
+    }
+
+    return serialize({
+        member: {
+            uid: memberUid,
+            displayName: displayName || email || 'Member',
+            email,
+        },
+        membership: safeMembershipSummary(membership),
+        progression: {
+            ...safeProgressionSummary(profile, reviews),
+            levels,
+            categories,
+        },
+        reviews: reviews.map(safeReviewSummary),
+        waiver: {
+            waiverId: memberUid,
+            status: clean(waiver.status, 40) || 'not_signed',
+            signedAt: waiver.signedAt || null,
+            signerName: clean(waiver.signerSnapshot?.fullName || waiver.signer?.name, 180),
+        },
+    });
+}
+
 async function handleGetProgressionReview(request) {
     await assertInstructor(request);
     const reviewId = clean(request.data?.reviewId, 260);
@@ -1020,6 +1357,8 @@ module.exports = {
     handleSubmitProgressionLevel,
     handleListProgressionReviews,
     handleGetProgressionReview,
+    handleListInstructorMembers,
+    handleGetInstructorMemberDetail,
     handleSaveProgressionFeedback,
     handleReviewProgressionCategory,
     handleApproveProgressionLevel,

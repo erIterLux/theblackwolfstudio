@@ -32,6 +32,12 @@ async function handleWorkspaceData(request, dependencies = {}) {
     case 'progressionReview':
       return require('../progression/progressionService')
         .handleGetProgressionReview(delegated);
+    case 'instructorMembers':
+      return require('../progression/progressionService')
+        .handleListInstructorMembers(delegated);
+    case 'instructorMemberDetail':
+      return require('../progression/progressionService')
+        .handleGetInstructorMemberDetail(delegated);
     case 'progressionContent':
       return require('../content/curriculumService')
         .handleListProgressionContent(delegated);
