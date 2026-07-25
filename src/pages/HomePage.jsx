@@ -4,11 +4,11 @@ import {
     CirclePlay,
     HeartPulse,
     ShieldCheck,
-    Sparkles,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import ProgramCard from '../components/ProgramCard';
 import SectionHeading from '../components/SectionHeading';
+import WolfGuideMark from '../components/wolf-guide/WolfGuideMark';
 import { memberships, principles, programs, wolfGuidePrompts } from '../data/siteContent';
 
 export default function HomePage() {
@@ -141,7 +141,10 @@ export default function HomePage() {
             <section className="section wolf-guide-section">
                 <div className="container wolf-guide-grid">
                     <div className="wolf-guide-visual">
-                        <div className="guide-orb"><Sparkles /><span>Wolf Guide</span></div>
+                        <div className="guide-orb">
+                            <WolfGuideMark />
+                            <span>Wolf Guide</span>
+                        </div>
                         <div className="guide-chat">
                             <p>What would support you right now?</p>
                             {wolfGuidePrompts.map(({ label, icon: Icon }) => (

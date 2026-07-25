@@ -7,7 +7,6 @@ import {
     RotateCcw,
     Send,
     Shield,
-    Sparkles,
     Trash2,
     X,
 } from 'lucide-react';
@@ -24,6 +23,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useWolfGuideState } from '../../context/WolfGuideContext';
 import useMembership from '../../hooks/useMembership';
 import { sendWolfGuideMessage } from '../../services/wolfGuide';
+import WolfGuideMark from './WolfGuideMark';
 
 const prompts = [
     { icon: HeartPulse, label: 'Help me settle before class' },
@@ -393,7 +393,7 @@ export default function WolfGuideWidget({ suspended = false }) {
                 <header className="wolf-guide-dialog__header">
                     <div>
                         <span className="wolf-guide-dialog__mark" aria-hidden="true">
-                            <Sparkles size={19} />
+                            <WolfGuideMark />
                         </span>
                         <div>
                             <p>Member companion</p>
@@ -451,7 +451,12 @@ export default function WolfGuideWidget({ suspended = false }) {
                 onClick={() => setOpen((current) => !current)}
             >
                 <span className="wolf-guide-launcher__icon" aria-hidden="true">
-                    {canUseWolfGuide ? <Sparkles size={21} /> : <LockKeyhole size={20} />}
+                    <WolfGuideMark />
+                    {!canUseWolfGuide && (
+                        <span className="wolf-guide-launcher__lock">
+                            <LockKeyhole size={12} />
+                        </span>
+                    )}
                 </span>
                 <span>
                     <strong>Wolf Guide</strong>

@@ -953,9 +953,11 @@ p {
     box-shadow: 0 0 80px rgba(93,115,139,.26);
 }
 
-    .guide-orb svg {
-        width: 42px;
-        height: 42px;
+    .guide-orb .wolf-guide-mark {
+        width: 78px;
+        height: 78px;
+        border-radius: 22px;
+        box-shadow: 0 12px 30px rgba(0, 0, 0, .24);
     }
 
     .guide-orb span {
@@ -1324,6 +1326,9 @@ textarea {
         top: 10%;
         left: 50%;
         width: min(430px, 70%);
+        height: auto;
+        aspect-ratio: 1;
+        object-fit: contain;
         opacity: .12;
         filter: none;
         transform: translateX(-50%);
