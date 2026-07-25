@@ -4,6 +4,8 @@ import {
   CalendarCheck2,
   CalendarDays,
   ClipboardCheck,
+  Copy,
+  ExternalLink,
   FileSignature,
   LayoutDashboard,
   MapPin,
@@ -465,6 +467,23 @@ export default function InstructorEventsAdmin() {
     }
   };
 
+  const copyRegistrationLink = async () => {
+    if (!selectedEventId) return;
+    const registrationUrl = new URL(
+      `/events/${encodeURIComponent(selectedEventId)}/register`,
+      window.location.origin,
+    ).toString();
+    try {
+      await window.navigator.clipboard.writeText(registrationUrl);
+      setMessage('Public event registration link copied.');
+      setMessageType('success');
+    } catch (error) {
+      console.error(error);
+      setMessage(`Copy this registration link: ${registrationUrl}`);
+      setMessageType('error');
+    }
+  };
+
   const filteredEvents = useMemo(() => {
     const query = eventQuery.trim().toLowerCase();
     const matches = events.filter((event) => {
@@ -654,6 +673,20 @@ export default function InstructorEventsAdmin() {
                   >
                     <ClipboardCheck size={17} aria-hidden="true" /> Check-in
                   </Link>
+                  {selectedEvent.status === 'published' && (
+                    <>
+                      <Link
+                        to={`/events/${encodeURIComponent(selectedEventId)}/register`}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        <ExternalLink size={17} aria-hidden="true" /> Registration page
+                      </Link>
+                      <button type="button" onClick={copyRegistrationLink}>
+                        <Copy size={17} aria-hidden="true" /> Copy registration link
+                      </button>
+                    </>
+                  )}
                 </nav>
               </>
             )}

@@ -12,8 +12,8 @@
 .event-card-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 1.5rem;
-    margin-top: 2rem;
+    gap: clamp(1.75rem, 2.4vw, 2.5rem);
+    margin-top: 0;
 }
 
 .event-card,
@@ -40,6 +40,10 @@
     .events-page .section-heading h2 {
         font-size: clamp(2.25rem, 3vw, 3rem);
         line-height: 1.02;
+    }
+
+    .events-page .section-heading {
+        margin-bottom: clamp(1.75rem, 3vw, 2.5rem);
     }
 
     .event-card h2,
@@ -152,6 +156,32 @@
     padding: clamp(1.25rem, 3vw, 2.5rem);
     border-radius: 28px;
 }
+
+.event-registration-page {
+    min-height: 70vh;
+    padding-block: clamp(2rem, 5vw, 4rem) 6rem;
+}
+
+.event-registration-page__inner {
+    max-width: 1040px;
+}
+
+.event-registration-page__back {
+    display: inline-flex;
+    margin-bottom: 1.25rem;
+}
+
+.event-registration-page__state {
+    max-width: 760px;
+    margin: 1rem auto 0;
+    text-align: center;
+    justify-items: center;
+}
+
+    .event-registration-page__state h1 {
+        margin-bottom: 0;
+        font-size: clamp(2.25rem, 4vw, 3.5rem);
+    }
 
 .event-checkout__heading {
     display: grid;
@@ -535,6 +565,10 @@
 @media (max-width: 680px) {
     .events-page .section-heading h2 {
         font-size: clamp(2rem, 8vw, 2.25rem);
+    }
+
+    .events-page .section-heading {
+        margin-bottom: 1.5rem;
     }
 
     .event-card h2 {

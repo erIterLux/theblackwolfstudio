@@ -555,6 +555,12 @@ exports.listPublishedEvents = onCall({
     timeoutSeconds: 30,
 }, async () => loadEventService().handleListPublishedEvents());
 
+exports.getPublishedEvent = onCall({
+    invoker: 'public',
+    memory: '256MiB',
+    timeoutSeconds: 30,
+}, async (request) => loadEventService().handleGetPublishedEvent(request));
+
 exports.saveEvent = onCall({
     invoker: 'public',
     memory: '256MiB',

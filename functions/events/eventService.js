@@ -272,6 +272,18 @@ async function handleListPublishedEvents() {
     return { events };
 }
 
+async function handleGetPublishedEvent(request) {
+    const eventId = clean(request.data?.eventId, 160);
+    if (!eventId) throw new HttpsError('invalid-argument', 'Event ID is required.');
+
+    const snapshot = await db.collection('events').doc(eventId).get();
+    if (!snapshot.exists || snapshot.data()?.status !== 'published') {
+        throw new HttpsError('not-found', 'That event is not available for registration.');
+    }
+
+    return { event: publicEvent(snapshot) };
+}
+
 function sanitizeEvent(data, instructorUid) {
     const title = clean(data?.title, 180);
     if (!title) throw new HttpsError('invalid-argument', 'Event title is required.');
@@ -1129,6 +1141,7 @@ module.exports = {
     releaseEventReservation,
     ensureEventRegistrationFromOrder,
     handleListPublishedEvents,
+    handleGetPublishedEvent,
     handleSaveEvent,
     handleGetEventRegistration,
     handleListMyEventRegistrations,

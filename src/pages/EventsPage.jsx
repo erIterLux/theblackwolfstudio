@@ -6,9 +6,8 @@ import {
     TicketCheck,
     Users,
 } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import EventCheckoutForm from '../components/events/EventCheckoutForm';
 import SectionHeading from '../components/SectionHeading';
 import { listPublishedEvents } from '../services/events';
 
@@ -52,7 +51,6 @@ function registrationLabel(event) {
 export default function EventsPage() {
     const [searchParams] = useSearchParams();
     const [events, setEvents] = useState([]);
-    const [selectedEventId, setSelectedEventId] = useState('');
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
 
@@ -77,10 +75,6 @@ export default function EventsPage() {
         };
     }, []);
 
-    const selectedEvent = useMemo(
-        () => events.find((event) => event.id === selectedEventId) || null,
-        [events, selectedEventId],
-    );
     const canceled = searchParams.get('purchase') === 'canceled';
 
     return (
@@ -107,8 +101,7 @@ export default function EventsPage() {
                         </div>
                     )}
 
-                    {!selectedEvent && (
-                        <>
+                    <>
                             <SectionHeading
                                 eyebrow="Upcoming events"
                                 title="Choose an event and register each participant."
@@ -162,28 +155,24 @@ export default function EventsPage() {
                                                     <span>{Number(event.pricePerParticipantCents || 0) === 0 ? 'Registration' : 'Per participant'}</span>
                                                     <strong>{formatEventPrice(event.pricePerParticipantCents, event.currency)}</strong>
                                                 </div>
-                                                <button
-                                                    className="button"
-                                                    type="button"
-                                                    disabled={!canRegister}
-                                                    onClick={() => setSelectedEventId(event.id)}
-                                                >
-                                                    <TicketCheck size={17} /> {canRegister ? 'Register' : registrationLabel(event)}
-                                                </button>
+                                                {canRegister ? (
+                                                    <Link
+                                                        className="button"
+                                                        to={`/events/${encodeURIComponent(event.id)}/register`}
+                                                    >
+                                                        <TicketCheck size={17} /> Register
+                                                    </Link>
+                                                ) : (
+                                                    <button className="button" type="button" disabled>
+                                                        <TicketCheck size={17} /> {registrationLabel(event)}
+                                                    </button>
+                                                )}
                                             </div>
                                         </article>
                                     );
                                 })}
                             </div>
-                        </>
-                    )}
-
-                    {selectedEvent && (
-                        <EventCheckoutForm
-                            event={selectedEvent}
-                            onCancel={() => setSelectedEventId('')}
-                        />
-                    )}
+                    </>
                 </div>
             </section>
         </>

@@ -16,6 +16,11 @@ export async function listPublishedEvents() {
     return response.data;
 }
 
+export async function getPublishedEvent(eventId) {
+    const response = await callable('getPublishedEvent')({ eventId });
+    return response.data;
+}
+
 export async function quoteEventCheckout({
     eventId,
     participantCount,

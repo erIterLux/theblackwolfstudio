@@ -8,6 +8,10 @@
   line-height: 1.02;
 }
 
+.private-training-page .section-heading {
+  margin-bottom: clamp(1.75rem, 3vw, 2.5rem);
+}
+
 .commerce-notice,
 .empty-state-card {
   margin-bottom: 2rem;
@@ -108,7 +112,7 @@
 .private-offer-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 1rem;
+  gap: clamp(1.5rem, 2.2vw, 2rem);
 }
 
 .private-offer-grid.is-single {
@@ -878,6 +882,10 @@
 @media (max-width: 700px) {
   .private-training-page .section-heading h2 {
     font-size: clamp(2rem, 8vw, 2.25rem);
+  }
+
+  .private-training-page .section-heading {
+    margin-bottom: 1.5rem;
   }
 
   .private-offer-card h2,
