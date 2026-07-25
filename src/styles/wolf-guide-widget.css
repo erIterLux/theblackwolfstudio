@@ -495,13 +495,26 @@
   }
 
   .wolf-guide-widget.is-expanded .wolf-guide-dialog {
-    inset: .65rem .65rem calc(.65rem + env(safe-area-inset-bottom));
+    top: max(.5rem, env(safe-area-inset-top));
+    right: max(.5rem, env(safe-area-inset-right));
+    bottom: max(.5rem, env(safe-area-inset-bottom));
+    left: max(.5rem, env(safe-area-inset-left));
+    width: auto;
     height: auto;
+    min-width: 0;
+    max-width: none;
     max-height: none;
+    border-radius: .85rem;
   }
 
   .wolf-guide-dialog__body {
     overflow-y: auto;
+  }
+
+  .wolf-guide-widget.is-expanded .wolf-guide-dialog__body,
+  .wolf-guide-widget.is-expanded .wolf-guide-conversation {
+    min-height: 0;
+    overflow: hidden;
   }
 
   .wolf-guide-dialog__header {
@@ -527,6 +540,23 @@
 
   .wolf-guide-widget.is-expanded .wolf-guide-heading-row {
     grid-template-columns: 1fr;
+  }
+
+  .wolf-guide-widget.is-expanded .wolf-guide-messages {
+    min-height: 0;
+    flex: 1 1 auto;
+  }
+
+  .wolf-guide-widget.is-expanded .wolf-guide-form {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .wolf-guide-widget.is-expanded .wolf-guide-form textarea {
+    min-height: 3.75rem;
+  }
+
+  .wolf-guide-widget.is-expanded .wolf-guide-form .button {
+    width: auto;
   }
 }
 

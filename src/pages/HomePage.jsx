@@ -156,7 +156,7 @@ export default function HomePage() {
                         <p className="eyebrow">Member experience · available now</p>
                         <h2>A grounded AI companion, built around practice—not diagnosis.</h2>
                         <p>
-                            Wolf Guide helps members review techniques, choose a short regulation practice, prepare for class, and reflect after training. It stays within educational and wellness support boundaries and directs urgent or clinical concerns to qualified human help.
+                            Wolf Guide helps members review techniques, choose a short regulation practice, prepare for a private lesson or studio event, and reflect after training. It stays within educational and wellness support boundaries and directs urgent or clinical concerns to qualified human help.
                         </p>
                         <p>
                             Begin includes a 3-message preview. Train includes 15 messages

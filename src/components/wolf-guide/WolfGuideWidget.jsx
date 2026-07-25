@@ -37,7 +37,7 @@ const prompts = [
 const INTRO_MESSAGE = {
     id: 'wolf-guide-intro',
     role: 'assistant',
-    content: 'I can help you prepare, review a principle, or choose a short regulation practice. I do not replace your instructor, therapist, doctor, or emergency services.',
+    content: 'I can help you prepare for a private lesson or event, review a principle, or choose a short regulation practice. I do not replace your instructor, therapist, doctor, or emergency services.',
 };
 
 const MAX_STORED_MESSAGES = 30;
@@ -326,7 +326,7 @@ function WolfGuideConversation({ memberState, storageKey }) {
                                 send();
                             }
                         }}
-                        placeholder="Ask about preparation, regulation, or a training principle…"
+                        placeholder="Ask about lesson preparation, regulation, or a training principle…"
                         maxLength={1800}
                         disabled={sending || usageLoading || limitReached}
                     />
@@ -361,7 +361,7 @@ function WolfGuideUpgrade() {
             </p>
             <ul>
                 <li>Training-principle review</li>
-                <li>Preparation and reflection prompts</li>
+                <li>Lesson and event preparation prompts</li>
                 <li>Published studio-reference context</li>
             </ul>
             <Link className="button button--light" to="/membership">
