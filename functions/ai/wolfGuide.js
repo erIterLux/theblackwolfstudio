@@ -4,12 +4,18 @@ const { logger } = require('firebase-functions');
 const { buildProgressionAiContext, getLevel, CATEGORIES } = require('../config/progressionSystem');
 
 const LIVE_STATUSES = new Set(['active', 'trialing']);
+const INSTRUCTOR_ROLES = new Set(['admin', 'instructor']);
+const AI_ROUTING_MODES = new Set(['auto', 'free', 'paid']);
 const MAX_MESSAGE_LENGTH = 1800;
 const MAX_TURNS_PER_HOUR = 40;
 const MAX_TURNS_PER_DAY = 120;
 const GEMINI_REQUEST_TIMEOUT_MS = 18000;
 const GEMINI_FALLBACK_TIMEOUT_MS = 12000;
 const GEMINI_FALLBACK_MODEL = 'gemini-3.1-flash-lite';
+const DEFAULT_FREE_KEY_TIMEOUT_MS = 8000;
+const MIN_FREE_KEY_TIMEOUT_MS = 3000;
+const MAX_FREE_KEY_TIMEOUT_MS = 20000;
+const AI_ROUTING_SETTINGS_PATH = 'studioSettings/wolfGuideAiRouting';
 const CURRICULUM_QUERY_LIMIT = 100;
 const CURRICULUM_SOURCE_LIMIT = 3;
 const CURRICULUM_TEXT_LIMIT = 2600;
@@ -35,7 +41,7 @@ Hard boundaries:
 - Do not provide step-by-step instructions intended to injure, incapacitate, choke, break joints, attack vulnerable anatomy, use weapons, or perform weapon disarms.
 - Do not promise that any technique guarantees safety.
 - The progression system is instructor-validated. You may explain requirements and help a member prepare, but you must never claim that a category or level has been passed.
-- Treat published Black Wolf Studio training references and the member’s instructor feedback as the primary source of technique guidance. When useful, name the training reference title or say that you are using the member’s latest instructor feedback.
+- Treat published Black Wolf Studio training references and the memberâ€™s instructor feedback as the primary source of technique guidance. When useful, name the training reference title or say that you are using the memberâ€™s latest instructor feedback.
 - Never invent a studio reference, requirement, or instructor comment. If the supplied studio context does not answer the question, say so and direct the member to an instructor.
 - Do not shame fear, freezing, fawning, dissociation, or other protective responses.
 - When a question is technique-specific or high risk, explain the principle at a high level and direct the member to practice with a qualified instructor.
@@ -52,6 +58,110 @@ ${PROGRESSION_SYSTEM_CONTEXT}
 
 function cleanText(value, max = MAX_MESSAGE_LENGTH) {
     return String(value || '').trim().slice(0, max);
+}
+
+function callerRole(request) {
+    if (request.auth?.token?.admin === true || request.auth?.token?.role === 'admin') {
+        return 'admin';
+    }
+    if (request.auth?.token?.role === 'instructor') return 'instructor';
+    return 'member';
+}
+
+function requireInstructor(request) {
+    const uid = request.auth?.uid;
+    if (!uid) throw new HttpsError('unauthenticated', 'Sign in to manage Wolf Guide routing.');
+    if (!INSTRUCTOR_ROLES.has(callerRole(request))) {
+        throw new HttpsError(
+            'permission-denied',
+            'Instructor access is required to manage Wolf Guide routing.',
+        );
+    }
+    return uid;
+}
+
+function secretValue(secret) {
+    return String(secret?.value?.() || '').trim();
+}
+
+function normalizeFreeTimeout(value) {
+    const milliseconds = Math.round(Number(value || DEFAULT_FREE_KEY_TIMEOUT_MS));
+    if (!Number.isFinite(milliseconds)) return DEFAULT_FREE_KEY_TIMEOUT_MS;
+    return Math.min(
+        MAX_FREE_KEY_TIMEOUT_MS,
+        Math.max(MIN_FREE_KEY_TIMEOUT_MS, milliseconds),
+    );
+}
+
+async function getAiRoutingSettings(dependencies = {}) {
+    const freeApiKey = secretValue(
+        dependencies.geminiFreeApiKey || dependencies.geminiApiKey,
+    );
+    const paidApiKey = secretValue(dependencies.geminiPaidApiKey);
+    const freeConfigured = Boolean(freeApiKey);
+    const paidConfigured = Boolean(paidApiKey);
+    const snapshot = await admin.firestore().doc(AI_ROUTING_SETTINGS_PATH).get();
+    const stored = snapshot.data() || {};
+    const defaultMode = paidConfigured ? 'auto' : 'free';
+    const mode = AI_ROUTING_MODES.has(stored.mode) ? stored.mode : defaultMode;
+    const freeTimeoutMs = normalizeFreeTimeout(stored.freeTimeoutMs);
+    let effectiveMode = mode;
+    if (mode === 'auto') {
+        if (freeConfigured && paidConfigured) effectiveMode = 'auto';
+        else if (paidConfigured) effectiveMode = 'paid';
+        else effectiveMode = 'free';
+    }
+
+    return {
+        mode,
+        effectiveMode,
+        freeTimeoutMs,
+        freeConfigured,
+        paidConfigured,
+        keysAreDistinct: !freeConfigured
+            || !paidConfigured
+            || freeApiKey !== paidApiKey,
+    };
+}
+
+async function handleGetWolfGuideRoutingSettings(request, dependencies = {}) {
+    requireInstructor(request);
+    return { settings: await getAiRoutingSettings(dependencies) };
+}
+
+async function handleSaveWolfGuideRoutingSettings(request, dependencies = {}) {
+    const actorUid = requireInstructor(request);
+    const mode = cleanText(request.data?.mode, 20).toLowerCase();
+    if (!AI_ROUTING_MODES.has(mode)) {
+        throw new HttpsError(
+            'invalid-argument',
+            'Choose Automatic, Free only, or Prepaid only.',
+        );
+    }
+
+    const freeTimeoutMs = normalizeFreeTimeout(request.data?.freeTimeoutMs);
+    const current = await getAiRoutingSettings(dependencies);
+    if (mode === 'free' && !current.freeConfigured) {
+        throw new HttpsError('failed-precondition', 'The free Gemini API key is not configured.');
+    }
+    if (mode === 'paid' && !current.paidConfigured) {
+        throw new HttpsError(
+            'failed-precondition',
+            'The prepaid Gemini API key is not configured.',
+        );
+    }
+    if (mode === 'auto' && !current.freeConfigured && !current.paidConfigured) {
+        throw new HttpsError('failed-precondition', 'No Gemini API key is configured.');
+    }
+
+    await admin.firestore().doc(AI_ROUTING_SETTINGS_PATH).set({
+        mode,
+        freeTimeoutMs,
+        updatedBy: actorUid,
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    }, { merge: true });
+
+    return { settings: await getAiRoutingSettings(dependencies) };
 }
 
 async function assertWolfGuideAccess(uid) {
@@ -198,7 +308,7 @@ async function getMemberProgressionContext(uid) {
         if (categoryData.latestFeedback?.focusAreas?.length) {
             feedbackParts.push(`next focus: ${categoryData.latestFeedback.focusAreas.join('; ')}`);
         }
-        return `${category.label}: ${categoryData.status || 'not_started'}${categoryData.currentEvidence?.storagePath || categoryData.video?.storagePath ? ' — evidence uploaded' : ' — no evidence uploaded'}${feedbackParts.length ? ` — ${feedbackParts.join(' — ')}` : ''}`;
+        return `${category.label}: ${categoryData.status || 'not_started'}${categoryData.currentEvidence?.storagePath || categoryData.video?.storagePath ? ' â€” evidence uploaded' : ' â€” no evidence uploaded'}${feedbackParts.length ? ` â€” ${feedbackParts.join(' â€” ')}` : ''}`;
     });
 
     return {
@@ -297,7 +407,23 @@ function isTransientGeminiError(error) {
     const status = getGeminiStatus(error);
     const message = getGeminiMessage(error).toLowerCase();
     return [429, 500, 502, 503, 504].includes(status)
-        || /(timeout|timed out|deadline|unavailable|overloaded|econnreset|etimedout|fetch failed)/i.test(message);
+        || /(timeout|timed out|deadline|unavailable|overloaded|quota|rate limit|resource exhausted|econnreset|etimedout|fetch failed)/i.test(message);
+}
+
+function canSwitchToPaidKey(error) {
+    const status = getGeminiStatus(error);
+    return [401, 403, 429].includes(status) || isTransientGeminiError(error);
+}
+
+function keyFallbackReason(error) {
+    const status = getGeminiStatus(error);
+    const message = getGeminiMessage(error).toLowerCase();
+    if (status === 429 || /(quota|rate limit|resource exhausted)/i.test(message)) {
+        return 'free_key_quota';
+    }
+    if ([401, 403].includes(status)) return 'free_key_authentication';
+    if (/(timeout|timed out|deadline|etimedout)/i.test(message)) return 'free_key_timeout';
+    return 'free_key_provider_error';
 }
 
 async function createGeminiInteraction({
@@ -318,7 +444,18 @@ async function createGeminiInteraction({
     return ai.interactions.create(request);
 }
 
-async function callGemini({ apiKey, model, message, previousInteractionId, memberState, progressionContext, curriculumContext }) {
+async function callGemini({
+    apiKey,
+    model,
+    message,
+    previousInteractionId,
+    memberState,
+    progressionContext,
+    curriculumContext,
+    requestTimeoutMs = GEMINI_REQUEST_TIMEOUT_MS,
+    requestAttempts = 2,
+    allowModelFallback = true,
+}) {
     const { GoogleGenAI } = await import('@google/genai');
     const contextLines = [
         memberState ? `Member check-in: ${cleanText(memberState, 120)}` : '',
@@ -345,8 +482,8 @@ ${curriculumContext}` : '',
             GoogleGenAI,
             apiKey,
             request,
-            timeoutMs: GEMINI_REQUEST_TIMEOUT_MS,
-            attempts: 2,
+            timeoutMs: requestTimeoutMs,
+            attempts: requestAttempts,
         });
         return { interaction, modelUsed: model, latencyMs: Date.now() - startedAt };
     } catch (firstError) {
@@ -363,13 +500,17 @@ ${curriculumContext}` : '',
                 GoogleGenAI,
                 apiKey,
                 request: statelessRequest,
-                timeoutMs: GEMINI_REQUEST_TIMEOUT_MS,
+                timeoutMs: requestTimeoutMs,
                 attempts: 1,
             });
             return { interaction, modelUsed: model, latencyMs: Date.now() - startedAt };
         }
 
-        if (model !== GEMINI_FALLBACK_MODEL && isTransientGeminiError(firstError)) {
+        if (
+            allowModelFallback
+            && model !== GEMINI_FALLBACK_MODEL
+            && isTransientGeminiError(firstError)
+        ) {
             logger.warn('Primary Gemini model was unavailable; trying the low-latency fallback model.', {
                 primaryModel: model,
                 fallbackModel: GEMINI_FALLBACK_MODEL,
@@ -401,6 +542,88 @@ ${curriculumContext}` : '',
     }
 }
 
+async function callGeminiWithRouting({
+    dependencies,
+    routing,
+    model,
+    message,
+    memberState,
+    progressionContext,
+    curriculumContext,
+    previousInteractionIds = {},
+    legacyPreviousInteractionId = null,
+}) {
+    const freeApiKey = secretValue(
+        dependencies.geminiFreeApiKey || dependencies.geminiApiKey,
+    );
+    const paidApiKey = secretValue(dependencies.geminiPaidApiKey);
+
+    const run = async (credentialTier, apiKey, options = {}) => {
+        const previousInteractionId = previousInteractionIds[credentialTier]
+            || (credentialTier === 'free' ? legacyPreviousInteractionId : null);
+        const result = await callGemini({
+            apiKey,
+            model,
+            message,
+            previousInteractionId,
+            memberState,
+            progressionContext,
+            curriculumContext,
+            requestTimeoutMs: options.requestTimeoutMs,
+            requestAttempts: options.requestAttempts,
+            allowModelFallback: options.allowModelFallback,
+        });
+        return {
+            ...result,
+            credentialTier,
+            fallbackReason: options.fallbackReason || null,
+        };
+    };
+
+    if (routing.effectiveMode === 'paid') {
+        if (!paidApiKey) {
+            throw new HttpsError(
+                'failed-precondition',
+                'The prepaid Gemini API key is not configured.',
+            );
+        }
+        return run('paid', paidApiKey);
+    }
+
+    if (routing.effectiveMode === 'free') {
+        if (!freeApiKey) {
+            throw new HttpsError('failed-precondition', 'The free Gemini API key is not configured.');
+        }
+        return run('free', freeApiKey);
+    }
+
+    if (!freeApiKey && paidApiKey) {
+        return run('paid', paidApiKey, { fallbackReason: 'free_key_not_configured' });
+    }
+    if (!freeApiKey) {
+        throw new HttpsError('failed-precondition', 'The free Gemini API key is not configured.');
+    }
+
+    try {
+        return await run('free', freeApiKey, {
+            requestTimeoutMs: routing.freeTimeoutMs,
+            requestAttempts: 1,
+            allowModelFallback: false,
+        });
+    } catch (freeError) {
+        if (!paidApiKey || !canSwitchToPaidKey(freeError)) throw freeError;
+        const fallbackReason = keyFallbackReason(freeError);
+        logger.warn('Free Gemini key was unavailable; switching to the prepaid key.', {
+            routingMode: routing.mode,
+            fallbackReason,
+            freeTimeoutMs: routing.freeTimeoutMs,
+            status: getGeminiStatus(freeError),
+            error: getGeminiMessage(freeError),
+        });
+        return run('paid', paidApiKey, { fallbackReason });
+    }
+}
+
 async function handleWolfGuideChat(request, dependencies = {}) {
     const uid = request.auth?.uid;
     if (!uid) throw new HttpsError('unauthenticated', 'Sign in to use Wolf Guide.');
@@ -413,8 +636,6 @@ async function handleWolfGuideChat(request, dependencies = {}) {
     const conversationId = cleanText(request.data?.conversationId, 120);
     const memberState = cleanText(request.data?.memberState, 120);
     const { ref: conversationRef, data: conversation } = await getConversation(uid, conversationId);
-    const progressionState = await getMemberProgressionContext(uid);
-    const curriculum = await getRelevantCurriculumContext(message, progressionState);
     await logMessage(conversationRef, 'member', message, { memberState: memberState || null });
 
     const fixed = fixedSafetyResponse(message);
@@ -424,22 +645,36 @@ async function handleWolfGuideChat(request, dependencies = {}) {
         return { conversationId: conversationRef.id, answer: fixed.answer, category: fixed.category };
     }
 
-    const apiKey = dependencies.geminiApiKey?.value();
-    if (!apiKey) throw new HttpsError('failed-precondition', 'Gemini API key is not configured.');
+    const [progressionState, routing] = await Promise.all([
+        getMemberProgressionContext(uid),
+        getAiRoutingSettings(dependencies),
+    ]);
+    if (!routing.freeConfigured && !routing.paidConfigured) {
+        throw new HttpsError('failed-precondition', 'A Gemini API key is not configured.');
+    }
+    const curriculum = await getRelevantCurriculumContext(message, progressionState);
 
     try {
         const {
             interaction,
             modelUsed,
             latencyMs,
-        } = await callGemini({
-            apiKey,
+            credentialTier,
+            fallbackReason,
+        } = await callGeminiWithRouting({
+            dependencies,
+            routing,
             model: dependencies.geminiModel || 'gemini-3.5-flash',
             message,
-            previousInteractionId: conversation.previousInteractionId || null,
             memberState,
             progressionContext: progressionState.text,
             curriculumContext: curriculum.context,
+            previousInteractionIds: conversation.previousInteractionIds || {},
+            legacyPreviousInteractionId: (
+                !conversation.credentialTier || conversation.credentialTier === 'free'
+            )
+                ? conversation.previousInteractionId || null
+                : null,
         });
         const answer = cleanText(interaction.output_text || '', 4500)
             || 'I could not form a useful response. Please ask your instructor or try a more specific question.';
@@ -448,11 +683,20 @@ async function handleWolfGuideChat(request, dependencies = {}) {
             category: 'education',
             modelUsed,
             latencyMs,
+            credentialTier,
+            fallbackReason,
             sourceIds: curriculum.sources.map((source) => source.id),
         });
+        const nextPreviousInteractionIds = {
+            ...(conversation.previousInteractionIds || {}),
+        };
+        if (interaction.id) nextPreviousInteractionIds[credentialTier] = interaction.id;
         await conversationRef.set({
             previousInteractionId: interaction.id || admin.firestore.FieldValue.delete(),
+            previousInteractionIds: nextPreviousInteractionIds,
             model: modelUsed,
+            credentialTier,
+            lastFallbackReason: fallbackReason || null,
             lastLatencyMs: latencyMs,
             updatedAt: admin.firestore.FieldValue.serverTimestamp(),
             lastCategory: 'education',
@@ -473,9 +717,12 @@ async function handleWolfGuideChat(request, dependencies = {}) {
             name: error?.name || 'Error',
             hasPreviousInteractionId: Boolean(conversation.previousInteractionId),
             configuredModel: dependencies.geminiModel || 'gemini-3.5-flash',
+            routingMode: routing.mode,
+            effectiveRoutingMode: routing.effectiveMode,
             stack: cleanText(error?.stack, 1800),
         });
 
+        if (error instanceof HttpsError) throw error;
         if (status === 429) {
             throw new HttpsError(
                 'resource-exhausted',
@@ -490,4 +737,8 @@ async function handleWolfGuideChat(request, dependencies = {}) {
     }
 }
 
-module.exports = { handleWolfGuideChat };
+module.exports = {
+    handleWolfGuideChat,
+    handleGetWolfGuideRoutingSettings,
+    handleSaveWolfGuideRoutingSettings,
+};

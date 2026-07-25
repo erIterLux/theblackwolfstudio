@@ -5,6 +5,7 @@ import {
     instructorNavigation,
     instructorQuickActions,
 } from '../components/portalNavigation';
+import WolfGuideRoutingSettings from '../components/wolf-guide/WolfGuideRoutingSettings';
 
 export default function InstructorHome() {
     const { user } = useAuth();
@@ -44,6 +45,16 @@ export default function InstructorHome() {
                             );
                         })}
                     </div>
+                </section>
+
+                <section className="instructor-home__section" aria-labelledby="instructor-ai-heading">
+                    <div className="instructor-home__section-heading">
+                        <div>
+                            <p className="eyebrow">Service controls</p>
+                            <h2 id="instructor-ai-heading">Wolf Guide AI</h2>
+                        </div>
+                    </div>
+                    <WolfGuideRoutingSettings />
                 </section>
 
                 <section className="instructor-home__section" aria-labelledby="instructor-all-tools-heading">

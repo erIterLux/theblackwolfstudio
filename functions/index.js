@@ -11,6 +11,7 @@ const stripeWebhookSecret = defineSecret('STRIPE_WEBHOOK_SECRET');
 const gmailEmail = defineSecret('GMAIL_EMAIL');
 const gmailAppPassword = defineSecret('GMAIL_APP_PASSWORD');
 const geminiApiKey = defineSecret('GEMINI_API_KEY');
+const geminiPaidApiKey = defineSecret('GEMINI_PAID_API_KEY');
 
 const appOrigin = defineString('APP_ORIGIN', { default: 'https://theblackwolf.studio' });
 const studioNotificationEmail = defineString('STUDIO_NOTIFICATION_EMAIL', { default: '' });
@@ -694,14 +695,41 @@ exports.emailOnStudioWaiverWritten = onDocumentWritten({
 
 exports.wolfGuideChat = onCall({
     invoker: 'public',
-    secrets: [geminiApiKey],
+    secrets: [geminiApiKey, geminiPaidApiKey],
     memory: '512MiB',
     timeoutSeconds: 120,
 }, async (request) => {
     const { handleWolfGuideChat } = require('./ai/wolfGuide');
     return handleWolfGuideChat(request, {
-        geminiApiKey,
+        geminiFreeApiKey: geminiApiKey,
+        geminiPaidApiKey,
         geminiModel: geminiModel.value(),
+    });
+});
+
+exports.getWolfGuideRoutingSettings = onCall({
+    invoker: 'public',
+    secrets: [geminiApiKey, geminiPaidApiKey],
+    memory: '256MiB',
+    timeoutSeconds: 30,
+}, async (request) => {
+    const { handleGetWolfGuideRoutingSettings } = require('./ai/wolfGuide');
+    return handleGetWolfGuideRoutingSettings(request, {
+        geminiFreeApiKey: geminiApiKey,
+        geminiPaidApiKey,
+    });
+});
+
+exports.saveWolfGuideRoutingSettings = onCall({
+    invoker: 'public',
+    secrets: [geminiApiKey, geminiPaidApiKey],
+    memory: '256MiB',
+    timeoutSeconds: 30,
+}, async (request) => {
+    const { handleSaveWolfGuideRoutingSettings } = require('./ai/wolfGuide');
+    return handleSaveWolfGuideRoutingSettings(request, {
+        geminiFreeApiKey: geminiApiKey,
+        geminiPaidApiKey,
     });
 });
 

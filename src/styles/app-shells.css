@@ -488,6 +488,149 @@
   color: #35495d;
 }
 
+.wolf-guide-routing-card {
+  display: grid;
+  gap: 1.15rem;
+  padding: clamp(1.15rem, 2.5vw, 1.5rem);
+  color: #202329;
+  background: #f2eee6;
+  border: 1px solid rgba(255, 255, 255, .08);
+}
+
+.wolf-guide-routing-card--loading {
+  min-height: 150px;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  align-content: center;
+}
+
+.wolf-guide-routing-card__heading,
+.wolf-guide-routing-card__footer {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.wolf-guide-routing-card__heading h3 {
+  margin: .1rem 0 .4rem;
+  font-size: clamp(1.35rem, 2.4vw, 1.75rem);
+}
+
+.wolf-guide-routing-card__heading p,
+.wolf-guide-routing-card__footer p {
+  max-width: 760px;
+  margin: 0;
+  color: #626970;
+}
+
+.wolf-guide-routing-card__heading > svg {
+  flex: 0 0 auto;
+  color: #435d75;
+}
+
+.wolf-guide-key-status {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .55rem;
+}
+
+.wolf-guide-key-status span {
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+  min-height: 34px;
+  padding: .4rem .65rem;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-size: .8125rem;
+  font-weight: 800;
+}
+
+.wolf-guide-key-status .is-ready {
+  color: #0b6046;
+  background: #e5f4ed;
+  border-color: #a7d7c4;
+}
+
+.wolf-guide-key-status .is-missing {
+  color: #7a5200;
+  background: #fff4d6;
+  border-color: #e8cc83;
+}
+
+.wolf-guide-routing-fields {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) minmax(220px, .7fr);
+  gap: 1rem;
+}
+
+.wolf-guide-routing-fields > label {
+  display: grid;
+  gap: .45rem;
+  font-weight: 800;
+}
+
+.wolf-guide-timeout-input {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+}
+
+.wolf-guide-timeout-input input {
+  min-width: 0;
+  border-radius: 6px 0 0 6px;
+}
+
+.wolf-guide-timeout-input > span {
+  min-height: 46px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 .8rem;
+  color: #5c646d;
+  background: #ece9e2;
+  border: 1px solid #b9bec4;
+  border-left: 0;
+  border-radius: 0 6px 6px 0;
+  font-size: .875rem;
+  font-weight: 800;
+}
+
+.wolf-guide-routing-summary {
+  display: flex;
+  align-items: flex-start;
+  gap: .65rem;
+  padding: .85rem .95rem;
+  color: #315a78;
+  background: #e9f1f7;
+  border-left: 4px solid #315a78;
+}
+
+.wolf-guide-routing-summary svg {
+  flex: 0 0 auto;
+}
+
+.wolf-guide-routing-summary p {
+  margin: 0;
+}
+
+.wolf-guide-routing-card > .form-status:not(.form-status--success):not(.form-status--error) {
+  color: #7a5200;
+  background: #fff4d6;
+  border-color: #e8cc83;
+  border-left-color: #7a5200;
+}
+
+.wolf-guide-routing-card__footer {
+  align-items: center;
+  padding-top: .9rem;
+  border-top: 1px solid rgba(32, 35, 41, .14);
+}
+
+.wolf-guide-routing-card__footer .button {
+  flex: 0 0 auto;
+}
+
 @media (max-width: 1180px) {
   .portal-user__name {
     display: none;
@@ -621,6 +764,22 @@
   .instructor-home-card {
     min-height: 0;
     padding: 1.15rem;
+  }
+}
+
+@media (max-width: 680px) {
+  .wolf-guide-routing-fields {
+    grid-template-columns: 1fr;
+  }
+
+  .wolf-guide-routing-card__heading,
+  .wolf-guide-routing-card__footer {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .wolf-guide-routing-card__footer .button {
+    width: 100%;
   }
 }
 
