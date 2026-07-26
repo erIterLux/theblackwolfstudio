@@ -172,16 +172,17 @@
 
 .event-registration-page {
     min-height: 70vh;
-    padding-block: clamp(1rem, 2.5vw, 2rem) 4rem;
+    padding: .75rem 0 clamp(3rem, 6vw, 5rem);
 }
 
 .event-registration-page__inner {
-    max-width: 1040px;
+    max-width: 1020px;
 }
 
 .event-registration-page__back {
     display: inline-flex;
-    margin-bottom: .75rem;
+    min-height: 36px;
+    margin-bottom: .4rem;
 }
 
 .event-registration-page__state {
@@ -197,10 +198,8 @@
     }
 
 .event-checkout__heading {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    align-items: flex-start;
-    margin-bottom: 1.5rem;
+    display: block;
+    margin-bottom: 1rem;
 }
 
     .event-checkout__heading > div {
@@ -208,17 +207,11 @@
     }
 
     .event-checkout__heading h2 {
-        max-width: 18ch;
+        max-width: 24ch;
         font-size: clamp(2.75rem, 3.25vw, 3.25rem);
         line-height: 1.01;
         overflow-wrap: break-word;
         text-wrap: balance;
-    }
-
-    .event-checkout__heading > .text-link {
-        flex: 0 0 auto;
-        align-self: start;
-        white-space: nowrap;
     }
 
 .event-registration-explainer,

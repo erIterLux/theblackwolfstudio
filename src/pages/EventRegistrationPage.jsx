@@ -1,6 +1,6 @@
 import { ArrowLeft, CalendarDays } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import EventCheckoutForm from '../components/events/EventCheckoutForm';
 import { getPublishedEvent } from '../services/events';
 
@@ -12,7 +12,6 @@ function registrationStateLabel(state) {
 
 export default function EventRegistrationPage() {
     const { eventId } = useParams();
-    const navigate = useNavigate();
     const [event, setEvent] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -51,7 +50,7 @@ export default function EventRegistrationPage() {
     }, [eventId]);
 
     return (
-        <section className="section section--light event-registration-page">
+        <section className="section--light event-registration-page">
             <div className="container event-registration-page__inner">
                 <Link className="text-link event-registration-page__back" to="/events">
                     <ArrowLeft size={17} /> All events
@@ -70,10 +69,7 @@ export default function EventRegistrationPage() {
 
                 {!loading && !error && event && (
                     event.registrationState === 'open' ? (
-                        <EventCheckoutForm
-                            event={event}
-                            onCancel={() => navigate('/events')}
-                        />
+                        <EventCheckoutForm event={event} />
                     ) : (
                         <article className="empty-state-card event-registration-page__state">
                             <CalendarDays size={38} aria-hidden="true" />

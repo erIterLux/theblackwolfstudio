@@ -70,7 +70,7 @@ function participantOptionLabel(participant = {}, index = 0) {
     return `Participant ${index + 1}${name ? ` - ${name}` : ''}`;
 }
 
-export default function EventCheckoutForm({ event, onCancel }) {
+export default function EventCheckoutForm({ event }) {
     const { user } = useAuth();
     const maxParticipants = Math.max(1, Math.min(12, Number(event.maxParticipantsPerOrder || 6)));
     const [participantCount, setParticipantCount] = useState(1);
@@ -237,9 +237,6 @@ export default function EventCheckoutForm({ event, onCancel }) {
                     <p className="eyebrow">Event registration</p>
                     <h2>{event.title}</h2>
                 </div>
-                <button className="text-link" type="button" onClick={onCancel}>
-                    Choose another event
-                </button>
             </div>
 
             <article className="event-signup-details">
