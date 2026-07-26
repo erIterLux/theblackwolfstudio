@@ -124,7 +124,12 @@ function publicEventUrl(registration = {}) {
     : '/events');
 }
 
-function createEventCalendar(registration = {}, registrationId = '', createdAt = new Date()) {
+function createEventCalendar(
+  registration = {},
+  registrationId = '',
+  createdAt = new Date(),
+  informationUrl = publicEventUrl(registration),
+) {
   const event = registration.eventSnapshot || {};
   const startsAt = utcCalendarDate(event.startsAt);
   const endsAt = utcCalendarDate(event.endsAt);
@@ -143,7 +148,7 @@ function createEventCalendar(registration = {}, registrationId = '', createdAt =
     location.address ? `Address: ${clean(location.address, 1000)}` : '',
     location.onlineUrl ? `Online access: ${clean(location.onlineUrl, 1000)}` : '',
     'Complete any required participant waivers before event check-in.',
-    `Event information: ${publicEventUrl(registration)}`,
+    `Manage registration: ${informationUrl}`,
   ].filter(Boolean).join('\n');
   const calendarLines = [
     'BEGIN:VCALENDAR',
@@ -159,7 +164,7 @@ function createEventCalendar(registration = {}, registrationId = '', createdAt =
     `SUMMARY:${escapeCalendarText(title)}`,
     `DESCRIPTION:${escapeCalendarText(description)}`,
     `LOCATION:${escapeCalendarText(locationText(event))}`,
-    `URL:${escapeCalendarText(publicEventUrl(registration))}`,
+    `URL:${escapeCalendarText(informationUrl)}`,
     'STATUS:CONFIRMED',
     'TRANSP:OPAQUE',
     'SEQUENCE:0',
@@ -233,13 +238,6 @@ async function sendEventRegistrationConfirmation({ ref, registration }) {
   const eventLocationParts = locationParts(event);
   const eventUrl = publicEventUrl(registration);
   const participantCount = Math.max(1, Number(registration.participantCount || 1));
-  const calendar = createEventCalendar(registration, ref.id);
-  const calendarAttachment = {
-    filename: calendarFilename(title),
-    content: Buffer.from(calendar, 'utf8'),
-    contentType: 'text/calendar; charset=utf-8; method=PUBLISH',
-    contentDisposition: 'attachment',
-  };
   const accessSnapshot = await ref.firestore
     .collection('studioOrderAccess')
     .doc(registration.orderId || ref.id)
@@ -251,6 +249,13 @@ async function sendEventRegistrationConfirmation({ ref, registration }) {
       + `&access_token=${encodeURIComponent(managementToken)}`,
     )
     : appUrl('/events');
+  const calendar = createEventCalendar(registration, ref.id, new Date(), managementUrl);
+  const calendarAttachment = {
+    filename: calendarFilename(title),
+    content: Buffer.from(calendar, 'utf8'),
+    contentType: 'text/calendar; charset=utf-8; method=PUBLISH',
+    contentDisposition: 'attachment',
+  };
   const commonText = [
     `Your registration for ${title} is confirmed.`,
     `When: ${dateLabel}`,
