@@ -1,4 +1,5 @@
 import {
+    ArrowRight,
     CalendarDays,
     Clock3,
     MapPin,
@@ -163,18 +164,26 @@ export default function EventsPage() {
                                                     <span>{Number(event.pricePerParticipantCents || 0) === 0 ? 'Registration' : 'Per participant'}</span>
                                                     <strong>{formatEventPrice(event.pricePerParticipantCents, event.currency)}</strong>
                                                 </div>
-                                                {canRegister ? (
+                                                <div className="event-card__actions">
                                                     <Link
-                                                        className="button"
-                                                        to={`/events/${encodeURIComponent(event.id)}/register`}
+                                                        className="button button--dark-ghost"
+                                                        to={`/events/${encodeURIComponent(event.id)}`}
                                                     >
-                                                        <TicketCheck size={17} /> Register
+                                                        Full details <ArrowRight size={17} />
                                                     </Link>
-                                                ) : (
-                                                    <button className="button" type="button" disabled>
-                                                        <TicketCheck size={17} /> {registrationLabel(event)}
-                                                    </button>
-                                                )}
+                                                    {canRegister ? (
+                                                        <Link
+                                                            className="button"
+                                                            to={`/events/${encodeURIComponent(event.id)}/register`}
+                                                        >
+                                                            <TicketCheck size={17} /> Register
+                                                        </Link>
+                                                    ) : (
+                                                        <button className="button" type="button" disabled>
+                                                            <TicketCheck size={17} /> {registrationLabel(event)}
+                                                        </button>
+                                                    )}
+                                                </div>
                                             </div>
                                         </article>
                                     );

@@ -48,6 +48,7 @@ function startingPrice(offer) {
 
 export default function PrivateTrainingPage() {
   const [searchParams] = useSearchParams();
+  const requestedOfferId = searchParams.get('offer_id') || '';
   const { membership, isActive: membershipActive } = useMembership();
   const [offers, setOffers] = useState([]);
   const [selectedOfferId, setSelectedOfferId] = useState('');
@@ -58,7 +59,13 @@ export default function PrivateTrainingPage() {
     let cancelled = false;
     listPrivateTrainingOffers()
       .then((result) => {
-        if (!cancelled) setOffers(result?.offers || []);
+        if (!cancelled) {
+          const nextOffers = result?.offers || [];
+          setOffers(nextOffers);
+          if (requestedOfferId && nextOffers.some((offer) => offer.id === requestedOfferId)) {
+            setSelectedOfferId(requestedOfferId);
+          }
+        }
       })
       .catch((nextError) => {
         if (!cancelled) {
@@ -73,7 +80,7 @@ export default function PrivateTrainingPage() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [requestedOfferId]);
 
   const selectedOffer = useMemo(
     () => (
@@ -202,16 +209,24 @@ export default function PrivateTrainingPage() {
                         ))}
                       </ul>
 
-                      <button
-                        className="button"
-                        type="button"
-                        onClick={() => {
-                          setSelectedOfferId(offer.id);
-                          window.scrollTo({ top: 0, behavior: 'smooth' });
-                        }}
-                      >
-                        Choose package <ArrowRight size={17} />
-                      </button>
+                      <div className="private-offer-card__actions">
+                        <Link
+                          className="button button--dark-ghost"
+                          to={`/private-training/${encodeURIComponent(offer.id)}`}
+                        >
+                          Full details <ArrowRight size={17} />
+                        </Link>
+                        <button
+                          className="button"
+                          type="button"
+                          onClick={() => {
+                            setSelectedOfferId(offer.id);
+                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                          }}
+                        >
+                          Choose package <ArrowRight size={17} />
+                        </button>
+                      </div>
                     </article>
                   );
                 })}

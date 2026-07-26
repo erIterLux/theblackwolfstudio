@@ -7,6 +7,7 @@ import {
   Users,
 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import {
   claimMembershipPrivateTrainingCredit,
@@ -255,9 +256,16 @@ export default function PrivateTrainingCheckoutForm({ offer, onCancel }) {
           </p>
           <h2>{offer.name}</h2>
         </div>
-        <button className="text-link" type="button" onClick={onCancel}>
-          Choose another package
-        </button>
+        <div className="private-checkout__heading-actions">
+          {!isMembershipBenefit && (
+            <Link className="text-link" to={`/private-training/${encodeURIComponent(offer.id)}`}>
+              Full package details
+            </Link>
+          )}
+          <button className="text-link" type="button" onClick={onCancel}>
+            Choose another package
+          </button>
+        </div>
       </div>
 
       <section className="private-checkout__section">

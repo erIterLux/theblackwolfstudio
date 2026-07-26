@@ -210,6 +210,16 @@
   white-space: nowrap;
 }
 
+.private-checkout__heading-actions {
+  display: grid;
+  justify-items: end;
+  gap: .5rem;
+}
+
+.private-checkout__heading-actions .text-link {
+  white-space: nowrap;
+}
+
 .private-checkout__heading h2,
 .private-checkout__section h3,
 .private-admin-panel-heading h2,
@@ -903,6 +913,14 @@
   }
 
   .private-checkout__heading > .text-link {
+    white-space: normal;
+  }
+
+  .private-checkout__heading-actions {
+    justify-items: start;
+  }
+
+  .private-checkout__heading-actions .text-link {
     white-space: normal;
   }
 

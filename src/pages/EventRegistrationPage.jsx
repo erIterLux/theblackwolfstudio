@@ -52,9 +52,14 @@ export default function EventRegistrationPage() {
     return (
         <section className="section--light event-registration-page">
             <div className="container event-registration-page__inner">
-                <Link className="text-link event-registration-page__back" to="/events">
-                    <ArrowLeft size={17} /> All events
-                </Link>
+                <nav className="event-registration-page__nav" aria-label="Event registration navigation">
+                    <Link className="text-link event-registration-page__back" to="/events">
+                        <ArrowLeft size={17} /> All events
+                    </Link>
+                    <Link className="text-link" to={`/events/${encodeURIComponent(eventId)}`}>
+                        View full event details
+                    </Link>
+                </nav>
 
                 {loading && <p className="page-loader">Loading event registration…</p>}
 

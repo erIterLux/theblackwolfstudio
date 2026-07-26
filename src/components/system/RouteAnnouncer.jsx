@@ -42,7 +42,9 @@ function resolveTitle(pathname) {
   if (pathname.startsWith('/events/') && pathname.endsWith('/register')) {
     return 'Event registration';
   }
+  if (pathname.startsWith('/events/')) return 'Event details';
   if (pathname.startsWith('/private-training/waiver/')) return 'Private-training waiver';
+  if (pathname.startsWith('/private-training/')) return 'Private lesson details';
   if (pathname.startsWith('/order/')) return 'Purchase details';
   if (pathname.startsWith('/instructor/events/') && pathname.endsWith('/check-in')) {
     return 'Event check-in';

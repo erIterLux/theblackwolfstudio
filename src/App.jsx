@@ -17,8 +17,10 @@ const LoginPage = lazy(routeLoaders.login);
 const MemberDashboard = lazy(routeLoaders.memberDashboard);
 const MembershipPage = lazy(routeLoaders.membership);
 const PrivateTrainingPage = lazy(routeLoaders.privateTraining);
+const PrivateTrainingDetailPage = lazy(routeLoaders.privateTrainingDetail);
 const PrivateTrainingSuccessPage = lazy(routeLoaders.privateTrainingSuccess);
 const EventsPage = lazy(routeLoaders.events);
+const EventDetailPage = lazy(routeLoaders.eventDetail);
 const EventRegistrationPage = lazy(routeLoaders.eventRegistration);
 const EventSuccessPage = lazy(routeLoaders.eventSuccess);
 const EventWaiverPage = lazy(routeLoaders.eventWaiver);
@@ -61,12 +63,14 @@ export default function App() {
                     <Route path="programs" element={<ProgramsPage />} />
                     <Route path="schedule" element={<EventsPage />} />
                     <Route path="events" element={<EventsPage />} />
+                    <Route path="events/:eventId" element={<EventDetailPage />} />
                     <Route path="events/:eventId/register" element={<EventRegistrationPage />} />
                     <Route path="events/success" element={<EventSuccessPage />} />
                     <Route path="events/waiver/:participantId" element={<EventWaiverPage />} />
                     <Route path="private-training/waiver/:waiverId" element={<PrivateTrainingWaiverPage />} />
                     <Route path="membership" element={<MembershipPage />} />
                     <Route path="private-training" element={<PrivateTrainingPage />} />
+                    <Route path="private-training/:offerId" element={<PrivateTrainingDetailPage />} />
                     <Route path="private-training/success" element={<PrivateTrainingSuccessPage />} />
                     <Route path="order/:orderId" element={<OrderDetailsPage />} />
                     <Route path="contact" element={<ContactPage />} />
