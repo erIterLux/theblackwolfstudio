@@ -10,6 +10,7 @@ import {
   LayoutDashboard,
   MapPin,
   Plus,
+  QrCode,
   RefreshCw,
   Search,
   Settings,
@@ -72,6 +73,18 @@ function cents(value) {
   if (String(value ?? '').trim() === '') return null;
   const number = Number(value);
   return Number.isFinite(number) && number >= 0 ? Math.round(number * 100) : null;
+}
+
+function eventQrToolPath(event) {
+  const registrationUrl = new URL(
+    `/events/${encodeURIComponent(event.id)}/register`,
+    window.location.origin,
+  ).toString();
+  const query = new URLSearchParams({
+    url: registrationUrl,
+    label: `${event.title || 'event'}-registration`,
+  });
+  return `/instructor/qr-code?${query.toString()}`;
 }
 
 function localDateValue(value) {
@@ -685,6 +698,9 @@ export default function InstructorEventsAdmin() {
                       <button type="button" onClick={copyRegistrationLink}>
                         <Copy size={17} aria-hidden="true" /> Copy registration link
                       </button>
+                      <Link to={eventQrToolPath(selectedEvent)}>
+                        <QrCode size={17} aria-hidden="true" /> Create QR code
+                      </Link>
                     </>
                   )}
                 </nav>

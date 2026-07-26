@@ -6,6 +6,7 @@ import {
   CalendarDays,
   Home,
   Megaphone,
+  QrCode,
   ReceiptText,
   ShieldCheck,
   Target,
@@ -60,6 +61,7 @@ export const instructorNavigation = [
     label: 'Operations',
     items: [
       { label: 'Studio reports', to: '/instructor/reports', icon: BarChart3 },
+      { label: 'QR code generator', to: '/instructor/qr-code', icon: QrCode },
       { label: 'Announcements', to: '/instructor/announcements', icon: Megaphone },
       { label: 'Notifications', to: '/instructor/notifications', icon: Bell },
     ],

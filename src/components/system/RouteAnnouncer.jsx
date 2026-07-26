@@ -25,6 +25,7 @@ const EXACT_TITLES = new Map([
   ['/instructor/progression', 'Progression reviews'],
   ['/instructor/content', 'Curriculum'],
   ['/instructor/events', 'Event management'],
+  ['/instructor/qr-code', 'QR code generator'],
   ['/instructor/discounts', 'Discounts'],
   ['/instructor/commerce/orders', 'Orders'],
   ['/instructor/private-training', 'Private training administration'],

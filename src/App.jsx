@@ -27,6 +27,7 @@ const MemberWaiverPage = lazy(routeLoaders.memberWaiver);
 const MemberEventsPage = lazy(routeLoaders.memberEvents);
 const InstructorEventsAdmin = lazy(routeLoaders.instructorEvents);
 const InstructorEventCheckIn = lazy(routeLoaders.instructorEventCheckIn);
+const InstructorQrCodePage = lazy(routeLoaders.instructorQrCode);
 const InstructorDiscountsAdmin = lazy(routeLoaders.instructorDiscounts);
 const MemberPurchasesPage = lazy(routeLoaders.memberPurchases);
 const OrderDetailsPage = lazy(routeLoaders.orderDetails);
@@ -118,6 +119,7 @@ export default function App() {
                     <Route path="instructor/content" element={<InstructorContentAdmin />} />
                     <Route path="instructor/events" element={<InstructorEventsAdmin />} />
                     <Route path="instructor/events/:eventId/check-in" element={<InstructorEventCheckIn />} />
+                    <Route path="instructor/qr-code" element={<InstructorQrCodePage />} />
                     <Route path="instructor/discounts" element={<InstructorDiscountsAdmin />} />
                     <Route path="instructor/commerce/orders" element={<InstructorOrdersAdmin />} />
                     <Route path="instructor/private-training" element={<InstructorPrivateTrainingAdmin />} />
