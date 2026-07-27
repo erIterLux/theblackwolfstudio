@@ -706,13 +706,28 @@
 }
 
 .content-blocks-heading button {
+  min-height: 40px;
   display: inline-flex;
   align-items: center;
   gap: .35rem;
   padding: .5rem .65rem;
-  background: transparent;
-  border: 1px solid rgba(20, 23, 27, .16);
+  color: #263f56;
+  background: #edf2f6;
+  border: 1px solid rgba(38, 63, 86, .28);
+  border-radius: 7px;
   font-weight: 800;
+  transition: color .16s ease, background .16s ease, border-color .16s ease, transform .16s ease;
+}
+
+.content-blocks-heading button:hover {
+  color: #fff;
+  background: #263f56;
+  border-color: #263f56;
+  transform: translateY(-1px);
+}
+
+.content-blocks-heading button svg {
+  flex: 0 0 auto;
 }
 
 .content-block-editor {
