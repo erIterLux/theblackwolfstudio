@@ -242,8 +242,8 @@ export default function MemberDashboard() {
                                 </div>
                             </div>
                             <p>
-                                Open instructor-published text, images, audio, and video connected
-                                to your current level and skill categories.
+                                Explore Basic references and any Advanced references included with
+                                your membership, connected to your current level and skill categories.
                             </p>
                             <PrefetchLink to="/member/library" className="text-link">
                                 Open training library <ArrowRight size={17} aria-hidden="true" />

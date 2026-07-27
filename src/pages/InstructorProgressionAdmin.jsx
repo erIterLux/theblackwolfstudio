@@ -232,6 +232,11 @@ function MemberDetail({ detail, loading, onOpenReview }) {
 
     const membership = detail.membership || {};
     const progression = detail.progression || {};
+    const membershipPlanKey = String(membership.planKey || '').toLowerCase();
+    const libraryAccessLevel = ['train', 'integrate'].includes(membershipPlanKey)
+        || (membershipPlanKey !== 'begin' && membership.benefits?.libraryAccessLevel === 'advanced')
+        ? 'advanced'
+        : 'basic';
     const waiverSigned = detail.waiver?.status === 'signed';
     const currentCategories = Object.values(progression.categories || {});
     const completedCategories = currentCategories.filter(
@@ -312,7 +317,13 @@ function MemberDetail({ detail, loading, onOpenReview }) {
                     </div>
                     <div className="instructor-member-benefit-pills">
                         {membership.benefits?.progressionAccess && <span>Progression</span>}
-                        {membership.benefits?.curriculumAccess && <span>Training library</span>}
+                        {membership.benefits?.curriculumAccess && (
+                            <span>
+                                {libraryAccessLevel === 'advanced'
+                                    ? 'Basic + advanced library'
+                                    : 'Basic library'}
+                            </span>
+                        )}
                         {membership.benefits?.wolfGuideAccess && <span>Wolf Guide</span>}
                         {membership.discounts?.eventPercent > 0 && (
                             <span>{membership.discounts.eventPercent}% event discount</span>

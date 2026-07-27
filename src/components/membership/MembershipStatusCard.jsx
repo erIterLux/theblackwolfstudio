@@ -100,6 +100,10 @@ export default function MembershipStatusCard() {
         membership.curriculumAccess
         ?? membership.benefits?.curriculumAccess,
     );
+    const libraryAccessLevel = ['train', 'integrate'].includes(planKey)
+        || (planKey !== 'begin' && membership.benefits?.libraryAccessLevel === 'advanced')
+        ? 'advanced'
+        : 'basic';
     const wolfGuideAccess = Boolean(
         membership.wolfGuideAccess
         ?? membership.benefits?.wolfGuideAccess,
@@ -155,7 +159,13 @@ export default function MembershipStatusCard() {
             {isActive && (
                 <div className="membership-benefit-summary" aria-label="Membership benefits">
                     {progressionAccess && <span>Progression access</span>}
-                    {curriculumAccess && <span>Training library</span>}
+                    {curriculumAccess && (
+                        <span>
+                            {libraryAccessLevel === 'advanced'
+                                ? 'Basic + advanced training library'
+                                : 'Basic training library'}
+                        </span>
+                    )}
                     {wolfGuideAccess && wolfGuideMessagesPerWeek > 0 && (
                         <span>{wolfGuideMessagesPerWeek} Wolf Guide messages each week</span>
                     )}

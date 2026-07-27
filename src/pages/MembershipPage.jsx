@@ -35,7 +35,7 @@ export default function MembershipPage() {
                     <SectionHeading
                         eyebrow="Membership options"
                         title="Choose your level of support."
-                        body="Every membership includes progression and the training library. Begin includes a 3-message Wolf Guide preview, Train includes 15 Wolf Guide messages each week, and Integrate includes 30 each week plus one private lesson credit for up to three participants."
+                        body="Every membership includes progression and the Basic training library. Train and Integrate also unlock the Advanced library and full Wolf Guide support. Begin includes a 3-message Wolf Guide preview, Train includes 15 messages each week, and Integrate includes 30 each week plus one private lesson credit for up to three participants."
                     />
                     <div className="membership-grid">
                         {memberships.map((plan) => (

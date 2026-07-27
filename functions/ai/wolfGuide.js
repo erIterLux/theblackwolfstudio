@@ -606,7 +606,11 @@ async function getMemberProgressionContext(uid) {
     };
 }
 
-async function getRelevantCurriculumContext(message, progressionState) {
+async function getRelevantCurriculumContext(
+    message,
+    progressionState,
+    libraryAccessLevel = 'basic',
+) {
     const snapshot = await admin.firestore()
         .collection('progressionContent')
         .where('status', '==', 'published')
@@ -624,7 +628,14 @@ async function getRelevantCurriculumContext(message, progressionState) {
 
     const ranked = snapshot.docs
         .map((docSnap) => ({ id: docSnap.id, ...docSnap.data() }))
-        .filter((item) => item.aiEligible === true && item.visibility === 'members')
+        .filter((item) => (
+            item.aiEligible === true
+            && item.visibility === 'members'
+            && (
+                String(item.accessLevel || 'basic').toLowerCase() !== 'advanced'
+                || libraryAccessLevel === 'advanced'
+            )
+        ))
         .map((item) => ({
             item,
             score: scoreCurriculumItem(
@@ -944,7 +955,20 @@ async function handleWolfGuideChat(request, dependencies = {}) {
     const progressionState = personalized
         ? await getMemberProgressionContext(uid)
         : { text: '', currentLevelKey: 'white', categoryKeys: [] };
-    const curriculum = await getRelevantCurriculumContext(message, progressionState);
+    const entitlementPlanKey = String(entitlement.planKey || '').toLowerCase();
+    const libraryAccessLevel = ['train', 'integrate'].includes(entitlementPlanKey)
+        || (
+            entitlementPlanKey !== 'begin'
+            && String(entitlement.membership?.benefits?.libraryAccessLevel || '').toLowerCase()
+                === 'advanced'
+        )
+        ? 'advanced'
+        : 'basic';
+    const curriculum = await getRelevantCurriculumContext(
+        message,
+        progressionState,
+        libraryAccessLevel,
+    );
     const { ref: conversationRef, data: conversation } = await getConversation(uid, conversationId);
     await logMessage(conversationRef, 'member', message, {
         memberState: personalized && memberState ? memberState : null,

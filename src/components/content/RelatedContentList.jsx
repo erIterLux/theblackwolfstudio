@@ -1,4 +1,4 @@
-import { ArrowRight, BookOpen } from 'lucide-react';
+import { ArrowRight, BookOpen, LockKeyhole } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export default function RelatedContentList({ items = [], levelKey, categoryKey }) {
@@ -24,10 +24,24 @@ export default function RelatedContentList({ items = [], levelKey, categoryKey }
       </div>
       <div className="related-content__items">
         {items.slice(0, 3).map((item) => (
-          <Link key={item.id} to={`/member/library?content=${item.id}`}>
-            <BookOpen size={18} />
-            <span><strong>{item.title}</strong><small>{item.summary}</small></span>
-          </Link>
+          item.locked ? (
+            <div className="related-content__locked" key={item.id}>
+              <div aria-hidden="true">
+                <BookOpen size={18} />
+                <span><strong>{item.title}</strong><small>{item.summary}</small></span>
+              </div>
+              <span className="related-content__locked-message">
+                <LockKeyhole size={17} />
+                <span><strong>Advanced reference</strong><small>Train or Integrate required</small></span>
+              </span>
+              <Link className="text-link" to="/membership">View plans</Link>
+            </div>
+          ) : (
+            <Link key={item.id} to={`/member/library?content=${item.id}`}>
+              <BookOpen size={18} />
+              <span><strong>{item.title}</strong><small>{item.summary}</small></span>
+            </Link>
+          )
         ))}
       </div>
     </div>

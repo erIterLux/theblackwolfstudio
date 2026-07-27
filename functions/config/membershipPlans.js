@@ -6,6 +6,7 @@ const PLAN_DEFINITIONS = Object.freeze({
         benefits: Object.freeze({
             progressionAccess: true,
             curriculumAccess: true,
+            libraryAccessLevel: 'basic',
             instructorReviews: false,
             wolfGuideAccess: false,
             wolfGuideMessagesPerWeek: 0,
@@ -20,7 +21,7 @@ const PLAN_DEFINITIONS = Object.freeze({
         }),
         features: [
             'Progression tracking',
-            'Member technique library',
+            'Basic training library',
             '3-message Wolf Guide preview',
             '5% member pricing on eligible events, private training, and merchandise',
         ],
@@ -32,6 +33,7 @@ const PLAN_DEFINITIONS = Object.freeze({
         benefits: Object.freeze({
             progressionAccess: true,
             curriculumAccess: true,
+            libraryAccessLevel: 'advanced',
             instructorReviews: true,
             wolfGuideAccess: true,
             wolfGuideMessagesPerWeek: 15,
@@ -46,7 +48,7 @@ const PLAN_DEFINITIONS = Object.freeze({
         }),
         features: [
             'Full progression tracking',
-            'Member technique library',
+            'Basic and advanced training library',
             'Instructor progression reviews',
             '15 Wolf Guide messages each week',
             '10% member pricing on eligible events, private training, and merchandise',
@@ -59,6 +61,7 @@ const PLAN_DEFINITIONS = Object.freeze({
         benefits: Object.freeze({
             progressionAccess: true,
             curriculumAccess: true,
+            libraryAccessLevel: 'advanced',
             instructorReviews: true,
             wolfGuideAccess: true,
             wolfGuideMessagesPerWeek: 30,
@@ -73,7 +76,7 @@ const PLAN_DEFINITIONS = Object.freeze({
         }),
         features: [
             'Full progression tracking',
-            'Member technique library',
+            'Basic and advanced training library',
             'Instructor progression reviews',
             '30 Wolf Guide messages each week',
             '15% member pricing on eligible events, private training, and merchandise',

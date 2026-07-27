@@ -2,6 +2,7 @@ import {
   ArrowLeft,
   BookOpen,
   Filter,
+  LockKeyhole,
   Search,
 } from 'lucide-react';
 import { useMemo, useState } from 'react';
@@ -20,22 +21,29 @@ export default function MemberLibraryPage() {
   const [search, setSearch] = useState('');
   const levelKey = searchParams.get('level') || '';
   const categoryKey = searchParams.get('category') || '';
+  const accessKey = searchParams.get('access') || '';
   const selectedContentId = searchParams.get('content') || '';
-  const { items, loading, error } = useProgressionContent();
+  const {
+    items,
+    libraryAccessLevel,
+    loading,
+    error,
+  } = useProgressionContent();
 
   const filtered = useMemo(() => {
     const query = search.trim().toLowerCase();
     return items.filter((item) => {
       const matchesLevel = !levelKey || item.levelKeys?.includes(levelKey);
       const matchesCategory = !categoryKey || item.categoryKeys?.includes(categoryKey);
+      const matchesAccess = !accessKey || (item.accessLevel || 'basic') === accessKey;
       const haystack = [
         item.title,
         item.summary,
         ...(item.techniqueTags || []),
       ].join(' ').toLowerCase();
-      return matchesLevel && matchesCategory && (!query || haystack.includes(query));
+      return matchesLevel && matchesCategory && matchesAccess && (!query || haystack.includes(query));
     });
-  }, [items, levelKey, categoryKey, search]);
+  }, [items, levelKey, categoryKey, accessKey, search]);
 
   const selectedItem = items.find((item) => item.id === selectedContentId) || null;
 
@@ -62,7 +70,26 @@ export default function MemberLibraryPage() {
           >
             <ArrowLeft size={17} /> Back to training references
           </button>
-          <ProgressionContentDetail item={selectedItem} />
+          {selectedItem.locked ? (
+            <article className="content-library-locked-detail">
+              <div className="content-library-locked-detail__preview" aria-hidden="true">
+                <p className="eyebrow">Advanced training reference</p>
+                <h1>{selectedItem.title}</h1>
+                <p>{selectedItem.summary}</p>
+              </div>
+              <div className="content-library-locked-detail__message">
+                <span><LockKeyhole size={24} /></span>
+                <div>
+                  <p className="eyebrow">Advanced library</p>
+                  <h2>Unlock this training reference.</h2>
+                  <p>Advanced references are available with Train and Integrate memberships. Upgrade to open the full lesson and its connected media.</p>
+                  <Link className="button button--small" to="/membership">Compare memberships</Link>
+                </div>
+              </div>
+            </article>
+          ) : (
+            <ProgressionContentDetail item={selectedItem} />
+          )}
         </div>
       </section>
     );
@@ -80,7 +107,10 @@ export default function MemberLibraryPage() {
           <div>
             <p className="eyebrow">Member learning library</p>
             <h1>Train with a clear reference.</h1>
-            <p>Instructor-published text, images, audio, and video connected directly to progression requirements.</p>
+            <p>Begin includes Basic references. Train and Integrate unlock both Basic and Advanced references, including connected text, images, audio, and video.</p>
+            <span className={`content-library-access is-${libraryAccessLevel}`}>
+              Your access: {libraryAccessLevel === 'advanced' ? 'Basic + Advanced' : 'Basic'}
+            </span>
           </div>
           <BookOpen size={34} />
         </header>
@@ -111,6 +141,15 @@ export default function MemberLibraryPage() {
               {progressionCategories.map((category) => <option key={category.key} value={category.key}>{category.label}</option>)}
             </select>
           </label>
+
+          <label>
+            <Filter size={16} /> Content access
+            <select value={accessKey} onChange={(event) => setFilter('access', event.target.value)}>
+              <option value="">Basic and Advanced</option>
+              <option value="basic">Basic</option>
+              <option value="advanced">Advanced</option>
+            </select>
+          </label>
         </div>
 
         {error && <p className="form-status form-status--error">{error}</p>}
@@ -125,29 +164,56 @@ export default function MemberLibraryPage() {
           </div>
         ) : (
           <div className="content-library-grid">
-            {filtered.map((item) => (
-              <button
-                className="content-library-card"
-                type="button"
-                key={item.id}
-                onClick={() => {
-                  const next = new URLSearchParams(searchParams);
-                  next.set('content', item.id);
-                  setSearchParams(next);
-                }}
-              >
-                <div className="content-library-card__meta">
-                  <span>{progressionLevelMap[item.levelKeys?.[0]]?.label || 'Multiple levels'}</span>
-                  <span>{progressionCategoryMap[item.primaryCategory]?.label || 'Training reference'}</span>
-                </div>
-                <BookOpen size={24} />
-                <h2>{item.title}</h2>
-                <p>{item.summary}</p>
-                <div className="content-tag-row">
-                  {(item.techniqueTags || []).slice(0, 4).map((tag) => <span key={tag}>{tag}</span>)}
-                </div>
-              </button>
-            ))}
+            {filtered.map((item) => {
+              const cardContents = (
+                <>
+                  <div className="content-library-card__meta">
+                    <span className={`content-access-badge is-${item.accessLevel || 'basic'}`}>
+                      {item.accessLevel === 'advanced' ? 'Advanced' : 'Basic'}
+                    </span>
+                    <span>{progressionLevelMap[item.levelKeys?.[0]]?.label || 'Multiple levels'}</span>
+                    <span>{progressionCategoryMap[item.primaryCategory]?.label || 'Training reference'}</span>
+                  </div>
+                  <BookOpen size={24} />
+                  <h2>{item.title}</h2>
+                  <p>{item.summary}</p>
+                  <div className="content-tag-row">
+                    {(item.techniqueTags || []).slice(0, 4).map((tag) => <span key={tag}>{tag}</span>)}
+                  </div>
+                </>
+              );
+
+              if (item.locked) {
+                return (
+                  <article className="content-library-card is-locked" key={item.id}>
+                    <div className="content-library-card__blur" aria-hidden="true">{cardContents}</div>
+                    <div className="content-library-card__lock">
+                      <span><LockKeyhole size={21} /></span>
+                      <div>
+                        <strong>Advanced reference</strong>
+                        <small>Upgrade to Train or Integrate to unlock.</small>
+                      </div>
+                      <Link className="text-link" to="/membership">View plans</Link>
+                    </div>
+                  </article>
+                );
+              }
+
+              return (
+                <button
+                  className="content-library-card"
+                  type="button"
+                  key={item.id}
+                  onClick={() => {
+                    const next = new URLSearchParams(searchParams);
+                    next.set('content', item.id);
+                    setSearchParams(next);
+                  }}
+                >
+                  {cardContents}
+                </button>
+              );
+            })}
           </div>
         )}
       </div>

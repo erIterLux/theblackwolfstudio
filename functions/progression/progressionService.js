@@ -754,6 +754,15 @@ function safeMembershipSummary(membership = {}) {
         benefits: {
             progressionAccess: membership.benefits?.progressionAccess === true,
             curriculumAccess: membership.benefits?.curriculumAccess === true,
+            libraryAccessLevel: ['train', 'integrate'].includes(
+                String(membership.planKey || '').toLowerCase(),
+            )
+                ? 'advanced'
+                : String(membership.planKey || '').toLowerCase() === 'begin'
+                    ? 'basic'
+                    : ['basic', 'advanced'].includes(membership.benefits?.libraryAccessLevel)
+                        ? membership.benefits.libraryAccessLevel
+                        : 'basic',
             instructorReviews: membership.benefits?.instructorReviews === true,
             wolfGuideAccess: membership.benefits?.wolfGuideAccess === true,
             privateTrainingCreditsPerPeriod: Math.max(

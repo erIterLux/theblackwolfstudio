@@ -17,6 +17,18 @@ service cloud.firestore {
           || request.auth.token.admin == true);
     }
 
+    function hasLiveMembership() {
+      return signedIn()
+        && get(/databases/$(database)/documents/memberships/$(request.auth.uid)).data.status
+          in ['active', 'trialing'];
+    }
+
+    function hasAdvancedLibraryAccess() {
+      return hasLiveMembership()
+        && get(/databases/$(database)/documents/memberships/$(request.auth.uid)).data.planKey
+          in ['train', 'integrate'];
+    }
+
     match /inquiries/{inquiryId} {
       allow create: if request.resource.data.keys().hasOnly([
         'name',
@@ -94,9 +106,11 @@ service cloud.firestore {
 
     match /progressionContent/{contentId} {
       allow read: if isInstructor()
-        || (signedIn()
+        || (hasLiveMembership()
           && resource.data.status == 'published'
-          && resource.data.visibility == 'members');
+          && resource.data.visibility == 'members'
+          && (resource.data.get('accessLevel', 'basic') != 'advanced'
+            || hasAdvancedLibraryAccess()));
       allow write: if false;
     }
 

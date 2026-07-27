@@ -13,6 +13,36 @@ service firebase.storage {
           || request.auth.token.admin == true);
     }
 
+    function hasLiveMembership() {
+      return signedIn()
+        && firestore.get(
+          /databases/(default)/documents/memberships/$(request.auth.uid)
+        ).data.status in ['active', 'trialing'];
+    }
+
+    function hasAdvancedLibraryAccess() {
+      return hasLiveMembership()
+        && firestore.get(
+          /databases/(default)/documents/memberships/$(request.auth.uid)
+        ).data.planKey in ['train', 'integrate'];
+    }
+
+    function canReadProgressionContent(contentId) {
+      return hasLiveMembership()
+        && firestore.get(
+          /databases/(default)/documents/progressionContent/$(contentId)
+        ).data.status == 'published'
+        && firestore.get(
+          /databases/(default)/documents/progressionContent/$(contentId)
+        ).data.visibility == 'members'
+        && (
+          firestore.get(
+            /databases/(default)/documents/progressionContent/$(contentId)
+          ).data.get('accessLevel', 'basic') != 'advanced'
+          || hasAdvancedLibraryAccess()
+        );
+    }
+
     function canManageMember(memberUid) {
       return signedIn() && (request.auth.uid == memberUid || isInstructor());
     }
@@ -53,7 +83,7 @@ service firebase.storage {
     }
 
     match /progression-content/{contentId}/{blockId}/{fileName} {
-      allow read: if signedIn();
+      allow read: if isInstructor() || canReadProgressionContent(contentId);
       allow create, update: if isInstructor()
         && request.resource.size <= 250 * 1024 * 1024
         && isSupportedMedia();

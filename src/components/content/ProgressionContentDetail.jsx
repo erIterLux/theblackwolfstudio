@@ -31,6 +31,9 @@ export default function ProgressionContentDetail({ item, compact = false }) {
       </header>
 
       <div className="content-tag-row">
+        <span className={`content-access-badge is-${item.accessLevel || 'basic'}`}>
+          {item.accessLevel === 'advanced' ? 'Advanced library' : 'Basic library'}
+        </span>
         {(item.levelKeys || []).map((levelKey) => (
           <span key={levelKey}>{progressionLevelMap[levelKey]?.label || levelKey}</span>
         ))}

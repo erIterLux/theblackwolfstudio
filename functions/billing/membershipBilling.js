@@ -244,6 +244,9 @@ async function syncSubscription({ stripe, subscription, eventType, priceMap }) {
         benefits: {
             progressionAccess: Boolean(isLive && benefits.progressionAccess),
             curriculumAccess: Boolean(isLive && benefits.curriculumAccess),
+            libraryAccessLevel: isLive
+                ? String(benefits.libraryAccessLevel || 'basic')
+                : 'none',
             instructorReviews: Boolean(isLive && benefits.instructorReviews),
             wolfGuideAccess: Boolean(isLive && (benefits.wolfGuideAccess ?? plan?.wolfGuide)),
             wolfGuideMessagesPerWeek: isLive

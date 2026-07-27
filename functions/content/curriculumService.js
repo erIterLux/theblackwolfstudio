@@ -12,6 +12,7 @@ const LIVE_MEMBERSHIP_STATUSES = new Set(['active', 'trialing']);
 const ALLOWED_STATUSES = new Set(['draft', 'published', 'archived']);
 const ALLOWED_VISIBILITY = new Set(['members', 'instructors']);
 const ALLOWED_BLOCK_TYPES = new Set(['text', 'image', 'audio', 'video']);
+const ALLOWED_ACCESS_LEVELS = new Set(['basic', 'advanced']);
 const LEVEL_KEYS = new Set(LEVELS.map((level) => level.key));
 const CATEGORY_KEYS = new Set(CATEGORIES.map((category) => category.key));
 
@@ -43,6 +44,7 @@ function normalizeRequirementRef(reference) {
 function normalizeContentLevels(item = {}) {
   return {
     ...item,
+    accessLevel: ALLOWED_ACCESS_LEVELS.has(item.accessLevel) ? item.accessLevel : 'basic',
     levelKeys: [...new Set(
       (Array.isArray(item.levelKeys) ? item.levelKeys : [])
         .map(canonicalLevelKey)
@@ -91,12 +93,25 @@ async function assertInstructor(request) {
   return { uid, role };
 }
 
+function membershipLibraryAccessLevel(membership = {}) {
+  const planKey = String(membership.planKey || '').toLowerCase();
+  if (planKey === 'begin') return 'basic';
+  if (['train', 'integrate'].includes(planKey)) return 'advanced';
+  const stored = String(membership.benefits?.libraryAccessLevel || '').toLowerCase();
+  if (ALLOWED_ACCESS_LEVELS.has(stored)) return stored;
+  return 'basic';
+}
+
 async function assertMemberAccess(uid) {
   const membershipSnap = await db.collection('memberships').doc(uid).get();
   const membership = membershipSnap.data() || {};
   if (!LIVE_MEMBERSHIP_STATUSES.has(membership.status)) {
     throw new HttpsError('permission-denied', 'An active membership is required for the training library.');
   }
+  return {
+    membership,
+    libraryAccessLevel: membershipLibraryAccessLevel(membership),
+  };
 }
 
 function sanitizeAsset(asset, contentId, blockId) {
@@ -197,6 +212,7 @@ function sanitizeContentPayload(data = {}) {
   const primaryCategory = clean(data.primaryCategory, 60);
   const title = clean(data.title, 240);
   const summary = clean(data.summary, 1200);
+  const requestedAccessLevel = clean(data.accessLevel, 20).toLowerCase();
 
   if (!title || !summary || !levelKeys.length || !categoryKeys.length) {
     throw new HttpsError('invalid-argument', 'Title, summary, levels, and categories are required.');
@@ -204,11 +220,15 @@ function sanitizeContentPayload(data = {}) {
   if (!categoryKeys.includes(primaryCategory)) {
     throw new HttpsError('invalid-argument', 'The primary category must be one of the selected categories.');
   }
+  if (requestedAccessLevel && !ALLOWED_ACCESS_LEVELS.has(requestedAccessLevel)) {
+    throw new HttpsError('invalid-argument', 'Library access level must be Basic or Advanced.');
+  }
 
   const content = {
     contentId,
     title,
     summary,
+    accessLevel: requestedAccessLevel || 'basic',
     primaryCategory,
     categoryKeys,
     levelKeys,
@@ -230,7 +250,9 @@ async function handleListProgressionContent(request) {
   const uid = requireAuth(request);
   const role = await getStudioRole(uid, request.auth?.token || {});
   const isInstructor = INSTRUCTOR_ROLES.has(role);
-  if (!isInstructor) await assertMemberAccess(uid);
+  const memberAccess = isInstructor
+    ? { libraryAccessLevel: 'advanced' }
+    : await assertMemberAccess(uid);
 
   const includeDrafts = isInstructor && request.data?.includeDrafts === true;
   const levelKey = clean(request.data?.levelKey, 40);
@@ -253,16 +275,41 @@ async function handleListProgressionContent(request) {
     })
     .sort((left, right) => String(right.updatedAt?.toDate?.() || right.updatedAt || '')
       .localeCompare(String(left.updatedAt?.toDate?.() || left.updatedAt || '')))
-    .map(serialize);
+    .map((item) => {
+      const locked = !isInstructor
+        && item.accessLevel === 'advanced'
+        && memberAccess.libraryAccessLevel !== 'advanced';
+      if (!locked) return serialize(item);
+      return serialize({
+        id: item.id,
+        title: item.title,
+        summary: item.summary,
+        primaryCategory: item.primaryCategory,
+        categoryKeys: item.categoryKeys || [],
+        levelKeys: item.levelKeys || [],
+        techniqueTags: item.techniqueTags || [],
+        status: item.status,
+        accessLevel: 'advanced',
+        locked: true,
+        requiredMemberships: ['Train', 'Integrate'],
+        updatedAt: item.updatedAt || null,
+      });
+    });
 
-  return { items, role };
+  return {
+    items,
+    role,
+    libraryAccessLevel: memberAccess.libraryAccessLevel,
+  };
 }
 
 async function handleGetProgressionContent(request) {
   const uid = requireAuth(request);
   const role = await getStudioRole(uid, request.auth?.token || {});
   const isInstructor = INSTRUCTOR_ROLES.has(role);
-  if (!isInstructor) await assertMemberAccess(uid);
+  const memberAccess = isInstructor
+    ? { libraryAccessLevel: 'advanced' }
+    : await assertMemberAccess(uid);
 
   const contentId = clean(request.data?.contentId, 180);
   if (!contentId) throw new HttpsError('invalid-argument', 'A content ID is required.');
@@ -271,6 +318,16 @@ async function handleGetProgressionContent(request) {
   const item = normalizeContentLevels({ id: snap.id, ...snap.data() });
   if (!isInstructor && (item.status !== 'published' || item.visibility !== 'members')) {
     throw new HttpsError('permission-denied', 'This training reference is not available.');
+  }
+  if (
+    !isInstructor
+    && item.accessLevel === 'advanced'
+    && memberAccess.libraryAccessLevel !== 'advanced'
+  ) {
+    throw new HttpsError(
+      'permission-denied',
+      'Advanced training references require a Train or Integrate membership.',
+    );
   }
   return { item: serialize(item) };
 }
@@ -322,6 +379,7 @@ async function handleSetProgressionContentStatus(request) {
 
   await ref.set({
     status,
+    accessLevel: ALLOWED_ACCESS_LEVELS.has(current.accessLevel) ? current.accessLevel : 'basic',
     publishedAt: status === 'published' ? now() : current.publishedAt || null,
     archivedAt: status === 'archived' ? now() : admin.firestore.FieldValue.delete(),
     updatedAt: now(),

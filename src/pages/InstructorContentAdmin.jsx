@@ -6,6 +6,7 @@ import {
     FileImage,
     FileText,
     FileVideo,
+    LockKeyhole,
     Plus,
     RefreshCw,
     Save,
@@ -33,6 +34,7 @@ const EMPTY_CONTENT = {
     id: '',
     title: '',
     summary: '',
+    accessLevel: 'basic',
     primaryCategory: 'movement',
     categoryKeys: ['movement'],
     levelKeys: ['white'],
@@ -71,6 +73,7 @@ function makeDraft(item = {}) {
         ...EMPTY_CONTENT,
         ...item,
         id: item.id || makeClientId('content'),
+        accessLevel: item.accessLevel === 'advanced' ? 'advanced' : 'basic',
         categoryKeys: item.categoryKeys?.length ? item.categoryKeys : ['movement'],
         levelKeys: item.levelKeys?.length ? item.levelKeys : ['white'],
         requirementRefs: item.requirementRefs || [],
@@ -103,9 +106,11 @@ export default function InstructorContentAdmin() {
         try {
             const result = await listProgressionContent({ includeDrafts: true }, { force });
             setItems(result?.items || []);
+            return result;
         } catch (error) {
             console.error(error);
             setMessage(error?.message || 'The content library could not be loaded.');
+            return null;
         } finally {
             setLoading(false);
         }
@@ -127,6 +132,7 @@ export default function InstructorContentAdmin() {
             item.title,
             item.summary,
             item.status,
+            item.accessLevel,
             ...(item.techniqueTags || []),
         ].join(' ').toLowerCase().includes(query));
     }, [items, search]);
@@ -178,6 +184,7 @@ export default function InstructorContentAdmin() {
         contentId: draft.id,
         title: draft.title,
         summary: draft.summary,
+        accessLevel: draft.accessLevel,
         primaryCategory: draft.primaryCategory,
         categoryKeys: draft.categoryKeys,
         levelKeys: draft.levelKeys,
@@ -193,16 +200,23 @@ export default function InstructorContentAdmin() {
     });
 
     const save = async (publish = false) => {
+        if (!['basic', 'advanced'].includes(draft.accessLevel)) {
+            setMessage('Choose a Basic or Advanced library access level.');
+            return;
+        }
         setBusy(true);
         setMessage('');
         try {
             const result = await saveProgressionContent(payload());
             if (publish) await setProgressionContentStatus(result.contentId, 'published');
-            await loadItems();
-            const nextResult = await listProgressionContent({ includeDrafts: true });
+            const nextResult = await loadItems({ force: true });
             const saved = nextResult?.items?.find((item) => item.id === result.contentId);
             if (saved) setDraft(makeDraft(saved));
-            setMessage(publish ? 'Reference published to members and Wolf Guide.' : 'Draft saved.');
+            setMessage(
+                publish
+                    ? `Reference published to ${draft.accessLevel === 'advanced' ? 'Train and Integrate' : 'all'} members${draft.aiEligible ? ' and eligible Wolf Guide retrieval' : ''}.`
+                    : 'Draft saved.',
+            );
         } catch (error) {
             console.error(error);
             setMessage(error?.message || 'The training reference could not be saved.');
@@ -292,7 +306,13 @@ export default function InstructorContentAdmin() {
                                     setPreview(false);
                                 }}
                             >
-                                <span><strong>{item.title}</strong><small>{item.summary}</small></span>
+                                <span>
+                                    <strong>{item.title}</strong>
+                                    <small>{item.summary}</small>
+                                    <small className={`content-access-label is-${item.accessLevel || 'basic'}`}>
+                                        {item.accessLevel === 'advanced' ? 'Advanced' : 'Basic'}
+                                    </small>
+                                </span>
                                 <em className={statusClass(item.status)}>{item.status}</em>
                             </button>
                         ))}
@@ -313,6 +333,43 @@ export default function InstructorContentAdmin() {
                             <ProgressionContentDetail item={previewItem} />
                         ) : (
                             <div className="content-editor-form">
+                                <section className="content-editor-step">
+                                    <header className="content-editor-step__heading">
+                                        <span>1</span>
+                                        <div>
+                                            <h2>Access and overview</h2>
+                                            <p>Classify the reference first, then give members a clear reason to open it.</p>
+                                        </div>
+                                    </header>
+                                    <fieldset className="content-access-picker">
+                                        <legend>Library access level <span className="required-label">Required</span></legend>
+                                        <div>
+                                            <label className={draft.accessLevel === 'basic' ? 'is-selected' : ''}>
+                                                <input
+                                                    type="radio"
+                                                    name="content-access-level"
+                                                    value="basic"
+                                                    checked={draft.accessLevel === 'basic'}
+                                                    onChange={(event) => updateDraft({ accessLevel: event.target.value })}
+                                                    required
+                                                />
+                                                <BookOpen size={21} />
+                                                <span><strong>Basic</strong><small>Begin, Train, and Integrate members</small></span>
+                                            </label>
+                                            <label className={draft.accessLevel === 'advanced' ? 'is-selected' : ''}>
+                                                <input
+                                                    type="radio"
+                                                    name="content-access-level"
+                                                    value="advanced"
+                                                    checked={draft.accessLevel === 'advanced'}
+                                                    onChange={(event) => updateDraft({ accessLevel: event.target.value })}
+                                                    required
+                                                />
+                                                <LockKeyhole size={21} />
+                                                <span><strong>Advanced</strong><small>Train and Integrate members only</small></span>
+                                            </label>
+                                        </div>
+                                    </fieldset>
                                 <label>
                                     Title
                                     <input value={draft.title} onChange={(event) => updateDraft({ title: event.target.value })} placeholder="Example: Maintaining a Stable Fighting Base" />
@@ -321,7 +378,16 @@ export default function InstructorContentAdmin() {
                                     Summary
                                     <textarea value={draft.summary} onChange={(event) => updateDraft({ summary: event.target.value })} placeholder="A concise explanation of what this reference teaches." />
                                 </label>
+                                </section>
 
+                                <section className="content-editor-step">
+                                <header className="content-editor-step__heading">
+                                    <span>2</span>
+                                    <div>
+                                        <h2>Progression connections</h2>
+                                        <p>Choose the levels, categories, and exact skill requirements this reference supports.</p>
+                                    </div>
+                                </header>
                                 <fieldset>
                                     <legend>Progression levels</legend>
                                     <div className="content-checkbox-grid">
@@ -345,7 +411,6 @@ export default function InstructorContentAdmin() {
                                         ))}
                                     </div>
                                 </fieldset>
-
                                 <label>
                                     Primary category
                                     <select value={draft.primaryCategory} onChange={(event) => updateDraft({ primaryCategory: event.target.value })}>
@@ -372,7 +437,16 @@ export default function InstructorContentAdmin() {
                                         ))}
                                     </div>
                                 </fieldset>
+                                </section>
 
+                                <section className="content-editor-step">
+                                <header className="content-editor-step__heading">
+                                    <span>3</span>
+                                    <div>
+                                        <h2>Teaching notes</h2>
+                                        <p>Capture the coaching language that makes the reference useful and safe.</p>
+                                    </div>
+                                </header>
                                 <label>
                                     Technique tags
                                     <input value={draft.techniqueTagsText} onChange={(event) => updateDraft({ techniqueTagsText: event.target.value })} placeholder="stance, balance, footwork" />
@@ -384,7 +458,16 @@ export default function InstructorContentAdmin() {
                                     <label>Common mistakes<textarea value={draft.commonMistakesText} onChange={(event) => updateDraft({ commonMistakesText: event.target.value })} placeholder="One item per line" /></label>
                                     <label>Safety notes<textarea value={draft.safetyNotesText} onChange={(event) => updateDraft({ safetyNotesText: event.target.value })} placeholder="One item per line" /></label>
                                 </div>
+                                </section>
 
+                                <section className="content-editor-step">
+                                <header className="content-editor-step__heading">
+                                    <span>4</span>
+                                    <div>
+                                        <h2>Member-facing sections</h2>
+                                        <p>Build the lesson with text, images, audio, or video.</p>
+                                    </div>
+                                </header>
                                 <div className="content-blocks-heading">
                                     <div><h2>Content sections</h2><p>Mix text, images, audio, and video. Media captions are provided to Wolf Guide.</p></div>
                                     <div>
@@ -407,7 +490,16 @@ export default function InstructorContentAdmin() {
                                 ))}
 
                                 {!draft.blocks.length && <p className="content-editor-empty">Add at least one section to build the reference.</p>}
+                                </section>
 
+                                <section className="content-editor-step">
+                                <header className="content-editor-step__heading">
+                                    <span>5</span>
+                                    <div>
+                                        <h2>Publishing controls</h2>
+                                        <p>Confirm visibility and whether Wolf Guide may use this reference.</p>
+                                    </div>
+                                </header>
                                 <div className="content-publishing-options">
                                     <label>
                                         Visibility
@@ -418,9 +510,10 @@ export default function InstructorContentAdmin() {
                                     </label>
                                     <label className="content-ai-toggle">
                                         <input type="checkbox" checked={draft.aiEligible} onChange={(event) => updateDraft({ aiEligible: event.target.checked })} />
-                                        Include published content in Wolf Guide retrieval
+                                        Include in Wolf Guide retrieval for memberships allowed to access it
                                     </label>
                                 </div>
+                                </section>
                             </div>
                         )}
 
@@ -430,10 +523,10 @@ export default function InstructorContentAdmin() {
                                     <Archive size={16} /> Archive
                                 </button>
                             )}
-                            <button className="button button--small button--dark-ghost" type="button" onClick={() => save(false)} disabled={busy || !draft.title.trim() || !draft.summary.trim()}>
+                            <button className="button button--small button--dark-ghost" type="button" onClick={() => save(false)} disabled={busy || !draft.accessLevel || !draft.title.trim() || !draft.summary.trim()}>
                                 <Save size={16} /> {busy ? 'Saving…' : 'Save draft'}
                             </button>
-                            <button className="button button--small" type="button" onClick={() => save(true)} disabled={busy || !draft.title.trim() || !draft.summary.trim() || !draft.blocks.length}>
+                            <button className="button button--small" type="button" onClick={() => save(true)} disabled={busy || !draft.accessLevel || !draft.title.trim() || !draft.summary.trim() || !draft.blocks.length}>
                                 <Send size={16} /> {busy ? 'Publishing…' : 'Publish'}
                             </button>
                         </footer>
