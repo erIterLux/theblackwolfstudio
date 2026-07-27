@@ -61,8 +61,8 @@ export default function MembershipPage() {
                         <p>Active members receive structured progression across striking, movement, situational awareness, breath control, grappling, ground, and weapons. Each level is validated by an instructor.</p>
                     </div>
                     <p className="membership-fine-print">
-                        Membership access is granted only after Stripe confirms the subscription
-                        through the secure webhook. Wolf Guide weekly allowances reset Monday at
+                        Membership access is granted only after Stripe confirms the subscription. 
+                        Wolf Guide weekly allowances reset Monday at
                         midnight Eastern, do not roll over, and count successful AI responses only;
                         the Begin preview is one-time. Plans renew automatically until canceled
                         through the billing portal.
