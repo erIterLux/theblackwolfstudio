@@ -1,19 +1,51 @@
 import {
   CheckCircle2,
+  Eye,
+  HeartPulse,
   Mail,
+  Phone,
   Search,
   ShieldAlert,
   ShieldCheck,
+  UserRound,
   UserCheck,
+  X,
 } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { sendWaiverReminder } from '../../services/waivers';
 import SignedWaiverDocumentActions from '../waivers/SignedWaiverDocumentActions';
 import WaiverReminderButton from '../waivers/WaiverReminderButton';
 
+const FOCUSABLE_SELECTOR = [
+  'a[href]',
+  'button:not([disabled])',
+  'input:not([disabled])',
+  'select:not([disabled])',
+  'textarea:not([disabled])',
+  '[tabindex]:not([tabindex="-1"])',
+].join(',');
+
 function readable(value) {
   return String(value || 'pending').replaceAll('_', ' ');
+}
+
+function formatMoney(cents, currency = 'usd') {
+  if (!Number.isFinite(Number(cents))) return 'Not listed';
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: String(currency || 'usd').toUpperCase(),
+  }).format(Number(cents) / 100);
+}
+
+function formatDate(value) {
+  if (!value) return 'Not listed';
+  const date = new Date(value);
+  if (Number.isNaN(date.valueOf())) return 'Not listed';
+  return new Intl.DateTimeFormat('en-US', {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+  }).format(date);
 }
 
 function emergencyContactComplete(participant) {
@@ -27,6 +59,190 @@ function waiverComplete(participant) {
   return ['signed', 'covered', 'not_required'].includes(participant.waiverStatus);
 }
 
+function DetailItem({ label, children }) {
+  return (
+    <div>
+      <dt>{label}</dt>
+      <dd>{children || 'Not listed'}</dd>
+    </div>
+  );
+}
+
+function RegistrantDetailsModal({ participant, onClose }) {
+  const titleId = useId();
+  const dialogRef = useRef(null);
+  const closeButtonRef = useRef(null);
+
+  useEffect(() => {
+    const previousOverflow = window.document.body.style.overflow;
+    window.document.body.style.overflow = 'hidden';
+    closeButtonRef.current?.focus();
+
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') {
+        onClose();
+        return;
+      }
+      if (event.key !== 'Tab') return;
+
+      const focusable = [...(dialogRef.current?.querySelectorAll(FOCUSABLE_SELECTOR) || [])];
+      if (!focusable.length) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && window.document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && window.document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.document.body.style.overflow = previousOverflow;
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [onClose]);
+
+  const hasEmergencyContact = emergencyContactComplete(participant);
+  const purchaser = participant.purchaser || {};
+  const pricing = participant.pricing || {};
+
+  return (
+    <div
+      className="registrant-details-modal"
+      role="presentation"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget) onClose();
+      }}
+    >
+      <section
+        ref={dialogRef}
+        className="registrant-details-modal__dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+      >
+        <header className="registrant-details-modal__header">
+          <div>
+            <p className="eyebrow">Registrant details</p>
+            <h2 id={titleId}>{participant.fullName || 'Unnamed participant'}</h2>
+            <p>Registration {participant.registrationId}</p>
+          </div>
+          <button
+            ref={closeButtonRef}
+            className="registrant-details-modal__close"
+            type="button"
+            onClick={onClose}
+            aria-label="Close registrant details"
+          >
+            <X size={22} aria-hidden="true" />
+          </button>
+        </header>
+
+        <div className="registrant-details-modal__body">
+          <section className={`registrant-emergency-card${hasEmergencyContact ? '' : ' is-missing'}`}>
+            <div className="registrant-details-section__heading">
+              <span><HeartPulse size={22} aria-hidden="true" /></span>
+              <div>
+                <p className="eyebrow">Emergency contact</p>
+                <h3>{hasEmergencyContact ? 'Contact information' : 'Information missing'}</h3>
+              </div>
+            </div>
+            <dl className="registrant-details-grid">
+              <DetailItem label="Full name">{participant.emergencyContactName}</DetailItem>
+              <DetailItem label="Phone">
+                {participant.emergencyContactPhone ? (
+                  <a href={`tel:${participant.emergencyContactPhone}`}>
+                    <Phone size={15} aria-hidden="true" />
+                    {participant.emergencyContactPhone}
+                  </a>
+                ) : null}
+              </DetailItem>
+            </dl>
+          </section>
+
+          <section className="registrant-details-section">
+            <div className="registrant-details-section__heading">
+              <span><UserRound size={22} aria-hidden="true" /></span>
+              <div>
+                <p className="eyebrow">Participant</p>
+                <h3>Personal information</h3>
+              </div>
+            </div>
+            <dl className="registrant-details-grid">
+              <DetailItem label="Full legal name">{participant.fullName}</DetailItem>
+              <DetailItem label="Email">
+                {participant.email ? <a href={`mailto:${participant.email}`}>{participant.email}</a> : null}
+              </DetailItem>
+              <DetailItem label="Phone">
+                {participant.phone ? <a href={`tel:${participant.phone}`}>{participant.phone}</a> : null}
+              </DetailItem>
+              <DetailItem label="Age status">{participant.isMinor ? 'Minor' : 'Adult'}</DetailItem>
+              <DetailItem label="Media consent">{participant.mediaConsent ? 'Granted' : 'Not granted'}</DetailItem>
+              <DetailItem label="Purchaser">{participant.isPurchaser ? 'Participant is purchaser' : 'Different purchaser'}</DetailItem>
+            </dl>
+          </section>
+
+          {participant.isMinor && (
+            <section className="registrant-details-section">
+              <div className="registrant-details-section__heading">
+                <span><ShieldCheck size={22} aria-hidden="true" /></span>
+                <div>
+                  <p className="eyebrow">Minor participant</p>
+                  <h3>Parent or guardian</h3>
+                </div>
+              </div>
+              <dl className="registrant-details-grid">
+                <DetailItem label="Full name">{participant.guardianName}</DetailItem>
+                <DetailItem label="Email">
+                  {participant.guardianEmail ? (
+                    <a href={`mailto:${participant.guardianEmail}`}>{participant.guardianEmail}</a>
+                  ) : null}
+                </DetailItem>
+              </dl>
+            </section>
+          )}
+
+          <section className="registrant-details-section">
+            <div className="registrant-details-section__heading">
+              <span><UserCheck size={22} aria-hidden="true" /></span>
+              <div>
+                <p className="eyebrow">Registration</p>
+                <h3>Purchaser and status</h3>
+              </div>
+            </div>
+            <dl className="registrant-details-grid">
+              <DetailItem label="Purchaser name">{purchaser.name}</DetailItem>
+              <DetailItem label="Purchaser email">
+                {purchaser.email ? <a href={`mailto:${purchaser.email}`}>{purchaser.email}</a> : null}
+              </DetailItem>
+              <DetailItem label="Purchaser phone">
+                {purchaser.phone ? <a href={`tel:${purchaser.phone}`}>{purchaser.phone}</a> : null}
+              </DetailItem>
+              <DetailItem label="Registered">{formatDate(participant.registeredAt)}</DetailItem>
+              <DetailItem label="Registration status">{readable(participant.registrationStatus)}</DetailItem>
+              <DetailItem label="Payment status">{readable(participant.paymentStatus)}</DetailItem>
+              <DetailItem label="Amount paid">
+                {formatMoney(pricing.totalCents, pricing.currency || participant.currency)}
+              </DetailItem>
+              <DetailItem label="Waiver status">{readable(participant.waiverStatus)}</DetailItem>
+              <DetailItem label="Check-in status">{readable(participant.checkInStatus)}</DetailItem>
+            </dl>
+          </section>
+        </div>
+
+        <footer className="registrant-details-modal__footer">
+          <button className="button button--small" type="button" onClick={onClose}>
+            Close details
+          </button>
+        </footer>
+      </section>
+    </div>
+  );
+}
+
 export default function InstructorEventParticipants({
   registrations = [],
   loading = false,
@@ -37,6 +253,8 @@ export default function InstructorEventParticipants({
   const [bulkBusy, setBulkBusy] = useState(false);
   const [bulkMessage, setBulkMessage] = useState('');
   const [bulkError, setBulkError] = useState('');
+  const [selectedParticipant, setSelectedParticipant] = useState(null);
+  const detailsTriggerRef = useRef(null);
 
   const participants = useMemo(() => registrations.flatMap((registration) => (
     (registration.participants || []).map((participant) => ({
@@ -44,8 +262,17 @@ export default function InstructorEventParticipants({
       purchaser: registration.purchaser || null,
       registrationId: registration.id,
       pricing: registration.pricing || null,
+      currency: registration.currency || registration.pricing?.currency || 'usd',
+      registeredAt: registration.paidAt || registration.createdAt || null,
+      registrationStatus: registration.registrationStatus,
+      paymentStatus: registration.paymentStatus,
     }))
   )), [registrations]);
+
+  const closeDetails = () => {
+    setSelectedParticipant(null);
+    window.requestAnimationFrame(() => detailsTriggerRef.current?.focus());
+  };
 
   const pendingParticipants = useMemo(
     () => participants.filter((participant) => participant.waiverStatus === 'pending'),
@@ -248,6 +475,17 @@ export default function InstructorEventParticipants({
               </div>
 
               <div className="event-participant-operation__actions">
+                <button
+                  className="button button--small"
+                  type="button"
+                  onClick={(event) => {
+                    detailsTriggerRef.current = event.currentTarget;
+                    setSelectedParticipant(participant);
+                  }}
+                >
+                  <Eye size={16} aria-hidden="true" />
+                  View details
+                </button>
                 {['signed', 'covered'].includes(participant.waiverStatus) && (
                   <SignedWaiverDocumentActions
                     scope="event"
@@ -278,6 +516,10 @@ export default function InstructorEventParticipants({
           );
         })}
       </div>
+
+      {selectedParticipant && (
+        <RegistrantDetailsModal participant={selectedParticipant} onClose={closeDetails} />
+      )}
     </section>
   );
 }
