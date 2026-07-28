@@ -180,12 +180,19 @@ export default function PortalShell({
                         </PrefetchLink>
                     )}
                     <NotificationBell to={notificationsPath} />
-                    <div className="portal-user" title={displayName}>
+                    <PrefetchLink
+                        className="portal-user"
+                        to={`${homePath}/profile`}
+                        title={`${displayName} profile`}
+                        aria-label={`Open profile for ${displayName}`}
+                    >
                         <span className="portal-user__avatar" aria-hidden="true">
-                            {displayName.slice(0, 1).toUpperCase()}
+                            {user?.photoURL ? (
+                                <img src={user.photoURL} alt="" />
+                            ) : displayName.slice(0, 1).toUpperCase()}
                         </span>
                         <span className="portal-user__name">{displayName}</span>
-                    </div>
+                    </PrefetchLink>
                 </div>
             </header>
 

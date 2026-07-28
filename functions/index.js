@@ -100,6 +100,22 @@ exports.getAuthenticatedAppBootstrap = onCall({
     instructorEmails: instructorEmails.value(),
 }));
 
+function loadProfileService() {
+    return require('./profile/profileService');
+}
+
+exports.getMyProfile = onCall({
+    invoker: 'public',
+    memory: '256MiB',
+    timeoutSeconds: 30,
+}, async (request) => loadProfileService().handleGetMyProfile(request));
+
+exports.updateMyProfile = onCall({
+    invoker: 'public',
+    memory: '256MiB',
+    timeoutSeconds: 30,
+}, async (request) => loadProfileService().handleUpdateMyProfile(request));
+
 exports.getMemberDashboardSummary = onCall({
     invoker: 'public',
     memory: '512MiB',

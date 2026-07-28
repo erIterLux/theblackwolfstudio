@@ -57,6 +57,16 @@ service firebase.storage {
       allow read, write: if signedIn() && request.auth.uid == userId;
     }
 
+    match /profile-images/{userId}/{fileName} {
+      allow read: if signedIn();
+      allow create, update: if signedIn()
+        && request.auth.uid == userId
+        && fileName == 'avatar'
+        && request.resource.size <= 5 * 1024 * 1024
+        && request.resource.contentType.matches('image/(jpeg|png|webp)');
+      allow delete: if signedIn() && request.auth.uid == userId;
+    }
+
     match /progression-videos/{memberUid}/{levelKey}/{categoryKey}/{fileName} {
       allow read: if canManageMember(memberUid);
       allow create, update: if canManageMember(memberUid)

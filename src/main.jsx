@@ -15,6 +15,7 @@ import './styles/purchases.css';
 import './styles/private-booking.css';
 import './styles/reports.css';
 import './styles/notifications.css';
+import './styles/profile.css';
 import './styles/dashboard-refinement.css';
 import './styles/app-shells.css';
 import './styles/operational-design-system.css';

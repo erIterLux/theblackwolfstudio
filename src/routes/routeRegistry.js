@@ -36,6 +36,7 @@ const routeDefinitions = {
   instructorProgression: () => import('../pages/InstructorProgressionAdmin'),
   instructorContent: () => import('../pages/InstructorContentAdmin'),
   memberLibrary: () => import('../pages/MemberLibraryPage'),
+  profile: () => import('../pages/ProfilePage'),
   notFound: () => import('../pages/NotFoundPage'),
 };
 
@@ -87,6 +88,7 @@ const routeMatchers = [
   [/^\/member\/private-training\/book\/?$/, 'privateTrainingBooking'],
   [/^\/member\/purchases\/?$/, 'memberPurchases'],
   [/^\/member\/notifications\/?$/, 'notifications'],
+  [/^\/member\/profile\/?$/, 'profile'],
   [/^\/instructor\/?$/, 'instructorHome'],
   [/^\/instructor\/progression\/?$/, 'instructorProgression'],
   [/^\/instructor\/content\/?$/, 'instructorContent'],
@@ -101,6 +103,7 @@ const routeMatchers = [
   [/^\/instructor\/reports(?:\/[^/]+)?\/?$/, 'instructorReports'],
   [/^\/instructor\/announcements\/?$/, 'instructorAnnouncements'],
   [/^\/instructor\/notifications\/?$/, 'notifications'],
+  [/^\/instructor\/profile\/?$/, 'profile'],
 ];
 
 function normalizePath(to) {

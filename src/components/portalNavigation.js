@@ -28,6 +28,7 @@ export const memberNavigation = [
       { label: 'Training library', to: '/member/library', icon: BookOpen },
       { label: 'Purchases', to: '/member/purchases', icon: ReceiptText },
       { label: 'Notifications', to: '/member/notifications', icon: Bell },
+      { label: 'Profile', to: '/member/profile', icon: UserCog },
     ],
   },
 ];
@@ -64,6 +65,7 @@ export const instructorNavigation = [
       { label: 'QR code generator', to: '/instructor/qr-code', icon: QrCode },
       { label: 'Announcements', to: '/instructor/announcements', icon: Megaphone },
       { label: 'Notifications', to: '/instructor/notifications', icon: Bell },
+      { label: 'Profile', to: '/instructor/profile', icon: UserCog },
     ],
   },
 ];

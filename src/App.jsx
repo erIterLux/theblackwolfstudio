@@ -48,6 +48,7 @@ const ProgressionPage = lazy(routeLoaders.progression);
 const InstructorProgressionAdmin = lazy(routeLoaders.instructorProgression);
 const InstructorContentAdmin = lazy(routeLoaders.instructorContent);
 const MemberLibraryPage = lazy(routeLoaders.memberLibrary);
+const ProfilePage = lazy(routeLoaders.profile);
 const NotFoundPage = lazy(routeLoaders.notFound);
 
 export default function App() {
@@ -97,6 +98,7 @@ export default function App() {
                     <Route path="member/private-training/book" element={<PrivateTrainingBookingPage />} />
                     <Route path="member/purchases" element={<MemberPurchasesPage />} />
                     <Route path="member/notifications" element={<NotificationsPage />} />
+                    <Route path="member/profile" element={<ProfilePage />} />
                     <Route
                         path="member/*"
                         element={(
@@ -133,6 +135,7 @@ export default function App() {
                     <Route path="instructor/reports/:reportSection" element={<InstructorReportsPage />} />
                     <Route path="instructor/announcements" element={<InstructorAnnouncementsAdmin />} />
                     <Route path="instructor/notifications" element={<NotificationsPage />} />
+                    <Route path="instructor/profile" element={<ProfilePage />} />
                     <Route
                         path="instructor/*"
                         element={(

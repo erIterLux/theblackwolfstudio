@@ -21,6 +21,7 @@ const EXACT_TITLES = new Map([
   ['/member/private-training/book', 'Book private training'],
   ['/member/purchases', 'Purchases'],
   ['/member/notifications', 'Notifications'],
+  ['/member/profile', 'Member profile'],
   ['/instructor', 'Instructor overview'],
   ['/instructor/progression', 'Progression reviews'],
   ['/instructor/content', 'Curriculum'],
@@ -34,6 +35,7 @@ const EXACT_TITLES = new Map([
   ['/instructor/reports', 'Studio reports'],
   ['/instructor/announcements', 'Studio announcements'],
   ['/instructor/notifications', 'Instructor notifications'],
+  ['/instructor/profile', 'Instructor profile'],
 ]);
 
 function resolveTitle(pathname) {

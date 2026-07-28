@@ -28,6 +28,7 @@ function authIsRouteCritical(pathname) {
 export function AuthProvider({ children }) {
   const { pathname } = useLocation();
   const [user, setUser] = useState(null);
+  const [userRevision, setUserRevision] = useState(0);
   const [loading, setLoading] = useState(isFirebaseConfigured);
 
   useEffect(() => {
@@ -71,6 +72,7 @@ export function AuthProvider({ children }) {
   const value = useMemo(
     () => ({
       user,
+      userRevision,
       loading,
       isFirebaseConfigured,
       signIn: async (email, password) => {
@@ -93,8 +95,14 @@ export function AuthProvider({ children }) {
         const { auth, signOut } = await loadAuthClient();
         if (auth) await signOut(auth);
       },
+      refreshUser: async () => {
+        if (!user) return null;
+        await user.reload();
+        setUserRevision((current) => current + 1);
+        return user;
+      },
     }),
-    [user, loading],
+    [user, loading, userRevision],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
