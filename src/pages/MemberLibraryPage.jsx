@@ -8,6 +8,7 @@ import {
 import { useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import ProgressionContentDetail from '../components/content/ProgressionContentDetail';
+import ContentLibraryPreview from '../components/content/ContentLibraryPreview';
 import {
   progressionCategories,
   progressionCategoryMap,
@@ -167,6 +168,7 @@ export default function MemberLibraryPage() {
             {filtered.map((item) => {
               const cardContents = (
                 <>
+                  <ContentLibraryPreview item={item} />
                   <div className="content-library-card__meta">
                     <span className={`content-access-badge is-${item.accessLevel || 'basic'}`}>
                       {item.accessLevel === 'advanced' ? 'Advanced' : 'Basic'}
