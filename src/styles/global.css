@@ -390,12 +390,12 @@ p {
 .hero__image {
     position: absolute;
     z-index: 0;
-    inset: 0 0 0 42%;
-    background-color: #000;
+    inset: 0;
+    background-color: transparent;
     background-image: url("/images/Wolfingout.png");
     background-repeat: no-repeat;
-    background-size: auto 100%;
-    background-position: right center;
+    background-size: auto 94%;
+    background-position: right 3vw center;
 }
 
     .hero__image::after {
@@ -408,7 +408,7 @@ p {
     z-index: 3;
     top: 49%;
     left: calc(50% + clamp(60px, 5.5vw, 102px));
-    width: clamp(180px, 16.2vw, 268px);
+    width: clamp(232px, 16.2vw, 268px);
     aspect-ratio: 1.02;
     transform: translate(-50%, -50%);
     filter: drop-shadow(0 18px 30px rgba(20,23,27,.16));
@@ -521,25 +521,25 @@ p {
     position: relative;
     z-index: 2;
     display: grid;
-    grid-template-columns: minmax(0, 46%) minmax(0, 54%);
-    gap: 0;
+    grid-template-columns: minmax(0, 620px) 1fr;
+    gap: clamp(3rem, 6vw, 6rem);
     align-items: center;
     padding-block: clamp(72px, 8vw, 112px);
 }
 
 .hero__copy {
-    max-width: 540px;
+    max-width: 600px;
     padding: 1.5rem 0;
 }
 
-    .hero__copy h1 {
-        max-width: 520px;
-        font-size: clamp(3.6rem, 6.2vw, 7rem);
+.hero__copy h1 {
+    max-width: 650px;
+    font-size: clamp(3.6rem, 7vw, 7rem);
         text-shadow: 0 1px 0 rgba(255,255,255,.72);
     }
 
 .hero__lead {
-    max-width: 500px;
+    max-width: 590px;
     margin-bottom: 2rem;
     color: var(--gray-600);
     font-size: clamp(1.03rem, 1.6vw, 1.22rem);
@@ -1579,6 +1579,17 @@ textarea {
     }
 }
 
+@media (min-width: 981px) and (max-width: 1500px) {
+    .hero__copy {
+        max-width: 400px;
+    }
+
+    .hero__copy h1,
+    .hero__lead {
+        max-width: 400px;
+    }
+}
+
 @media (max-width: 1120px) {
     .menu-button {
         display: inline-flex;
@@ -1607,9 +1618,10 @@ textarea {
             padding: .85rem;
         }
 
+    .hero__copy,
     .hero__copy h1,
     .hero__lead {
-        max-width: 410px;
+        max-width: 290px;
     }
 }
 
