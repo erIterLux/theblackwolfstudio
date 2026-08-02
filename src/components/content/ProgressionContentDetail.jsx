@@ -16,6 +16,28 @@ function ListSection({ title, items }) {
   );
 }
 
+function TextSection({ title, children }) {
+  if (!children) return null;
+  return (
+    <section className="content-detail__list content-detail__list--wide">
+      <h3>{title}</h3>
+      <p>{children}</p>
+    </section>
+  );
+}
+
+function TagSection({ title, items }) {
+  if (!items?.length) return null;
+  return (
+    <section className="content-detail__list">
+      <h3>{title}</h3>
+      <div className="content-detail__tag-list">
+        {items.map((item) => <span key={item}>{item}</span>)}
+      </div>
+    </section>
+  );
+}
+
 export default function ProgressionContentDetail({ item, compact = false }) {
   if (!item) return null;
 
@@ -25,7 +47,6 @@ export default function ProgressionContentDetail({ item, compact = false }) {
         <div>
           <p className="eyebrow">Training reference</p>
           <h2>{item.title}</h2>
-          <p>{item.summary}</p>
         </div>
         <BookOpen size={34} />
       </header>
@@ -38,15 +59,20 @@ export default function ProgressionContentDetail({ item, compact = false }) {
           <span key={levelKey}>{progressionLevelMap[levelKey]?.label || levelKey}</span>
         ))}
         {(item.categoryKeys || []).map((categoryKey) => (
-          <span key={categoryKey}>{progressionCategoryMap[categoryKey]?.label || categoryKey}</span>
+          <span key={categoryKey}>
+            {categoryKey === item.primaryCategory ? 'Primary: ' : ''}
+            {progressionCategoryMap[categoryKey]?.label || categoryKey}
+          </span>
         ))}
       </div>
 
       <div className="content-detail__summary-grid">
+        <TextSection title="Summary">{item.summary}</TextSection>
         <ListSection title="Learning objectives" items={item.learningObjectives} />
         <ListSection title="Key points" items={item.keyPoints} />
         <ListSection title="Common mistakes" items={item.commonMistakes} />
         <ListSection title="Safety notes" items={item.safetyNotes} />
+        <TagSection title="Technique tags" items={item.techniqueTags} />
       </div>
 
       {(item.blocks || []).map((block) => (
