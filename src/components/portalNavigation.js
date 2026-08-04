@@ -6,6 +6,7 @@ import {
   CalendarDays,
   Home,
   Megaphone,
+  MessageSquareText,
   QrCode,
   ReceiptText,
   ShieldCheck,
@@ -38,6 +39,7 @@ export const instructorNavigation = [
     label: 'Workspace',
     items: [
       { label: 'Overview', to: '/instructor', icon: Home, end: true },
+      { label: 'Inquiries', to: '/instructor/inquiries', icon: MessageSquareText },
       { label: 'Booking calendar', to: '/instructor/private-training/calendar', icon: CalendarClock },
       { label: 'Availability', to: '/instructor/availability', icon: CalendarDays },
     ],

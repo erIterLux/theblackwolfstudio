@@ -43,6 +43,7 @@ const InstructorReportsPage = lazy(routeLoaders.instructorReports);
 const NotificationsPage = lazy(routeLoaders.notifications);
 const InstructorAnnouncementsAdmin = lazy(routeLoaders.instructorAnnouncements);
 const InstructorHome = lazy(routeLoaders.instructorHome);
+const InstructorInquiriesPage = lazy(routeLoaders.instructorInquiries);
 const ProgramsPage = lazy(routeLoaders.programs);
 const ProgressionPage = lazy(routeLoaders.progression);
 const InstructorProgressionAdmin = lazy(routeLoaders.instructorProgression);
@@ -121,6 +122,7 @@ export default function App() {
                     )}
                 >
                     <Route path="instructor" element={<InstructorHome />} />
+                    <Route path="instructor/inquiries" element={<InstructorInquiriesPage />} />
                     <Route path="instructor/progression" element={<InstructorProgressionAdmin />} />
                     <Route path="instructor/content" element={<InstructorContentAdmin />} />
                     <Route path="instructor/events" element={<InstructorEventsAdmin />} />

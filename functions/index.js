@@ -45,6 +45,22 @@ exports.notifyOnInquiryCreated = onDocumentCreated({
     });
 });
 
+function loadInquiryService() {
+    return require('./inquiries/inquiryService');
+}
+
+exports.listInquiries = onCall({
+    invoker: 'public',
+    memory: '256MiB',
+    timeoutSeconds: 30,
+}, async (request) => loadInquiryService().handleListInquiries(request));
+
+exports.updateInquiryStatus = onCall({
+    invoker: 'public',
+    memory: '256MiB',
+    timeoutSeconds: 30,
+}, async (request) => loadInquiryService().handleUpdateInquiryStatus(request));
+
 exports.createMembershipCheckout = onCall({
     invoker: 'public',
     secrets: [stripeSecretKey],
